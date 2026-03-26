@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { authenticateToken, requireAdmin } = require('../middleware/role.middleware');
 const User = require('../models/User');
 const Attendance = require('../models/Attendance');
+const invitationController = require('../controllers/invitation.controller');
 
 // Admin dashboard stats
 router.get('/stats', [authenticateToken, requireAdmin], (req, res) => {
@@ -21,5 +22,16 @@ router.get('/stats', [authenticateToken, requireAdmin], (req, res) => {
     });
   });
 });
+
+// ===== Employee Invitation Routes =====
+
+// Invite employee
+router.post('/invite-employee', [authenticateToken, requireAdmin], invitationController.inviteEmployee);
+
+// Get all invitations
+router.get('/invitations', [authenticateToken, requireAdmin], invitationController.getInvitations);
+
+// Resend invitation
+router.post('/resend-invitation/:invitationId', [authenticateToken, requireAdmin], invitationController.resendInvitation);
 
 module.exports = router;

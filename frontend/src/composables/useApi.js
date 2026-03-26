@@ -14,7 +14,7 @@ export const useApi = () => {
   }
   
   const addUser = async (userData) => {
-    return api.post('/org/users', userData)
+    return api.post('/users', userData)
   }
   
   const addDepartment = async (deptData) => {

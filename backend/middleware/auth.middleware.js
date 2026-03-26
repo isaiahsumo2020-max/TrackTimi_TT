@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = 'tracktimi_secret_2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'tracktimi_secret_2026';
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];

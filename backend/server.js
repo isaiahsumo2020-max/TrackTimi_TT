@@ -16,6 +16,10 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('combined'));
 
+// Domain detection middleware
+const { detectOrganization } = require('./middleware/domain.middleware');
+app.use(detectOrganization);
+
 // JWT_SECRET
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 
@@ -71,11 +75,11 @@ app.use('/api/admin', require('./routes/admin.routes'));
 // ⭐ 4. LANDING PAGE (PUBLIC)
 app.use('/api/landing', require('./routes/landing.routes'));
 
-// ⭐ 5. SUPER ADMIN (SEPARATE JWT)
-app.use('/api/superadmin', require('./routes/superadmin.routes'));
-
-// ⭐ SUPER ADMIN LOGIN (PUBLIC)
+// ⭐ 5. SUPER ADMIN LOGIN (PUBLIC) - Must be BEFORE /api/superadmin to match first
 app.use('/api/superadmin/auth', require('./routes/superadmin-auth.routes'));
+
+// ⭐ 5.5 SUPER ADMIN (SEPARATE JWT) - After auth so protected routes work
+app.use('/api/superadmin', require('./routes/superadmin.routes'));
 
 // 404 Handler
 app.use((req, res) => {

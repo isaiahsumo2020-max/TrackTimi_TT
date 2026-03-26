@@ -1,32 +1,28 @@
-<!-- src/App.vue - SIMPLIFIED ROOT LAYOUT -->
+<!-- src/App.vue - PURE ROUTER CONTAINER -->
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div id="app">
     <router-view />
-    <Footer />
   </div>
 </template>
 
 <script setup>
-import Footer from '@/components/Footer.vue'
-// NO IMPORTS NEEDED - router handled by main.js
+/* EMPTY - Router handles everything */
 </script>
 
 <style>
-/* Global resets */
-html, body {
-  height: 100%;
-}
-#app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
 * {
   box-sizing: border-box;
 }
-body {
+
+html, body {
+  height: 100%;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+}
+
+#app {
+  min-height: 100vh;
+  width: 100%;
 }
 </style>
