@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
+const { generateUniqueEmployeeId } = require('../utils/employeeId');
 
-const JWT_SECRET = 'tracktimi_secret_2026'; // Move to .env later
+const JWT_SECRET = process.env.JWT_SECRET || 'tracktimi_secret_2026';
 
 exports.register = (req, res) => {
   const { firstName, surName, email, password, userTypeId = 2, orgId } = req.body; // 2 = Staff
@@ -19,48 +20,58 @@ exports.register = (req, res) => {
       return res.status(500).json({ error: 'Password encryption failed' });
     }
 
-    // Create user with password
-    const sql = `
-      INSERT INTO User (First_Name, SurName, Email, Password, User_Type_ID, Org_ID)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-
-    db.run(sql, [firstName, surName, email.toLowerCase(), hash, userTypeId, orgId || null], 
-      function(err) {
-        if (err) {
-          if (err.message.includes('UNIQUE constraint')) {
-            return res.status(409).json({ error: 'Email already registered' });
-          }
-          console.error('Register DB error:', err);
-          return res.status(500).json({ error: 'Registration failed' });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign(
-          { 
-            User_ID: this.lastID, 
-            firstName, 
-            surName, 
-            email: email.toLowerCase(),
-            userTypeId 
-          },
-          JWT_SECRET,
-          { expiresIn: '24h' }
-        );
-
-        res.status(201).json({
-          message: '✅ User registered successfully',
-          token,
-          user: {
-            User_ID: this.lastID,
-            firstName,
-            surName,
-            email: email.toLowerCase(),
-            userTypeId
-          }
-        });
+    // Generate unique Employee ID
+    generateUniqueEmployeeId((err, employeeId) => {
+      if (err) {
+        console.error('Employee ID generation error:', err);
+        return res.status(500).json({ error: 'Failed to generate Employee ID' });
       }
-    );
+
+      // Create user with password and Employee ID
+      const sql = `
+        INSERT INTO User (First_Name, SurName, Email, Password, User_Type_ID, Org_ID, Employee_ID)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      db.run(sql, [firstName, surName, email.toLowerCase(), hash, userTypeId, orgId || null, employeeId], 
+        function(err) {
+          if (err) {
+            if (err.message.includes('UNIQUE constraint')) {
+              return res.status(409).json({ error: 'Email already registered' });
+            }
+            console.error('Register DB error:', err);
+            return res.status(500).json({ error: 'Registration failed' });
+          }
+
+          // Generate JWT token
+          const token = jwt.sign(
+            { 
+              User_ID: this.lastID, 
+              firstName, 
+              surName, 
+              email: email.toLowerCase(),
+              userTypeId,
+              employeeId
+            },
+            JWT_SECRET,
+            { expiresIn: '24h' }
+          );
+
+          res.status(201).json({
+            message: '✅ User registered successfully',
+            token,
+            user: {
+              User_ID: this.lastID,
+              Employee_ID: employeeId,
+              firstName,
+              surName,
+              email: email.toLowerCase(),
+              userTypeId
+            }
+          });
+        }
+      );
+    });
   });
 };
 
@@ -94,10 +105,13 @@ exports.login = (req, res) => {
         const token = jwt.sign(
           {
             User_ID: user.User_ID,
+            Org_ID: user.Org_ID,
             firstName: user.First_Name,
             surName: user.SurName,
             email: user.Email,
-            userTypeId: user.User_Type_ID || 2
+            roleId: user.Role_ID,
+            userTypeId: user.User_Type_ID || 2,
+            employeeId: user.Employee_ID
           },
           JWT_SECRET,
           { expiresIn: '24h' }
@@ -108,10 +122,13 @@ exports.login = (req, res) => {
           token,
           user: {
             User_ID: user.User_ID,
+            Employee_ID: user.Employee_ID,
             firstName: user.First_Name,
             surName: user.SurName,
             email: user.Email,
-            userTypeId: user.User_Type_ID || 2
+            roleId: user.Role_ID,
+            userTypeId: user.User_Type_ID || 2,
+            orgId: user.Org_ID
           }
         });
       });

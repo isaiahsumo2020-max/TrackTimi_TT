@@ -14,7 +14,7 @@
       <div class="space-y-4 mb-8">
         <router-link
           to="/login"
-          class="block w-full max-w-sm mx-auto px-8 py-4 bg-emerald-500 text-white font-semibold rounded-2xl hover:bg-emerald-600 transition-all shadow-lg"
+          class="block w-full max-w-sm mx-auto px-8 py-4 bg-orange-500 text-white font-semibold rounded-2xl hover:bg-emerald-600 transition-all shadow-lg"
         >
           Sign In
         </router-link>

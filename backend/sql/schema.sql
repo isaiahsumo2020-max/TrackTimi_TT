@@ -31,8 +31,10 @@ INSERT OR IGNORE INTO Region (Region_Name) VALUES
 CREATE TABLE IF NOT EXISTS Organization (
     Org_ID INTEGER PRIMARY KEY AUTOINCREMENT,
     Org_Name TEXT NOT NULL,
+    Org_Domain TEXT UNIQUE,
     Org_Type_ID INTEGER,
     Region_ID INTEGER,
+    Theme_Color TEXT DEFAULT '#f2a409',
     Address TEXT,
     Num_of_Employee INTEGER,
     Phone_Num TEXT,
@@ -68,6 +70,7 @@ CREATE TABLE IF NOT EXISTS User (
     SurName TEXT NOT NULL,
     Last_Name TEXT,
     Org_ID INTEGER,
+    Org_Domain TEXT,
     User_Type_ID INTEGER DEFAULT 3, -- Default: Staff
     Email TEXT UNIQUE,
     Phone_Num TEXT,
@@ -182,4 +185,5 @@ INSERT OR IGNORE INTO Organization (Org_Name, Org_Type_ID, Region_ID, Num_of_Emp
     ('Liberia High School', 1, 1, 250, '+231-XXX-XXX-XXXX', 'admin@libhs.edu.lr');
 
 -- Sample Admin User
-INSERT OR IGNORE INTO User (First_Name, SurName, E
+INSERT OR IGNORE INTO User (First_Name, SurName, Email, Password, Org_ID, Role_ID) VALUES 
+    ('Admin', 'User', 'admin@libhs.edu.lr', 'hashed_password', 1, 1);

@@ -36,3 +36,23 @@ exports.getOrganizationById = (req, res) => {
     res.json(org);
   });
 };
+
+exports.updateOrganization = (req, res) => {
+  const orgId = req.params.id;
+  const { orgName, email, phone, address, regionId, orgTypeId, numEmployees, themeColor, logoPath, logoMimeType } = req.body;
+
+  const sql = `
+    UPDATE Organization 
+    SET Org_Name = ?, Email = ?, Phone_Num = ?, Address = ?, Region_ID = ?, Org_Type_ID = ?, Num_of_Employee = ?, Theme_Color = ?, Logo_Path = ?, Logo_MIME_Type = ?, Updated_at = CURRENT_TIMESTAMP
+    WHERE Org_ID = ?
+  `;
+
+  db.run(sql, [
+    orgName, email, phone, address, regionId, orgTypeId, numEmployees, 
+    themeColor || '#ff6600', logoPath || null, logoMimeType || 'image/png', orgId
+  ], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    if (this.changes === 0) return res.status(404).json({ error: 'Organization not found' });
+    res.json({ message: '✅ Organization updated successfully', Org_ID: orgId });
+  });
+};

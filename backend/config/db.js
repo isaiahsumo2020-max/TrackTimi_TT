@@ -2,7 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcrypt');
 
-const dbPath = path.join(__dirname, '..', 'data', 'tracktimi.db');
+const dbPath = path.join(__dirname, '..', 'data', '../data/tracktimi.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('❌ Failed to connect to TrackTimi DB:', err.message);
@@ -30,7 +30,7 @@ function initializeTables() {
       Region_Name TEXT UNIQUE NOT NULL
     )`);
     db.run(`INSERT OR IGNORE INTO Region (Region_Name) VALUES 
-      ('Montserrado'), ('Margibi'), ('Nimba')`);
+      ('Montserrado'), ('Bong'), ('Bomi'), ('Margibi'), ('Nimba')`);
 
     db.run(`CREATE TABLE IF NOT EXISTS Role (
       Role_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,7 +56,7 @@ function initializeTables() {
       Created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
     
-    const superAdminHash = bcrypt.hashSync('tracktimi2026', 10);
+    const superAdminHash = bcrypt.hashSync('superpass123', 10);
     db.run(`INSERT OR IGNORE INTO Super_Admin (Email, Password, Full_Name) VALUES (?, ?, ?)`,
       ['superadmin@tracktimi.com', superAdminHash, 'TrackTimi System Admin']
     );
@@ -67,6 +67,8 @@ function initializeTables() {
       Org_Name TEXT NOT NULL,
       Org_Slug TEXT UNIQUE,
       Org_Type_ID INTEGER,
+      Org_Domain TEXT UNIQUE,
+      Theme_Color TEXT DEFAULT '#f2a409',
       Region_ID INTEGER,
       Num_of_Employee INTEGER DEFAULT 0,
       Phone_Num TEXT,
@@ -85,13 +87,14 @@ function initializeTables() {
       FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID) ON DELETE CASCADE
     )`);
 
-    // ⭐ FIXED: Devices = Users (Max_Devices = Max_Users)
+    //  Devices = Users
     db.run(`CREATE TABLE IF NOT EXISTS Device (
       Device_ID INTEGER PRIMARY KEY AUTOINCREMENT,
       Device_Name TEXT NOT NULL,
       Device_Model TEXT,
       Device_UUID TEXT UNIQUE NOT NULL,
       Device_Type TEXT NOT NULL,
+      Org_Domain TEXT NOT NULL,
       OS_Name TEXT,
       OS_Version TEXT,
       IP_Address TEXT,
@@ -111,10 +114,11 @@ function initializeTables() {
       Password TEXT NOT NULL,
       Org_ID INTEGER NOT NULL,
       Role_ID INTEGER,
+      Employee_ID TEXT UNIQUE,
       User_Type_ID INTEGER,
       Phone_Num TEXT,
       Job_Title TEXT,
-      Device_ID INTEGER UNIQUE,  -- ⭐ 1 User = 1 Device ONLY
+      Device_ID INTEGER UNIQUE, 
       Depart_ID INTEGER,
       Is_Active BOOLEAN DEFAULT 1,
       Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

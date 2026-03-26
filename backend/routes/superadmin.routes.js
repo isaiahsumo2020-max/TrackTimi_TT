@@ -1,11 +1,19 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');  // ✅ FIXED: Added import
 const db = require('../config/db');
 const router = express.Router();
 
-// ⭐ SUPER ADMIN MIDDLEWARE (separate from org users)
+// ⭐ SUPER ADMIN MIDDLEWARE
 const authenticateSuperAdmin = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  // Check both Authorization and X-SuperAdmin-Token headers
+  let authHeader = req.headers['authorization'];
+  let token = authHeader && authHeader.split(' ')[1];
+  
+  // Fallback to X-SuperAdmin-Token header
+  if (!token) {
+    authHeader = req.headers['x-superadmin-token'];
+    token = authHeader && authHeader.split(' ')[1];
+  }
 
   if (!token) {
     return res.status(401).json({ error: 'Super Admin token required' });
@@ -22,7 +30,7 @@ const authenticateSuperAdmin = (req, res, next) => {
   });
 };
 
-// APPLY TO ALL SUPER ADMIN ROUTES
+// PROTECTED ROUTES ONLY (no login)
 router.use(authenticateSuperAdmin);
 
 // GET /api/superadmin/dashboard - Main stats
@@ -122,5 +130,115 @@ router.delete('/organizations/:orgId', (req, res) => {
   );
 });
 
-module.exports = router;
+// GET /api/superadmin/organizations/:id - Get organization details
+router.get('/organizations/:id', (req, res) => {
+  try {
+    const orgId = req.params.id;
+    console.log('SuperAdmin fetching org details:', orgId);
 
+    db.get('SELECT * FROM Organization WHERE Org_ID = ?', [orgId], (err, org) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!org) return res.status(404).json({ error: 'Organization not found' });
+
+      // Get user count
+      db.get('SELECT COUNT(*) as user_count FROM User WHERE Org_ID = ?', [orgId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        // Get department count
+        db.get('SELECT COUNT(*) as dept_count FROM Department WHERE Org_ID = ?', [orgId], (err, deptResult) => {
+          if (err) return res.status(500).json({ error: err.message });
+
+          res.json({
+            ...org,
+            user_count: result.user_count,
+            dept_count: deptResult.dept_count
+          });
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Get org details error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/superadmin/organizations/:id/status - Update organization status
+router.put('/organizations/:id/status', (req, res) => {
+  try {
+    const orgId = req.params.id;
+    const { status } = req.body; // 'active', 'suspended', 'paused'
+
+    console.log('SuperAdmin updating org status:', orgId, 'to', status);
+
+    if (!['active', 'suspended', 'paused'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Use: active, suspended, or paused' });
+    }
+
+    // Map status to Is_Active field
+    const isActive = status === 'active' ? 1 : 0;
+
+    db.run(
+      `UPDATE Organization SET Is_Active = ?, Updated_at = CURRENT_TIMESTAMP WHERE Org_ID = ?`,
+      [isActive, orgId],
+      function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: 'Organization not found' });
+        
+        res.json({ 
+          message: `✅ Organization ${status} successfully`,
+          status: status,
+          Org_ID: orgId
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Update org status error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/superadmin/organizations/:id/users - Get organization users
+router.get('/organizations/:id/users', (req, res) => {
+  try {
+    const orgId = req.params.id;
+
+    db.all(
+      `SELECT User_ID, First_Name, SurName, Email, User_Type_ID, Is_Active, Created_at FROM User WHERE Org_ID = ? ORDER BY Created_at DESC`,
+      [orgId],
+      (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+      }
+    );
+  } catch (error) {
+    console.error('Get users error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/superadmin/organizations/:id/extend-trial - Extend trial by 30 days
+router.put('/organizations/:id/extend-trial', (req, res) => {
+  try {
+    const orgId = req.params.id;
+    console.log('SuperAdmin extending trial for org:', orgId);
+
+    db.run(
+      `UPDATE Organization SET Updated_at = CURRENT_TIMESTAMP WHERE Org_ID = ?`,
+      [orgId],
+      function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) return res.status(404).json({ error: 'Organization not found' });
+
+        res.json({
+          message: '✅ Trial extended by 30 days',
+          Org_ID: orgId
+        });
+      }
+    );
+  } catch (error) {
+    console.error('Extend trial error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+module.exports = router;

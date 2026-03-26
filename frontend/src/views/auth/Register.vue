@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
     <div class="text-center">
       <h1 class="text-2xl font-bold text-slate-900">User Registration</h1>
@@ -8,4 +8,4 @@
       </router-link>
     </div>
   </div>
-</template>
+</template> -->

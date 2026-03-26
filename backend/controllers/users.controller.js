@@ -10,7 +10,9 @@ const userSchema = Joi.object({
   email: Joi.string().email().allow(null, ''),
   phone: Joi.string().allow(null, ''),
   depId: Joi.number().integer().allow(null),
-  jobTitle: Joi.string().allow(null, '')
+  departId: Joi.number().integer().allow(null),
+  jobTitle: Joi.string().allow(null, ''),
+  employeeId: Joi.string().allow(null, '')
 });
 
 exports.createUser = (req, res) => {
@@ -19,11 +21,19 @@ exports.createUser = (req, res) => {
     return res.status(400).json({ error: error.details[0].message });
   }
 
-  User.create(value, (err, user) => {
+  const userData = {
+    ...value,
+    depId: value.depId ?? value.departId ?? null
+  };
+
+  console.log('📝 Creating user with data:', userData);
+
+  User.create(userData, (err, user) => {
     if (err) {
-      console.error('Create user error:', err.message);
-      return res.status(500).json({ error: 'Failed to create user' });
+      console.error('❌ Create user error:', err.message);
+      return res.status(500).json({ error: 'Failed to create user', details: err.message });
     }
+    console.log('✅ User created:', user);
     res.status(201).json(user);
   });
 };
