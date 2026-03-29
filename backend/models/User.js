@@ -9,22 +9,22 @@ const User = {
       if (err) return callback(err);
 
       const sql = `
-        INSERT INTO User (First_Name, SurName, Last_Name, Email, Password, Org_ID, User_Type_ID, Employee_ID, Phone_Num, Dep_ID, Job_Title)
+        INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, Role_ID, Employee_ID, User_Type_ID, Phone_Num, Job_Title, Depart_ID)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
       const departmentId = userData.departId ?? userData.depId ?? null;
       const params = [
         userData.firstName,
         userData.surName,
-        userData.lastName || null,
-        userData.email || null,
-        userData.password || null,
-        userData.orgId || null,
-        userData.userTypeId || null,
+        userData.email,
+        userData.password,
+        userData.orgId,
+        userData.roleId || null,
         employeeId,
+        userData.userTypeId || null,
         userData.phone || null,
-        departmentId,
-        userData.jobTitle || null
+        userData.jobTitle || null,
+        departmentId
       ];
       
       db.run(sql, params, function(err) {
@@ -59,12 +59,12 @@ const User = {
   update: (id, userData, callback) => {
     const sql = `
       UPDATE User SET 
-        First_Name = ?, SurName = ?, Last_Name = ?, Email = ?, Phone_Num = ?, Job_Title = ?
+        First_Name = ?, SurName = ?, Email = ?, Phone_Num = ?, Job_Title = ?, Depart_ID = ?
       WHERE User_ID = ?
     `;
     db.run(sql, [
-      userData.firstName, userData.surName, userData.lastName || null,
-      userData.email || null, userData.phone || null, userData.jobTitle || null, id
+      userData.firstName, userData.surName, userData.email || null,
+      userData.phone || null, userData.jobTitle || null, userData.departId ?? userData.depId ?? null, id
     ], callback);
   },
 

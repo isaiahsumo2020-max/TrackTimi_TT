@@ -1,10 +1,12 @@
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const db = require('./config/db');
+const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
@@ -16,12 +18,18 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('combined'));
 
+// Security headers
+app.use(helmet());
+
+// Apply general rate limits to API routes
+app.use('/api', generalLimiter);
+
 // Domain detection middleware
 const { detectOrganization } = require('./middleware/domain.middleware');
 app.use(detectOrganization);
 
-// JWT_SECRET
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+// JWT_SECRET (keep consistent with authentication routes defaults)
+const JWT_SECRET = process.env.JWT_SECRET || 'tracktimi_secret_2026';
 
 // JWT middleware
 const authenticateToken = (req, res, next) => {
@@ -59,6 +67,8 @@ app.use('/api/auth', require('./routes/auth.routes'));
 
 // 2. Protected Org routes (require JWT)
 app.use('/api/org', authenticateToken);
+// Mount org-scoped routes: ensure specific `/org/users` routes load before the generic org routes
+app.use('/api/org', require('./routes/org.users.routes'));
 app.use('/api/org', require('./routes/org.routes'));
 
 // 3. Attendance (require JWT)
@@ -66,6 +76,7 @@ app.use('/api/attendance', authenticateToken);
 app.use('/api/attendance', require('./routes/attendance.routes'));
 
 // Other routes...
+// Keep legacy /api/users but prefer admin routes under /api/org/users
 app.use('/api/users', require('./routes/users.routes'));
 app.use('/api/departments', require('./routes/department.routes'));
 app.use('/api/shifts', require('./routes/shift.routes'));
@@ -106,6 +117,14 @@ const server = app.listen(PORT, () => {
   console.log(`📱 Frontend → http://localhost:5173`);
   console.log(`💾 DB → backend/data/tracktimi.db`);
 });
+
+// Initialize Socket.IO for real-time updates
+try {
+  const socketHelper = require('./utils/socket');
+  socketHelper.init(server);
+} catch (err) {
+  console.error('Socket.IO init error:', err);
+}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

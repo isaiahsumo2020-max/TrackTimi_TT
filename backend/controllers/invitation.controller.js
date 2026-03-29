@@ -1,328 +1,151 @@
+const Joi = require('joi');
 const Invitation = require('../models/Invitation');
-const User = require('../models/User');
 const db = require('../config/db');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { generateUniqueEmployeeId } = require('../utils/employeeId');
+const nodemailer = require('nodemailer');
+const bcrypt = require('bcrypt');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tracktimi_secret_2026';
-
-/**
- * Admin invites employee
- * POST /api/admin/invite-employee
- */
-exports.inviteEmployee = (req, res) => {
-  const { email, firstName, surName, departmentId, jobTitle, userTypeId = 3 } = req.body;
-  const orgId = req.user.orgId;
-  const createdBy = req.user.userId;
-
-  // Validation
-  if (!email || !firstName || !surName) {
-    return res.status(400).json({ error: 'Email, firstName, and surName are required' });
+function getTransporter() {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+    });
   }
+  return { sendMail: (opts) => { console.log('Email stub send:', opts); return Promise.resolve(); } };
+}
 
-  // Check if user already exists in org
-  db.get(
-    'SELECT User_ID FROM User WHERE Email = ? AND Org_ID = ?',
-    [email, orgId],
-    (err, existingUser) => {
-      if (err) {
-        console.error('Database error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
+exports.inviteEmployee = async (req, res) => {
+  try {
+    const schema = Joi.object({ email: Joi.string().email().required(), firstName: Joi.string().required(), surName: Joi.string().required() });
+    const { error, value } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
-      if (existingUser) {
-        return res.status(409).json({ error: 'Employee with this email already exists in organization' });
-      }
+    const orgId = req.user.orgId;
+    const invitedBy = req.user.userId;
 
-      // Check if already invited
-      Invitation.findByOrgAndEmail(orgId, email, (err, existingInvitation) => {
-        if (err) {
-          console.error('Database error:', err);
-          return res.status(500).json({ error: 'Database error' });
-        }
+    // Check existing user
+    db.get('SELECT User_ID FROM User WHERE Email = ? AND Org_ID = ?', [value.email.toLowerCase(), orgId], (err, existing) => {
+      if (err) return res.status(500).json({ error: 'DB error' });
+      if (existing) return res.status(409).json({ error: 'User already exists' });
 
-        if (existingInvitation) {
-          return res.status(409).json({ 
-            error: 'Employee has already been invited',
-            invitationId: existingInvitation.Invitation_ID,
-            token: existingInvitation.Token
+      // Check existing invitation
+      Invitation.findByOrgAndEmail(orgId, value.email, (err, existingInv) => {
+        if (err) return res.status(500).json({ error: 'DB error' });
+        if (existingInv) return res.status(409).json({ error: 'Already invited', token: existingInv.Token });
+
+        Invitation.create({ email: value.email, orgId: orgId, userTypeId: 3, createdBy: invitedBy }, async (errCreate, inv) => {
+          if (errCreate) return res.status(500).json({ error: 'Failed to create invitation' });
+
+          // store pending employee
+          const sql = `INSERT INTO Pending_Employee (Email, First_Name, SurName, Job_Title, Depart_ID, Org_ID, Invitation_ID, User_Type_ID, Created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`;
+          db.run(sql, [value.email.toLowerCase(), value.firstName, value.surName, null, null, orgId, inv.Invitation_ID, 3], (errPending) => {
+            if (errPending) console.error('Pending insert error:', errPending);
           });
-        }
 
-        // Create invitation
-        Invitation.create(
-          {
-            email,
-            orgId,
-            userTypeId,
-            createdBy
-          },
-          (err, invitation) => {
-            if (err) {
-              console.error('Invitation creation error:', err);
-              return res.status(500).json({ error: 'Failed to create invitation' });
-            }
+          const token = inv.Token;
+          const activationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5175'}/activate/${token}`;
+          const transporter = getTransporter();
+          const mailOptions = { from: process.env.SMTP_FROM || 'no-reply@tracktimi.local', to: value.email, subject: 'You are invited to TrackTimi', text: `Activate: ${activationUrl}`, html: `<p>Activate: <a href="${activationUrl}">link</a></p>` };
+          try { await transporter.sendMail(mailOptions); } catch (e) { console.warn('Email send failed:', e.message); }
 
-            // Store employee details temporarily in database (pending activation)
-            const sql = `
-              INSERT INTO Pending_Employee (Email, First_Name, SurName, Depart_ID, Job_Title, Org_ID, Invitation_ID, User_Type_ID)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `;
-
-            db.run(sql, [email, firstName, surName, departmentId || null, jobTitle || null, orgId, invitation.Invitation_ID, userTypeId], (err) => {
-              if (err) console.error('Pending employee creation error:', err);
-              
-              res.status(201).json({
-                message: '✅ Employee invitation sent',
-                invitation: {
-                  Invitation_ID: invitation.Invitation_ID,
-                  email,
-                  token: invitation.token,
-                  expiresAt: invitation.expiresAt,
-                  status: 'pending'
-                }
-              });
-            });
-          }
-        );
+          res.status(201).json({ invited: true, token });
+        });
       });
-    }
-  );
+    });
+  } catch (e) {
+    console.error('Invite error:', e.message);
+    res.status(500).json({ error: 'Server error' });
+  }
 };
 
-/**
- * Get all invitations for organization
- * GET /api/admin/invitations
- */
-exports.getInvitations = (req, res) => {
-  const orgId = req.user.orgId;
-
-  Invitation.findByOrgId(orgId, (err, invitations) => {
-    if (err) {
-      console.error('Get invitations error:', err);
-      return res.status(500).json({ error: 'Failed to fetch invitations' });
-    }
-
-    res.json({
-      total: invitations.length,
-      invitations: invitations.map(inv => ({
-        Invitation_ID: inv.Invitation_ID,
-        Email: inv.Email,
-        UserType: inv.UserType,
-        Is_Used: inv.Is_Used,
-        Created_at: inv.Created_at,
-        Used_at: inv.Used_at,
-        Status: inv.Is_Used ? 'Accepted' : inv.Expires_At < new Date() ? 'Expired' : 'Pending'
-      }))
+exports.getInvitationDetails = (req, res) => {
+  const token = req.params.token;
+  Invitation.findByToken(token, (err, row) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch invitation' });
+    if (!row) return res.status(404).json({ error: 'Invitation not found or already used' });
+    // try to get pending details
+    db.get('SELECT First_Name, SurName, Email FROM Pending_Employee WHERE Invitation_ID = ?', [row.Invitation_ID], (err2, pending) => {
+      if (err2) console.error('Pending lookup error:', err2);
+      res.json({ email: pending?.Email || row.Email, firstName: pending?.First_Name, surName: pending?.SurName, orgId: row.Org_ID, expiresAt: row.Expires_At });
     });
   });
 };
 
-/**
- * Employee activates account with invitation token
- * POST /api/auth/activate-invitation
- */
-exports.activateInvitation = (req, res) => {
-  const { token, password } = req.body;
+exports.activateInvitation = async (req, res) => {
+  try {
+    const schema = Joi.object({ token: Joi.string().required(), password: Joi.string().min(6).required() });
+    const { error, value } = schema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
 
-  if (!token || !password) {
-    return res.status(400).json({ error: 'Token and password required' });
+    Invitation.findByToken(value.token, async (err, invite) => {
+      if (err) return res.status(500).json({ error: 'Failed to verify invitation' });
+      if (!invite) return res.status(404).json({ error: 'Invalid or used invitation token' });
+
+      db.get('SELECT * FROM Pending_Employee WHERE Invitation_ID = ?', [invite.Invitation_ID], async (err2, pending) => {
+        if (err2) return res.status(500).json({ error: 'DB error' });
+        if (!pending) return res.status(400).json({ error: 'Pending record not found' });
+
+        const hashed = await bcrypt.hash(value.password, 10);
+        const sql = `INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Job_Title, Depart_ID, Employee_ID, Is_Active, Created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))`;
+
+        // simple employee id
+        const empId = 'EMP' + Math.floor(Math.random() * 900000 + 100000);
+
+        db.run(sql, [pending.First_Name, pending.SurName, pending.Email.toLowerCase(), hashed, pending.Org_ID, pending.User_Type_ID, pending.Job_Title, pending.Depart_ID, empId], function(errCreate) {
+          if (errCreate) {
+            console.error('User create error:', errCreate);
+            return res.status(500).json({ error: 'Failed to create user' });
+          }
+          const userId = this.lastID;
+          Invitation.markUsed(value.token, (errMark) => { if (errMark) console.error('Mark used error:', errMark); });
+          db.run('DELETE FROM Pending_Employee WHERE Invitation_ID = ?', [invite.Invitation_ID], (errDel) => { if (errDel) console.error('Pending delete error:', errDel); });
+          res.json({ created: true, userId, employeeId: empId });
+        });
+      });
+    });
+  } catch (e) {
+    console.error('Activate invite error:', e.message);
+    res.status(500).json({ error: 'Server error' });
   }
+};
 
-  // Find valid invitation
-  Invitation.findByToken(token, (err, invitation) => {
+// Admin: list invitations for org
+exports.getInvitations = (req, res) => {
+  const orgId = req.user?.orgId || req.body.orgId;
+  if (!orgId) return res.status(400).json({ error: 'orgId required' });
+
+  db.all('SELECT * FROM Invitation WHERE Org_ID = ? ORDER BY Created_at DESC', [orgId], (err, rows) => {
     if (err) {
-      console.error('Invitation lookup error:', err);
-      return res.status(500).json({ error: 'Database error' });
+      console.error('Get invitations error:', err);
+      return res.status(500).json({ error: 'DB error' });
     }
-
-    if (!invitation) {
-      return res.status(401).json({ error: 'Invalid or expired invitation token' });
-    }
-
-    // Get pending employee details
-    db.get(
-      'SELECT * FROM Pending_Employee WHERE Invitation_ID = ?',
-      [invitation.Invitation_ID],
-      (err, pending) => {
-        if (err) {
-          console.error('Pending employee lookup error:', err);
-          return res.status(500).json({ error: 'Database error' });
-        }
-
-        if (!pending) {
-          return res.status(400).json({ error: 'No pending employee record found' });
-        }
-
-        // Generate employee ID
-        generateUniqueEmployeeId((err, employeeId) => {
-          if (err) {
-            console.error('Employee ID generation error:', err);
-            return res.status(500).json({ error: 'Failed to generate employee ID' });
-          }
-
-          // Hash password
-          bcrypt.hash(password, 10, (err, hash) => {
-            if (err) {
-              console.error('Password hash error:', err);
-              return res.status(500).json({ error: 'Password encryption failed' });
-            }
-
-            // Create actual user
-            const sql = `
-              INSERT INTO User (
-                First_Name, SurName, Email, Password, 
-                Org_ID, User_Type_ID, Job_Title, Depart_ID, 
-                Employee_ID, Is_Active, Created_at
-              )
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))
-            `;
-
-            db.run(
-              sql,
-              [
-                pending.First_Name,
-                pending.SurName,
-                pending.Email,
-                hash,
-                pending.Org_ID,
-                pending.User_Type_ID,
-                pending.Job_Title,
-                pending.Depart_ID,
-                employeeId
-              ],
-              function(err) {
-                if (err) {
-                  if (err.message.includes('UNIQUE constraint')) {
-                    return res.status(409).json({ error: 'Email already registered' });
-                  }
-                  console.error('User creation error:', err);
-                  return res.status(500).json({ error: 'Failed to create user account' });
-                }
-
-                const userId = this.lastID;
-
-                // Mark invitation as used
-                Invitation.markAsUsed(invitation.Invitation_ID, userId, (err) => {
-                  if (err) console.error('Error marking invitation as used:', err);
-
-                  // Delete pending employee record
-                  db.run('DELETE FROM Pending_Employee WHERE Invitation_ID = ?', [invitation.Invitation_ID], (err) => {
-                    if (err) console.error('Error deleting pending employee:', err);
-
-                    // Generate JWT
-                    const jwtToken = jwt.sign(
-                      {
-                        userId,
-                        orgId: pending.Org_ID,
-                        email: pending.Email,
-                        role: pending.User_Type_ID === 1 ? 'Admin' : 'Staff',
-                        employeeId
-                      },
-                      JWT_SECRET,
-                      { expiresIn: '7d' }
-                    );
-
-                    res.json({
-                      message: ' Account activated successfully',
-                      token: jwtToken,
-                      user: {
-                        userId,
-                        employeeId,
-                        firstName: pending.First_Name,
-                        surName: pending.SurName,
-                        email: pending.Email,
-                        orgId: pending.Org_ID,
-                        userTypeId: pending.User_Type_ID
-                      }
-                    });
-                  });
-                });
-              }
-            );
-          });
-        });
-      }
-    );
+    res.json({ total: rows.length, invitations: rows });
   });
 };
 
-/**
- * Resend invitation
- * POST /api/admin/resend-invitation/:invitationId
- */
-exports.resendInvitation = (req, res) => {
-  const { invitationId } = req.params;
-  const orgId = req.user.orgId;
+// Admin: resend an invitation (extend expiry and send email)
+exports.resendInvitation = async (req, res) => {
+  const invitationId = req.params.invitationId;
+  const orgId = req.user?.orgId;
+  if (!invitationId || !orgId) return res.status(400).json({ error: 'invitationId and org context required' });
 
-  db.get(
-    'SELECT * FROM Invitation WHERE Invitation_ID = ? AND Org_ID = ?',
-    [invitationId, orgId],
-    (err, invitation) => {
-      if (err) {
-        console.error('Invitation lookup error:', err);
-        return res.status(500).json({ error: 'Database error' });
-      }
+  db.get('SELECT * FROM Invitation WHERE Invitation_ID = ? AND Org_ID = ?', [invitationId, orgId], async (err, inv) => {
+    if (err) return res.status(500).json({ error: 'DB error' });
+    if (!inv) return res.status(404).json({ error: 'Invitation not found' });
 
-      if (!invitation || invitation.Is_Used) {
-        return res.status(400).json({ error: 'Invitation not found or already used' });
-      }
+    const newExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    db.run('UPDATE Invitation SET Expires_At = ? WHERE Invitation_ID = ?', [newExpires, invitationId], (errUpd) => {
+      if (errUpd) console.error('Expire update error:', errUpd);
+    });
 
-      // Update expiration date
-      const newExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      db.run(
-        'UPDATE Invitation SET Expires_At = ? WHERE Invitation_ID = ?',
-        [newExpiresAt, invitationId],
-        (err) => {
-          if (err) {
-            console.error('Update error:', err);
-            return res.status(500).json({ error: 'Failed to resend invitation' });
-          }
+    const activationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5175'}/activate/${inv.Token}`;
+    const transporter = getTransporter();
+    const mailOptions = { from: process.env.SMTP_FROM || 'no-reply@tracktimi.local', to: inv.Email, subject: 'Your TrackTimi invitation (resend)', text: `Activate: ${activationUrl}`, html: `<p>Activate: <a href="${activationUrl}">link</a></p>` };
+    try { await transporter.sendMail(mailOptions); } catch (e) { console.warn('Resend email failed:', e.message); }
 
-          res.json({
-            message: '✅ Invitation resent',
-            expiresAt: newExpiresAt
-          });
-        }
-      );
-    }
-  );
-};
-
-/**
- * Get invitation details (for activation page)
- * GET /api/auth/invitation/:token
- */
-exports.getInvitationDetails = (req, res) => {
-  const { token } = req.params;
-
-  Invitation.findByToken(token, (err, invitation) => {
-    if (err) {
-      console.error('Invitation lookup error:', err);
-      return res.status(500).json({ error: 'Database error' });
-    }
-
-    if (!invitation) {
-      return res.status(401).json({ error: 'Invalid or expired invitation token' });
-    }
-
-    db.get(
-      'SELECT First_Name, SurName, Email FROM Pending_Employee WHERE Invitation_ID = ?',
-      [invitation.Invitation_ID],
-      (err, pending) => {
-        if (err) {
-          console.error('Pending employee lookup error:', err);
-          return res.status(500).json({ error: 'Database error' });
-        }
-
-        res.json({
-          email: pending?.Email || invitation.Email,
-          firstName: pending?.First_Name,
-          surName: pending?.SurName,
-          expiresAt: invitation.Expires_At
-        });
-      }
-    );
+    res.json({ resent: true, expiresAt: newExpires });
   });
 };
+ 

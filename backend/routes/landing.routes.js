@@ -4,24 +4,17 @@ const router = express.Router();
 
 // GET /api/landing/stats - Public stats for landing page
 router.get('/stats', (req, res) => {
-  db.all(`
+  db.get(`
     SELECT 
-      COUNT(DISTINCT Org_ID) as totalOrgs,
-      COUNT(DISTINCT User_ID) as totalUsers,
-      COUNT(*) as totalCheckinsToday
-    FROM (
-      SELECT Org_ID, COUNT(*) as userCount FROM User WHERE Is_Active = 1 GROUP BY Org_ID
-      UNION ALL
-      SELECT Org_ID, COUNT(*) as userCount FROM User WHERE Is_Active = 1
-    ) users
-    LEFT JOIN Attendance a ON a.Org_ID = users.Org_ID 
-    WHERE DATE(a.Check_in_time) = DATE('now')
+      (SELECT COUNT(DISTINCT Org_ID) FROM User WHERE Is_Active = 1) as totalOrgs,
+      (SELECT COUNT(*) FROM User WHERE Is_Active = 1) as totalUsers,
+      (SELECT COUNT(*) FROM Attendance WHERE DATE(Check_in_time) = DATE('now')) as totalCheckinsToday
   `, (err, stats) => {
     if (err) return res.status(500).json({ error: 'Database error' });
     
     res.json({
       success: true,
-      stats: stats[0] || { totalOrgs: 0, totalUsers: 0, totalCheckinsToday: 0 }
+      stats: stats || { totalOrgs: 0, totalUsers: 0, totalCheckinsToday: 0 }
     });
   });
 });

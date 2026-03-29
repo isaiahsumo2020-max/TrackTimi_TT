@@ -1,46 +1,46 @@
 <template>
-  <div class="min-h-screen bg-white flex flex-col">
+  <div class="min-h-screen bg-[#F8FAFC] flex flex-col font-sans antialiased text-slate-900">
     <!-- Top Header -->
-    <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50 px-4 lg:px-6 py-4 lg:py-6 lg:ml-64">
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 px-4 lg:px-8 py-4 lg:ml-64 transition-all duration-300">
       <div class="max-w-7xl mx-auto flex items-center justify-between">
-        <!-- Left: Brand + Hamburger -->
+        <!-- Left: Hamburger + Title -->
         <div class="flex items-center space-x-4">
-          <!-- Mobile Hamburger -->
           <button
             @click="toggleSidebar"
-            class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Toggle menu"
+            class="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors text-slate-600"
           >
-            <span class="text-2xl">☰</span>
+            <MenuIcon v-if="!sidebarOpen" class="w-6 h-6" />
+            <XIcon v-else class="w-6 h-6" />
           </button>
           
-          <!-- Org Logo -->
-          <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <span class="text-xl font-bold text-white">{{ orgInitial }}</span>
-          </div>
-          
-          <!-- Org Info (Hidden on mobile) -->
-          <div class="hidden lg:block">
-            <h1 class="text-2xl font-bold text-black truncate">{{ orgName }}</h1>
-            <span class="text-sm bg-black/10 text-black px-3 py-1 rounded-full font-semibold">
-              {{ userRole }}
-            </span>
+          <div class="flex flex-col">
+            <h1 class="text-xl font-bold tracking-tight text-slate-900 truncate lg:block hidden">
+              {{ orgName }}
+            </h1>
+            <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400 lg:block hidden">
+              Management Console
+            </p>
           </div>
         </div>
 
-        <!-- Right Actions -->
-        <div class="flex items-center space-x-3">
+        <!-- Right: Actions -->
+        <div class="flex items-center space-x-4">
           <router-link
             :to="`/${orgSlug}/checkin`"
-            class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200"
+            class="hidden md:flex items-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm shadow-sm transition-all duration-200 active:scale-95"
           >
-            📍 Check In
+            <MapPinIcon class="w-4 h-4" />
+            <span>Check In</span>
           </router-link>
+          
+          <div class="h-8 w-[1px] bg-slate-200 mx-2 hidden md:block"></div>
+
           <button
             @click="logout"
-            class="px-6 py-3 bg-gray-900 hover:bg-black text-white font-bold rounded-xl text-sm shadow-lg hover:shadow-xl transition-all duration-200"
+            class="flex items-center space-x-2 px-4 py-2.5 text-slate-600 hover:text-red-600 font-semibold rounded-lg text-sm transition-colors"
           >
-            Logout
+            <LogOutIcon class="w-4 h-4" />
+            <span class="hidden sm:inline">Logout</span>
           </button>
         </div>
       </div>
@@ -49,131 +49,96 @@
     <!-- Main Content Area -->
     <div class="flex flex-1 overflow-hidden">
       <!-- Mobile Sidebar Overlay -->
-      <div
-        v-if="sidebarOpen"
-        @click="toggleSidebar"
-        class="fixed inset-0 bg-black/50 z-40 lg:hidden"
-        aria-hidden="true"
-      ></div>
+      <transition name="fade">
+        <div
+          v-if="sidebarOpen"
+          @click="toggleSidebar"
+          class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+        ></div>
+      </transition>
 
       <!-- Sidebar -->
       <aside
         :class="[
-          'bg-gray-700 text-slate-00 border-r border-gray-200 shadow-lg transform transition-transform duration-300 ease-in-out z-50',
+          'bg-slate-900 text-slate-300 border-r border-slate-800 shadow-2xl transform transition-transform duration-300 ease-in-out z-50',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
           'fixed inset-y-0 left-0 w-64 lg:translate-x-0'
         ]"
       >
         <div class="h-full flex flex-col">
           <!-- Brand Header -->
-          <div class="p-5 border-b border-gray-200">
-            <div class="flex items-center justify-between mb-3">
-              <div class="flex items-center space-x-2">
-                <div class="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center text-white font-black">
-                  <span>{{ orgInitial }}</span>
-                </div>
-                <div>
-                  <div class="text-xs uppercase tracking-wider font-bold text-gray-100">Business Admin</div>
-                  <div class="text-xl font-black text-orange-500">Track<Span class="text-white">Timi</Span></div>
-                </div>
+          <div class="p-6 border-b border-slate-800">
+            <div class="flex items-center space-x-3 mb-6">
+              <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                <span class="font-bold text-lg leading-none">{{ orgInitial }}</span>
               </div>
-              <button
-                @click="toggleSidebar"
-                class="lg:hidden p-2 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition"
-                aria-label="Close sidebar"
-              >
-                ✕
-              </button>
+              <div class="flex flex-col">
+                <span class="text-xs font-bold text-indigo-400 uppercase tracking-tighter">Enterprise</span>
+                <span class="text-xl font-black text-white tracking-tight">Track<span class="text-indigo-500">Timi</span></span>
+              </div>
             </div>
-            <div class="text-xs text-gray-500">{{ userRole }}</div>
+
+            <!-- User Profile Quick View -->
+            <div class="flex items-center space-x-3 p-2 rounded-lg bg-slate-800/50 border border-slate-700/50">
+              <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
+                {{ userInitials }}
+              </div>
+              <div class="flex flex-col overflow-hidden">
+                <span class="text-xs font-bold text-white truncate">{{ userShortName }}</span>
+                <span class="text-[10px] text-slate-400 uppercase font-medium">{{ userRole }}</span>
+              </div>
+            </div>
           </div>
 
           <!-- Navigation -->
-          <nav class="flex-1 overflow-auto py-4 px-2 space-y-5">
-            <div>
-              <h3 class="px-4 text-xs font-semibold uppercase tracking-wider text-gray-100">Overview</h3>
-              <div class="mt-2 space-y-1">
+          <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-8 custom-scrollbar">
+            <div v-for="(group, idx) in groupedMenu" :key="idx">
+              <h3 class="px-4 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-4">{{ group.title }}</h3>
+              <div class="space-y-1">
                 <router-link
-                  :to="`/${orgSlug}/dashboard`"
-                  class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200"
-                  :class="route.path.includes('dashboard') ? 'bg-orange-500 text-white shadow-md border-l-4 border-orange-600' : 'text-gray-100 hover:bg-orange-50 hover:text-orange-600'"
+                  v-for="item in group.items"
+                  :key="item.path"
+                  :to="item.path"
+                  class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative"
+                  :class="route.path.includes(item.name) 
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' 
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'"
                   @click="sidebarOpen = false"
                 >
-                  <span class="text-lg">📊</span>
-                  <span>Dashboard</span>
-                </router-link>
-              </div>
-            </div>
-
-            <div>
-              <h3 class="px-4 text-xs font-semibold uppercase tracking-wider text-gray-100">Workforce</h3>
-              <div class="mt-2 space-y-1">
-                <router-link
-                  :to="`/${orgSlug}/users`"
-                  class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200"
-                  :class="route.path.includes('users') ? 'bg-orange-500 text-white shadow-md border-l-4 border-orange-600' : 'text-gray-100 hover:bg-orange-50 hover:text-orange-600'"
-                  @click="sidebarOpen = false"
-                >
-                  <span class="text-lg">👥</span>
-                  <span>Users</span>
-                </router-link>
-
-                <router-link
-                  :to="`/${orgSlug}/departments`"
-                  class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200"
-                  :class="route.path.includes('departments') ? 'bg-orange-500 text-white shadow-md border-l-4 border-orange-600' : 'text-gray-100 hover:bg-orange-50 hover:text-orange-600'"
-                  @click="sidebarOpen = false"
-                >
-                  <span class="text-lg">📁</span>
-                  <span>Departments</span>
-                </router-link>
-
-                <router-link
-                  :to="`/${orgSlug}/checkin`"
-                  class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200"
-                  :class="route.path.includes('checkin') ? 'bg-orange-500 text-white shadow-md border-l-4 border-orange-600' : 'text-gray-100 hover:bg-orange-50 hover:text-orange-600'"
-                  @click="sidebarOpen = false"
-                >
-                  <span class="text-lg">📍</span>
-                  <span>Check In</span>
-                </router-link>
-              </div>
-            </div>
-
-            <div>
-              <h3 class="px-4 text-xs font-semibold uppercase tracking-wider text-gray-100">Settings</h3>
-              <div class="mt-2 space-y-1">
-                <router-link
-                  :to="`/${orgSlug}/settings`"
-                  class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200"
-                  :class="route.path.includes('settings') ? 'bg-orange-500 text-white shadow-md border-l-4 border-orange-600' : 'text-gray-100 hover:bg-orange-50 hover:text-orange-600'"
-                  @click="sidebarOpen = false"
-                >
-                  <span class="text-lg">⚙️</span>
-                  <span>Settings</span>
+                  <component :is="item.icon" class="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
+                  <span>{{ item.label }}</span>
+                  <div v-if="route.path.includes(item.name)" class="absolute left-0 w-1 h-5 bg-white rounded-full"></div>
                 </router-link>
               </div>
             </div>
           </nav>
 
-          <!-- Fixed Bottom: Logout -->
-          <div class="border-t border-gray-200 p-4">
-            <button
-              @click="logout"
-              class="w-full px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg transition"
-            >
-              ⏏ Logout
-            </button>
+          <!-- System Status -->
+          <div class="p-6 mt-auto">
+            <div class="bg-indigo-950/30 rounded-xl p-4 border border-indigo-500/20">
+               <div class="flex items-center space-x-2 text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+                 <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                 </span>
+                 <span>System Active</span>
+               </div>
+            </div>
           </div>
         </div>
       </aside>
 
       <!-- Main Content -->
-      <main class="flex-1 lg:ml-64 p-6 lg:p-8 overflow-y-auto">
-        <router-view />
+      <main class="flex-1 lg:ml-64 p-4 lg:p-8 overflow-y-auto">
+        <div class="max-w-7xl mx-auto">
+          <router-view v-slot="{ Component }">
+            <transition name="page" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
+        </div>
       </main>
     </div>
-
   </div>
 </template>
 
@@ -181,58 +146,80 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import { 
+  LayoutDashboardIcon, 
+  UsersIcon, 
+  BriefcaseIcon, 
+  MapPinIcon, 
+  SettingsIcon, 
+  LogOutIcon, 
+  MenuIcon, 
+  XIcon,
+  CalendarIcon,
+  ClipboardListIcon
+} from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Sidebar state (desktop visible by default, mobile can toggle)
-const sidebarOpen = ref(true)
+const sidebarOpen = ref(false)
+const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
 
-// Toggle sidebar
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-  if (sidebarOpen.value) {
-    document.body.classList.add('overflow-hidden')
-  } else {
-    document.body.classList.remove('overflow-hidden')
-  }
-}
+// Dynamic Branding Logic
+const orgSlug = computed(() => route.params.orgSlug || authStore.user?.orgSlug || 'firm')
+const orgName = computed(() => authStore.user?.orgName || 'TrackTimi Firm')
+const orgInitial = computed(() => orgName.value.charAt(0).toUpperCase())
+const userRole = computed(() => authStore.user?.role || 'Staff')
 
-// Organization data
-const orgSlug = computed(() => route.params.orgSlug || authStore.user?.orgSlug || 'acmecorp')
-const orgName = computed(() => authStore.user?.orgName || `${orgSlug.value.charAt(0).toUpperCase() + orgSlug.value.slice(1)} Corp`)
-const orgInitial = computed(() => orgName.value.slice(0, 2).toUpperCase())
-const userRole = computed(() => authStore.user?.role || 'Admin')
 const userShortName = computed(() => {
-  const name = (authStore.user?.name || authStore.user?.firstName || authStore.user?.email || 'Admin').trim()
-  if (!name) return 'Admin'
-  const parts = name.split(' ').filter(Boolean)
-  const trimmed = parts[0] || name
-  return trimmed.length > 10 ? `${trimmed.slice(0, 10)}...` : trimmed
+  const name = authStore.user?.name || authStore.user?.firstName || 'Admin'
+  return name.length > 12 ? name.substring(0, 12) + '...' : name
 })
 
-// ✅ FIXED: Single role-based navItems computed
-const navItems = computed(() => {
+const userInitials = computed(() => {
+  return userShortName.value.substring(0, 2).toUpperCase()
+})
+
+// Corporate Navigation Structure
+const groupedMenu = computed(() => {
   const role = authStore.user?.role?.toLowerCase() || ''
   const basePath = `/${orgSlug.value}`
-  
-  // Admin/Manager → Full nav (handles 'orgadmin', 'admin', 'manager')
-  if (role === 'orgadmin' || role === 'admin' || role === 'manager') {
+
+  if (['orgadmin', 'admin', 'manager'].includes(role)) {
     return [
-      { name: 'dashboard', label: 'Dashboard', path: `${basePath}/dashboard`, icon: '📊', active: route.path.includes('dashboard') },
-      { name: 'users', label: 'Users', path: `${basePath}/users`, icon: '👥', active: route.path.includes('users') },
-      { name: 'departments', label: 'Departments', path: `${basePath}/departments`, icon: '📁', active: route.path.includes('departments') },
-      { name: 'checkin', label: 'Check In', path: `${basePath}/checkin`, icon: '📍', active: route.path.includes('checkin') },
-      { name: 'settings', label: 'Settings', path: `${basePath}/settings`, icon: '⚙️', active: route.path.includes('settings') }
+      {
+        title: 'Insights',
+        items: [
+          { name: 'dashboard', label: 'Dashboard', path: `${basePath}/dashboard`, icon: LayoutDashboardIcon },
+        ]
+      },
+      {
+        title: 'Workforce',
+        items: [
+          { name: 'users', label: 'Users', path: `${basePath}/users`, icon: UsersIcon },
+          { name: 'departments', label: 'Departments', path: `${basePath}/departments`, icon: BriefcaseIcon },
+          { name: 'checkin', label: 'Activity Logs', path: `${basePath}/checkin`, icon: MapPinIcon },
+        ]
+      },
+      {
+        title: 'System',
+        items: [
+          { name: 'settings', label: 'Settings', path: `${basePath}/settings`, icon: SettingsIcon },
+        ]
+      }
     ]
   }
-  
-  // ✅ EMPLOYEE/USER (Staff) → Personal dashboard + schedule/checkins
+
   return [
-    { name: 'user-dashboard', label: 'My Dashboard', path: `${basePath}/user-dashboard`, icon: '📊', active: route.path.includes('user-dashboard') },
-    { name: 'schedule', label: 'My Schedule', path: `${basePath}/schedule`, icon: '📅', active: route.path.includes('schedule') },
-    { name: 'checkins', label: 'My Check-ins', path: `${basePath}/checkins`, icon: '📍', active: route.path.includes('checkins') }
+    {
+      title: 'Self Service',
+      items: [
+        { name: 'user-dashboard', label: 'My Stats', path: `${basePath}/user-dashboard`, icon: LayoutDashboardIcon },
+        { name: 'schedule', label: 'My Schedule', path: `${basePath}/schedule`, icon: CalendarIcon },
+        { name: 'checkins', label: 'My History', path: `${basePath}/checkins`, icon: ClipboardListIcon },
+      ]
+    }
   ]
 })
 
@@ -241,32 +228,26 @@ const logout = () => {
   router.push('/login')
 }
 
-// Close sidebar on route change
-watch(() => route.path, () => {
-  sidebarOpen.value = false
-  document.body.classList.remove('overflow-hidden')
-})
-
-// Close sidebar on escape key
-onMounted(() => {
-  const handleEscape = (e) => {
-    if (e.key === 'Escape' && sidebarOpen.value) {
-      toggleSidebar()
-    }
-  }
-  window.addEventListener('keydown', handleEscape)
-  return () => window.removeEventListener('keydown', handleEscape)
-})
+watch(() => route.path, () => { sidebarOpen.value = false })
 </script>
 
 <style scoped>
-/* Smooth transitions */
-aside {
-  will-change: transform;
+/* Page Transition */
+.page-enter-active, .page-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
 }
+.page-enter-from { opacity: 0; transform: translateY(5px); }
+.page-leave-to { opacity: 0; transform: translateY(-5px); }
 
-/* Prevent body scroll when sidebar open */
-body.overflow-hidden {
-  overflow: hidden;
+/* Sidebar Fade */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }
 </style>

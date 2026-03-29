@@ -1,415 +1,267 @@
-const express = require('express');
+const router = require('express').Router();
 const db = require('../config/db');
-const bcrypt = require('bcrypt'); 
-const jwt = require('jsonwebtoken'); 
-const router = express.Router();
+const bcrypt = require('bcryptjs');
+const { authenticateToken, requireAdmin } = require('../middleware/role.middleware');
 
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+// Apply authentication to all organization-level routes
+router.use(authenticateToken);
 
-  if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
+// =============================================================
+// 1. PERSONNEL MANAGEMENT (Users)
+// =============================================================
+
+// GET: Fetch all personnel with their Department details
+router.get('/users', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId; 
+
+  const sql = `
+    SELECT 
+      u.User_ID, 
+      u.First_Name AS firstName, 
+      u.SurName AS surName, 
+      u.Email AS email, 
+      u.Job_Title AS jobTitle, 
+      u.User_Type_ID AS userTypeId,
+      u.Employee_ID AS employeeId,
+      d.Depart_Name AS departmentName
+    FROM User u
+    LEFT JOIN Department d ON u.Dep_ID = d.Dep_ID
+    WHERE u.Org_ID = ? AND u.Is_Active = 1
+    ORDER BY u.First_Name ASC`;
+
+  db.all(sql, [orgId], (err, rows) => {
+    if (err) {
+      console.error("Fetch Users Error:", err.message);
+      return res.status(500).json({ error: 'Database sync error' });
+    }
+    res.json(rows); 
+  });
+});
+
+// POST: Provision new personnel (With Password Hashing)
+router.post('/users', requireAdmin, async (req, res) => {
+  const { firstName, surName, email, password, depId, userTypeId, jobTitle } = req.body;
+  const { generateUniqueEmployeeId } = require('../utils/employeeId');
+  const orgId = req.user.orgId; 
+
+  if (!firstName || !surName || !email || !password) {
+    return res.status(400).json({ error: 'Name, Email, and Password are required' });
   }
 
-  const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid token' });
-    req.user = user;
-    next();
-  });
-};
-
-// POST /api/auth/register-org - FIXED VERSION
-router.post('/register-org', async (req, res) => {
   try {
-    const { orgName, orgSlug, adminName, adminEmail, adminPassword } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 1. CHECK if email already exists FIRST
-    const existingUser = await new Promise((resolve, reject) => {
-      db.get('SELECT User_ID FROM User WHERE Email = ?', [adminEmail], (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
-      });
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ error: 'Email already registered. Please use a different email or login.' });
-    }
-
-
-    // 2. CHECK if org slug already exists - FIXED ✅
-const existingOrg = await new Promise((resolve, reject) => {
-  db.get(`
-    SELECT Org_ID FROM Organization 
-    WHERE LOWER(Org_Name) = LOWER(?) OR LOWER(Org_Slug) = LOWER(?)
-  `, [orgName, orgSlug], (err, row) => {
-    if (err) reject(err);
-    else resolve(row);
-  });
-});
-
-if (existingOrg) {
-  return res.status(400).json({ 
-    error: `Organization "${orgName}" or slug "${orgSlug}" already exists. Please choose a different name.` 
-  });
-}
-
-    // 3. Create organization
-    const orgResult = await new Promise((resolve, reject) => {
-      db.run(
-        `INSERT INTO Organization (Org_Name, Org_Type_ID, Region_ID, Org_Domain, Email, Phone_Num) 
-         VALUES (?, 1, 1, ?, ?)`,
-        [orgName, adminEmail, ''],
-        function(err) {
-          if (err) reject(err);
-          else resolve({ orgId: this.lastID });
-        }
-      );
-    });
-
-    // 4. Hash password
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
-
-    // 5. Create admin user
-    const userResult = await new Promise((resolve, reject) => {
-      db.run(
-        `INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Job_Title) 
-         VALUES (?, ?, ?, ?, ?, 1, ?)`,
-        [
-          adminName.split(' ')[0] || 'Admin',
-          adminName.split(' ').slice(1).join(' ') || 'Admin',
-          adminEmail,
-          hashedPassword,
-          orgResult.orgId,
-          'Organization Admin'
-        ],
-        function(err) {
-          if (err) reject(err);
-          else resolve({ userId: this.lastID });
-        }
-      );
-    });
-
-    // 6. Generate JWT
-    const token = jwt.sign(
-      { 
-        userId: userResult.userId, 
-        orgId: orgResult.orgId, 
-        orgSlug,
-        role: 'OrgAdmin',
-        email: adminEmail 
-      },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    res.json({
-      token,
-      user: {
-        userId: userResult.userId,
-        orgId: orgResult.orgId,
-        orgSlug,
-        orgName,
-        name: adminName,
-        email: adminEmail,
-        role: 'OrgAdmin'
-      }
-    });
-
-  } catch (error) {
-    console.error('Register org error:', error);
-    
-    // Better error messages
-    if (error.message.includes('UNIQUE constraint failed')) {
-      return res.status(400).json({ 
-        error: 'Email or organization name already exists. Please try a different email.' 
-      });
-    }
-    
-    res.status(400).json({ error: error.message || 'Organization creation failed' });
-  }
-});
-
-// GET /api/organizations - List organizations
-// 
-router.get('/', (req, res) => {
-  res.status(501).json({ error: 'Organization list endpoint not implemented yet' });
-});
-
-// GET /api/organizations/:id - Get single organization
-router.get('/:id', (req, res) => {
-  const db = require('../config/db');
-  const orgId = req.params.id;
-  
-  db.get('SELECT * FROM Organization WHERE Org_ID = ?', [orgId], (err, org) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (!org) return res.status(404).json({ error: 'Organization not found' });
-    res.json(org);
-  });
-});
-
-// PUT /api/org/:id - Update organization settings (Admin only)
-router.put('/:id', (req, res) => {
-  try {
-    const orgId = req.params.id;
-    const userId = req.user.userId;
-    
-    // Verify user is part of this organization and has admin rights
-    db.get(`
-      SELECT u.User_Type_ID, u.Org_ID FROM User u 
-      WHERE u.User_ID = ? AND u.Org_ID = ?
-    `, [userId, orgId], (err, user) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (!user) return res.status(403).json({ error: 'Unauthorized: You are not part of this organization' });
-      
-      // Check if user is Admin or Manager (type ID 1 or 2)
-      if (user.User_Type_ID !== 1 && user.User_Type_ID !== 2) {
-        return res.status(403).json({ error: 'Unauthorized: Only admins can update organization settings' });
-      }
-
-      const { orgName, email, phone, address, regionId, orgTypeId, numEmployees, themeColor, logoPath, logoMimeType } = req.body;
+    generateUniqueEmployeeId((err, employeeId) => {
+      if (err) return res.status(500).json({ error: 'ID generation failed' });
 
       const sql = `
-        UPDATE Organization 
-        SET Org_Name = ?, Email = ?, Phone_Num = ?, Address = ?, Region_ID = ?, Org_Type_ID = ?, Num_of_Employee = ?, Theme_Color = ?, Logo_Path = ?, Logo_MIME_Type = ?, Updated_at = CURRENT_TIMESTAMP
-        WHERE Org_ID = ?
-      `;
+        INSERT INTO User (
+          First_Name, SurName, Email, Password, Org_ID, 
+          User_Type_ID, Employee_ID, Job_Title, Dep_ID, Is_Active
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`;
 
       db.run(sql, [
-        orgName, email, phone, address, regionId, orgTypeId, numEmployees, 
-        themeColor || '#ff6600', logoPath || null, logoMimeType || 'image/png', orgId
+        firstName, 
+        surName, 
+        email.toLowerCase(), 
+        hashedPassword, 
+        orgId, 
+        userTypeId || 3, 
+        employeeId, 
+        jobTitle, 
+        depId || null
       ], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ error: 'Organization not found' });
-        res.json({ message: '✅ Organization settings updated successfully', Org_ID: orgId });
+        if (err) {
+          if (err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Email already registered' });
+          return res.status(500).json({ error: 'Database write failed: ' + err.message });
+        }
+        res.status(201).json({ success: true, userId: this.lastID, employeeId });
       });
     });
   } catch (error) {
-    console.error('Organization update error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Encryption failed' });
   }
 });
 
-// GET /api/org/:id/settings - Get organization settings (for dashboard)
-router.get('/:id/settings', (req, res) => {
-  try {
-    const orgId = req.params.id;
-    const userId = req.user?.userId;
-    
-    console.log('GET /org/:id/settings - orgId:', orgId, 'userId:', userId, 'req.user:', req.user)
-    
-    // Just fetch the organization directly - the user is already authenticated by global middleware
-    db.get('SELECT * FROM Organization WHERE Org_ID = ?', [orgId], (err, org) => {
-      if (err) {
-        console.error('Error fetching org:', err)
-        return res.status(500).json({ error: err.message })
+// =============================================================
+// 2. LIVE DEPARTMENT MANAGEMENT
+// =============================================================
+
+// GET: Fetch departments with live member counts
+// GET: Fetch departments with a nested list of all personnel
+router.get('/departments', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+
+  // We fetch everything in one query using a JOIN
+  const sql = `
+    SELECT 
+      d.Dep_ID AS deptId, 
+      d.Depart_Name AS deptName,
+      u.User_ID AS userId,
+      u.First_Name AS firstName,
+      u.SurName AS surName,
+      u.Email AS email,
+      u.Job_Title AS jobTitle
+    FROM Department d
+    LEFT JOIN User u ON d.Dep_ID = u.Dep_ID AND u.Is_Active = 1
+    WHERE d.Org_ID = ? AND d.Is_Active = 1
+    ORDER BY d.Depart_Name ASC, u.First_Name ASC`;
+
+  db.all(sql, [orgId], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch department details' });
+
+    // --- DATA TRANSFORMATION ---
+    // Since SQL returns flat rows, we group them by Department in JavaScript
+    const departmentsMap = {};
+
+    rows.forEach(row => {
+      if (!departmentsMap[row.deptId]) {
+        departmentsMap[row.deptId] = {
+          id: row.deptId,
+          name: row.deptName,
+          users: [] // This will hold our detailed list
+        };
       }
-      if (!org) {
-        console.log('Organization not found:', orgId)
-        return res.status(404).json({ error: 'Organization not found' })
+      
+      // If there is a user in this row, add them to the users array
+      if (row.userId) {
+        departmentsMap[row.deptId].users.push({
+          id: row.userId,
+          name: `${row.firstName} ${row.surName}`,
+          email: row.email,
+          job: row.jobTitle
+        });
       }
-      console.log('Org settings retrieved:', org.Org_Name)
-      res.json(org);
     });
-  } catch (error) {
-    console.error('Get settings error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+
+    // Convert the map back to an array for the frontend
+    res.json(Object.values(departmentsMap));
+  });
 });
 
+// POST: Create a new department
+// POST: Create a new department
+router.post('/departments', requireAdmin, (req, res) => {
+  const { name } = req.body;
+  const orgId = req.user.orgId;
 
-// GET /api/org/shifts/my - User's shifts only
-router.get('/shifts/my', (req, res) => {
-  db.all(`
-    SELECT s.*, d.Depart_Name 
-    FROM Shift s 
-    JOIN Department d ON s.Dep_ID = d.Dep_ID 
-    WHERE s.User_ID = ? 
-    ORDER BY s.Start_Time ASC
-  `, [req.user.userId], (err, shifts) => {
-    if (err) return res.status(500).json({ error: 'Database error' })
-    res.json(shifts)
-  })
-})
+  if (!name) return res.status(400).json({ error: 'Department name is required' });
 
-// GET /api/org/checkins/my - User's checkins only
-router.get('/checkins/my', (req, res) => {
-  db.all(`
-    SELECT a.*, u.First_Name, u.SurName, d.Depart_Name
-    FROM Attendance a 
-    JOIN User u ON a.User_ID = u.User_ID
-    JOIN Department d ON u.Depart_ID = d.Dep_ID
-    WHERE a.User_ID = ?
-    ORDER BY a.Check_in_time DESC 
-    LIMIT 10
-  `, [req.user.userId], (err, checkins) => {
-    if (err) return res.status(500).json({ error: 'Database error' })
-    res.json(checkins)
-  })
-})
-
-
-// GET /api/org/departments/my - User's department
-router.get('/departments/my', (req, res) => {
-  db.get(`
-    SELECT d.* FROM Department d 
-    JOIN User u ON u.Depart_ID = d.Dep_ID 
-    WHERE u.User_ID = ?
-  `, [req.user.userId], (err, dept) => {
-    if (err) return res.status(500).json({ error: 'Database error' })
-    res.json(dept ? [dept] : [])
-  })
-})
-
-// ⭐ POST /api/org/users - Create new user (OrgAdmin only)
-router.post('/users', (req, res) => {
-  const { firstName, surName, email, departId, userTypeId, roleId } = req.body;
-  const { generateUniqueEmployeeId } = require('../utils/employeeId');
-
-  // Validate required fields
-  if (!firstName || !surName || !email) {
-    return res.status(400).json({ error: 'firstName, surName, and email are required' });
-  }
-
-  // Generate unique Employee ID
-  generateUniqueEmployeeId((err, employeeId) => {
+  const sql = `INSERT INTO Department (Depart_Name, Org_ID, Is_Active) VALUES (?, ?, 1)`;
+  
+  db.run(sql, [name, orgId], function(err) {
     if (err) {
-      console.error('Employee ID generation error:', err);
-      return res.status(500).json({ error: 'Failed to generate Employee ID' });
+      // LOG THE REAL ERROR TO YOUR TERMINAL
+      console.error("❌ DEPT CREATE ERROR:", err.message);
+      // SEND THE REAL ERROR TO THE FRONTEND
+      return res.status(500).json({ error: 'Database Error: ' + err.message });
     }
+    res.status(201).json({ success: true, id: this.lastID, name });
+  });
+});
 
-    // Prepare user data
-    const userData = {
-      firstName,
-      surName,
-      email: email.toLowerCase(),
-      orgId: req.user.Org_ID, // Use org from JWT token
-      departId: departId || null,
-      userTypeId: userTypeId || 3, // Default to Staff
-      roleId: roleId || null,
-      phone: req.body.phone || null,
-      jobTitle: req.body.jobTitle || null
-    };
+// =============================================================
+// 3. DETAILED DASHBOARD METRICS (Real-time Name Tracking)
+// =============================================================
 
-    // Insert into database with Employee ID
-    const sql = `
-      INSERT INTO User (First_Name, SurName, Email, Org_ID, Role_ID, User_Type_ID, Employee_ID, Phone_Num, Job_Title, Depart_ID, Is_Active)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
-    `;
+router.get('/dashboard-metrics', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
 
-    db.run(sql, [
-      userData.firstName,
-      userData.surName,
-      userData.email,
-      userData.orgId,
-      userData.roleId,
-      userData.userTypeId,
-      employeeId,
-      userData.phone,
-      userData.jobTitle,
-      userData.departId
-    ], function(err) {
-      if (err) {
-        console.error('Create user error:', err);
-        if (err.message.includes('UNIQUE constraint')) {
-          return res.status(409).json({ error: 'Email already exists' });
-        }
-        return res.status(500).json({ error: 'Failed to create user' });
-      }
+  // 1. Get ALL active staff members
+  const sqlAllStaff = `SELECT User_ID, First_Name, SurName, Job_Title FROM User WHERE Org_ID = ? AND Is_Active = 1`;
 
-      res.status(201).json({
-        message: 'User created successfully',
-        User_ID: this.lastID,
-        Employee_ID: employeeId,
-        ...userData
+  // 2. Get all attendance records for TODAY (local time)
+  const sqlAttendance = `
+    SELECT a.*, u.First_Name, u.SurName, u.Job_Title 
+    FROM Attendance a 
+    JOIN User u ON a.User_ID = u.User_ID 
+    WHERE a.Org_ID = ? AND date(a.Check_in_time) = date('now', 'localtime')`;
+
+  db.all(sqlAllStaff, [orgId], (err, allStaff) => {
+    if (err) return res.status(500).json({ error: 'Staff fetch error' });
+
+    db.all(sqlAttendance, [orgId], (err, attendanceToday) => {
+      if (err) return res.status(500).json({ error: 'Attendance fetch error' });
+
+      // Identify Present people
+      const presentList = attendanceToday.map(r => ({
+        name: `${r.First_Name} ${r.SurName}`,
+        job: r.Job_Title,
+        checkIn: r.Check_in_time,
+        checkOut: r.Check_out_time,
+        onSite: r.Check_out_time === null
+      }));
+
+      // Identify Absent people (Total Staff - Present Staff)
+      const presentIds = attendanceToday.map(a => a.User_ID);
+      const absentList = allStaff
+        .filter(s => !presentIds.includes(s.User_ID))
+        .map(s => ({
+          name: `${s.First_Name} ${s.SurName}`,
+          job: s.Job_Title
+        }));
+
+      res.json({
+        metrics: {
+          totalEmployees: allStaff.length,
+          presentToday: presentList.length,
+          onSiteNow: presentList.filter(u => u.onSite).length,
+          absentToday: absentList.length
+        },
+        presentList,
+        absentList
       });
     });
   });
 });
 
-// GET /api/org/branding - Get organization branding (logo and color)
-router.get('/branding', (req, res) => {
-  try {
-    const orgId = req.user.orgId;
+// =============================================================
+// GEOFENCING MANAGEMENT (Work Zones)
+// =============================================================
 
-    if (!orgId) {
-      return res.status(400).json({ error: 'Organization ID not found in token' });
+// 1. GET all active work zones for this Org
+router.get('/geofences', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+  const sql = `SELECT Fence_ID, Location_Name, Latitude, Longitude, Radius FROM Geofence WHERE Org_ID = ? AND Is_Active = 1`;
+
+  db.all(sql, [orgId], (err, rows) => {
+    if (err) {
+      console.error("❌ Fetch Zones Error:", err.message);
+      return res.status(500).json({ error: 'Failed to fetch work zones' });
     }
-
-    db.get(
-      `SELECT Org_ID, Org_Name, Theme_Color, Logo_Path, Logo_MIME_Type FROM Organization WHERE Org_ID = ?`,
-      [orgId],
-      (err, org) => {
-        if (err) {
-          console.error('Error fetching branding:', err);
-          return res.status(500).json({ error: 'Failed to fetch branding' });
-        }
-
-        if (!org) {
-          return res.status(404).json({ error: 'Organization not found' });
-        }
-
-        res.json({
-          orgId: org.Org_ID,
-          orgName: org.Org_Name,
-          themeColor: org.Theme_Color || '#ff6600',
-          logo: org.Logo_Path,
-          logoMimeType: org.Logo_MIME_Type || 'image/png'
-        });
-      }
-    );
-  } catch (error) {
-    console.error('Branding fetch error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+    res.json(rows);
+  });
 });
 
-// PUT /api/org/branding - Update organization branding
-router.put('/branding', (req, res) => {
-  try {
-    const orgId = req.user.orgId;
-    const { themeColor, logo, logoMimeType } = req.body;
+router.post('/geofences', requireAdmin, (req, res) => {
+  const { locationName, latitude, longitude, radius } = req.body;
+  const orgId = req.user.orgId;
 
-    if (!orgId) {
-      return res.status(400).json({ error: 'Organization ID not found in token' });
+  // Log exactly what is arriving to the backend
+  console.log("📥 Attempting to save zone:", { locationName, latitude, longitude, orgId });
+
+  const sql = `INSERT INTO Geofence (Org_ID, Location_Name, Latitude, Longitude, Radius, Is_Active) VALUES (?, ?, ?, ?, ?, 1)`;
+  
+  db.run(sql, [orgId, locationName, latitude, longitude, radius || 200], function(err) {
+    if (err) {
+      // THIS WILL SHOW THE EXACT ERROR IN YOUR TERMINAL
+      console.error("❌ SQLITE ERROR:", err.message);
+      return res.status(500).json({ error: `Database Error: ${err.message}` });
     }
-
-    // Validate color format
-    if (themeColor && !/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(themeColor)) {
-      return res.status(400).json({ error: 'Invalid color format. Use hex color (e.g., #FF6B6B)' });
-    }
-
-    db.run(
-      `UPDATE Organization SET Theme_Color = ?, Logo_Path = ?, Logo_MIME_Type = ?, Updated_at = CURRENT_TIMESTAMP WHERE Org_ID = ?`,
-      [
-        themeColor || '#ff6600',
-        logo || null,
-        logoMimeType || 'image/png',
-        orgId
-      ],
-      function(err) {
-        if (err) {
-          console.error('Error updating branding:', err);
-          return res.status(500).json({ error: 'Failed to update branding' });
-        }
-
-        if (this.changes === 0) {
-          return res.status(404).json({ error: 'Organization not found' });
-        }
-
-        res.json({
-          message: '✅ Branding updated successfully',
-          themeColor: themeColor || '#ff6600',
-          logo: logo || null,
-          logoMimeType: logoMimeType || 'image/png'
-        });
-      }
-    );
-  } catch (error) {
-    console.error('Branding update error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+    
+    console.log("✅ Zone saved successfully with ID:", this.lastID);
+    res.status(201).json({ success: true, id: this.lastID });
+  });
 });
 
+// 3. DELETE (Soft delete) a work zone
+router.delete('/geofences/:id', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+  const fenceId = req.params.id;
+
+  db.run(`UPDATE Geofence SET Is_Active = 0 WHERE Fence_ID = ? AND Org_ID = ?`, [fenceId, orgId], function(err) {
+    if (err || this.changes === 0) return res.status(500).json({ error: 'Delete failed' });
+    res.json({ success: true, message: 'Zone removed' });
+  });
+});
 module.exports = router;

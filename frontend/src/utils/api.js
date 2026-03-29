@@ -1,21 +1,18 @@
-// src/utils/api.js
 import axios from 'axios'
-import { useAuthStore } from '@/stores/auth.js'
 
 const api = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
 })
 
-// Request interceptor - auto-add token
+// Add the token to every request automatically
 api.interceptors.request.use((config) => {
-  const authStore = useAuthStore()
-  if (authStore.token) {
-    config.headers.Authorization = `Bearer ${authStore.token}`
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
-  return config
-})
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
 export default api
