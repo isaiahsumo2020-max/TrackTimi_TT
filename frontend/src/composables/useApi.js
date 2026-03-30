@@ -14,11 +14,19 @@ export const useApi = () => {
   }
   
   const addUser = async (userData) => {
-    return api.post('/users', userData)
+    return api.post('/org/users', userData)
   }
   
   const addDepartment = async (deptData) => {
     return api.post('/org/departments', deptData)
+  }
+
+  const inviteEmployee = async (inviteData) => {
+    return api.post('/org/invite', inviteData)
+  }
+  
+  const activateInvitation = async (activationData) => {
+    return api.post('/auth/activate', activationData)
   }
   
   const checkin = async (locationData) => {
@@ -30,6 +38,8 @@ export const useApi = () => {
     orgDepartments,
     addUser,
     addDepartment,
+    inviteEmployee,
+    activateInvitation,
     checkin
   }
 }

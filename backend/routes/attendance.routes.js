@@ -1,19 +1,22 @@
 const router = require('express').Router();
 const attendanceController = require('../controllers/attendance.controller');
+const { authenticateToken } = require('../middleware/role.middleware');
 
-// POST /api/attendance/checkin
+// Protect all routes
+router.use(authenticateToken);
+
+// 1. GET checkin status (The frontend calls this immediately after checkin)
+// THIS IS THE ONE THAT WAS LIKELY MISSING OR CAUSING THE 404
+router.get('/status', attendanceController.getCheckinStatus);
+
+// 2. Actions
 router.post('/checkin', attendanceController.checkIn);
+router.post('/checkout', attendanceController.checkOut);
 
-// GET /api/attendance/recent?limit=20
+// 3. History
+router.get('/my-history', attendanceController.getMyHistory);
+
+// 4. Admin Utilities
 router.get('/recent', attendanceController.getRecent);
-
-// GET /api/attendance/logs?page=1&limit=25
-router.get('/logs', attendanceController.getOrgLogs);
-
-// GET /api/attendance/summary
-router.get('/summary', attendanceController.getOrgSummary);
-
-// GET /api/attendance/report
-router.get('/report', attendanceController.generateReport);
 
 module.exports = router;

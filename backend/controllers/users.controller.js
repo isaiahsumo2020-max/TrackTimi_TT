@@ -1,63 +1,62 @@
-const Joi = require('joi');
-const User = require('../models/User');
+const db = require('../config/db');
+const bcrypt = require('bcryptjs');
 
-const userSchema = Joi.object({
-  firstName: Joi.string().required(),
-  surName: Joi.string().required(),
-  lastName: Joi.string().allow(null, ''),
-  orgId: Joi.number().integer().allow(null),
-  userTypeId: Joi.number().integer().allow(null),
-  email: Joi.string().email().allow(null, ''),
-  phone: Joi.string().allow(null, ''),
-  depId: Joi.number().integer().allow(null),
-  departId: Joi.number().integer().allow(null),
-  jobTitle: Joi.string().allow(null, ''),
-  employeeId: Joi.string().allow(null, '')
-});
+// 1. CREATE USER (Provisioning)
+exports.createUser = async (req, res) => {
+  try {
+    const { firstName, surName, email, password, jobTitle, depId, userTypeId } = req.body;
+    const adminOrgId = req.user.orgId;
 
-exports.createUser = (req, res) => {
-  const { error, value } = userSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
+    if (!firstName || !surName || !email || !password) {
+      return res.status(400).json({ error: 'Name, Email, and Password are required' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const sql = `
+      INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Job_Title, Dep_ID, Is_Active)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+    `;
+
+    db.run(sql, [firstName, surName, email.toLowerCase(), hashedPassword, adminOrgId, userTypeId || 3, jobTitle, depId || null], function(err) {
+      if (err) {
+        if (err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Email already exists' });
+        return res.status(500).json({ error: 'Database error: ' + err.message });
+      }
+      res.status(201).json({ message: 'User provisioned successfully' });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
-
-  const userData = {
-    ...value,
-    depId: value.depId ?? value.departId ?? null
-  };
-
-  console.log('📝 Creating user with data:', userData);
-
-  User.create(userData, (err, user) => {
-    if (err) {
-      console.error('❌ Create user error:', err.message);
-      return res.status(500).json({ error: 'Failed to create user', details: err.message });
-    }
-    console.log('✅ User created:', user);
-    res.status(201).json(user);
-  });
 };
 
+// 2. GET ALL USERS (The one causing the crash on line 7)
 exports.getUsers = (req, res) => {
-  User.findAll((err, users) => {
-    if (err) {
-      console.error('Get users error:', err.message);
-      return res.status(500).json({ error: 'Failed to fetch users' });
-    }
-    res.json(users);
+  const orgId = req.user.orgId;
+  const sql = `
+    SELECT 
+      User_ID, 
+      First_Name AS firstName, 
+      SurName AS surName, 
+      Email AS email, 
+      Job_Title AS jobTitle,
+      Employee_ID AS employeeId
+    FROM User 
+    WHERE Org_ID = ? AND Is_Active = 1
+  `;
+  
+  db.all(sql, [orgId], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Fetch failed' });
+    res.json(rows);
   });
 };
 
+// 3. GET SINGLE USER
 exports.getUserById = (req, res) => {
-  const id = Number(req.params.id);
-  if (!id) return res.status(400).json({ error: 'Invalid user id' });
-
-  User.findById(id, (err, user) => {
-    if (err) {
-      console.error('Get user by id error:', err.message);
-      return res.status(500).json({ error: 'Failed to fetch user' });
-    }
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
+  const { id } = req.params;
+  const orgId = req.user.orgId;
+  db.get('SELECT * FROM User WHERE User_ID = ? AND Org_ID = ?', [id, orgId], (err, row) => {
+    if (err || !row) return res.status(404).json({ error: 'User not found' });
+    res.json(row);
   });
 };

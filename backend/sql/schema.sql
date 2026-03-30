@@ -1,5 +1,5 @@
 -- =====================================================
--- TRACKTIMI COMPLETE DATABASE SCHEMA
+-- TRACKTIMI COMPLETE DATABASE SCHEMA (UPDATED)
 -- SQLite3 - Production Ready
 -- =====================================================
 
@@ -168,22 +168,54 @@ CREATE TABLE IF NOT EXISTS Attendance (
     FOREIGN KEY (Device_Info_ID) REFERENCES Device_Info(Device_Info_ID)
 );
 
--- 12. Indexes for Performance
+-- 12. Geofencing Locations (NEW)
+CREATE TABLE IF NOT EXISTS Geofence (
+    Fence_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Org_ID INTEGER NOT NULL,
+    Location_Name TEXT NOT NULL,
+    Latitude REAL NOT NULL,
+    Longitude REAL NOT NULL,
+    Radius INTEGER DEFAULT 200, -- Distance in meters
+    Is_Active BOOLEAN DEFAULT 1,
+    Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID)
+);
+
+-- 13. Audit Log (NEW - Required by Admin Controller)
+CREATE TABLE IF NOT EXISTS Audit_Log (
+    Log_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    User_ID INTEGER,
+    Org_ID INTEGER,
+    Action TEXT NOT NULL, -- e.g., 'create_user', 'check_in'
+    Table_Name TEXT,
+    Record_ID INTEGER,
+    New_Data TEXT, -- JSON string of changes
+    IP_Address TEXT,
+    Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (User_ID) REFERENCES User(User_ID),
+    FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID)
+);
+
+-- 14. Indexes for Performance
 CREATE INDEX IF NOT EXISTS idx_user_org ON User(Org_ID);
 CREATE INDEX IF NOT EXISTS idx_user_email ON User(Email);
 CREATE INDEX IF NOT EXISTS idx_attendance_user ON Attendance(User_ID);
 CREATE INDEX IF NOT EXISTS idx_attendance_date ON Attendance(Check_in_time);
-CREATE INDEX IF NOT EXISTS idx_shift_user ON Shift(User_ID);
-CREATE INDEX IF NOT EXISTS idx_shift_date ON Shift(Shift_Date);
+CREATE INDEX IF NOT EXISTS idx_geofence_org ON Geofence(Org_ID);
 
 -- =====================================================
 -- SAMPLE DATA FOR TESTING
 -- =====================================================
 
 -- Sample Organization
-INSERT OR IGNORE INTO Organization (Org_Name, Org_Type_ID, Region_ID, Num_of_Employee, Phone_Num, Email) VALUES 
-    ('Liberia High School', 1, 1, 250, '+231-XXX-XXX-XXXX', 'admin@libhs.edu.lr');
+INSERT OR IGNORE INTO Organization (Org_Name, Org_Domain, Org_Type_ID, Region_ID, Num_of_Employee, Phone_Num, Email) VALUES 
+    ('TrackTimi HQ', 'tracktimi', 4, 1, 10, '+231-770-000-000', 'info@tracktimi.com');
+
+-- Sample Geofence for Organization (Central Monrovia Example)
+INSERT OR IGNORE INTO Geofence (Org_ID, Location_Name, Latitude, Longitude, Radius) VALUES 
+    (1, 'Main Office Monrovia', 6.3156, -10.8074, 200);
 
 -- Sample Admin User
-INSERT OR IGNORE INTO User (First_Name, SurName, Email, Password, Org_ID, Role_ID) VALUES 
-    ('Admin', 'User', 'admin@libhs.edu.lr', 'hashed_password', 1, 1);
+-- Password is 'Admin123!' hashed with bcrypt (Example hash)
+INSERT OR IGNORE INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Job_Title) VALUES 
+    ('Admin', 'System', 'admin@tracktimi.com', '$2b$10$YourHashedPasswordHere', 1, 1, 'System Administrator');

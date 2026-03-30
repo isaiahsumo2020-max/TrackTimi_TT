@@ -1,77 +1,138 @@
 <template>
-  <div class="space-y-8">
-    <div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ userName }}'s Dashboard</h1>
-      <p class="text-xl text-gray-600">Your personal schedule & check-ins</p>
+  <div class="p-6 lg:p-10 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    
+    <!-- 1. Premium Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-1">Personnel Portal</p>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+          Hello, {{ user?.firstName }} <span class="font-light text-slate-400">👋</span>
+        </h1>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        <div class="bg-white px-6 py-3 rounded-2xl border border-slate-100 shadow-sm text-center">
+          <p class="text-[9px] font-black text-slate-400 uppercase">Work Hours (MTD)</p>
+          <p class="text-sm font-black text-slate-900">{{ totalMonthlyHours }}h</p>
+        </div>
+        <!-- Quick Action Button -->
+        <router-link :to="`/${orgSlug}/checkin`" 
+          class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+          Clock Center 📍
+        </router-link>
+      </div>
     </div>
 
-    <!-- Today's Status -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border-2 border-green-200">
-        <div class="flex items-center space-x-3 mb-4">
-          <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-            <span class="text-2xl text-white">📍</span>
+    <!-- 2. Status & Shift Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Current Status Card -->
+      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+        <div class="relative z-10">
+          <div class="flex justify-between items-start mb-6">
+            <div :class="statusColor" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:rotate-12">
+              <ClockIcon class="w-6 h-6" />
+            </div>
+            <span :class="statusBadge" class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+              {{ todayStatus }}
+            </span>
           </div>
-          <div>
-            <p class="text-sm font-medium text-green-700 uppercase tracking-wide">Today</p>
-            <p class="text-3xl font-bold text-green-900">{{ todayStatus }}</p>
-          </div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Session</p>
+          <h2 class="text-4xl font-black text-slate-900 tracking-tighter mt-1">{{ todayTime }}</h2>
+          <p class="text-xs font-bold text-slate-400 mt-2 italic">{{ statusMessage }}</p>
         </div>
-        <p class="text-green-800 text-sm">{{ todayTime }}</p>
+        <!-- Decoration -->
+        <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-slate-50 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
       </div>
 
-      <!-- Upcoming Shifts -->
-      <div class="lg:col-span-2 p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="text-xl font-bold mb-6 flex items-center space-x-2">
-          <span>📅</span>
-          <span>Upcoming Shifts</span>
-        </h3>
-        <div v-if="shifts.length" class="space-y-4">
-          <div v-for="shift in shifts" :key="shift.Shift_ID" class="p-6 bg-gray-50 rounded-xl border-l-4 border-blue-500">
-            <div class="flex justify-between items-start mb-2">
-              <span class="font-bold text-lg">{{ shift.Shift_Title }}</span>
-              <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-bold rounded-full">
-                {{ shift.Depart_Name }}
+      <!-- Upcoming Shift -->
+      <div class="lg:col-span-2 bg-slate-900 p-8 rounded-[3rem] shadow-2xl text-white relative overflow-hidden">
+        <div class="relative z-10 flex flex-col h-full">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xs font-black uppercase tracking-[0.2em] opacity-50 text-indigo-400">Next Scheduled Shift</h3>
+            <CalendarIcon class="w-4 h-4 opacity-50" />
+          </div>
+          
+          <div v-if="nextShift" class="flex-1 flex flex-col justify-center">
+            <div class="flex items-center space-x-4 mb-4">
+              <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg text-[10px] font-black uppercase border border-indigo-500/30">
+                {{ nextShift.Depart_Name || 'General' }}
+              </span>
+              <span class="text-xs font-bold opacity-60">{{ formatDate(nextShift.Shift_Date) }}</span>
+            </div>
+            <h2 class="text-3xl font-black tracking-tight">{{ nextShift.Shift_Start_Time }} — {{ nextShift.Shift_End_Time }}</h2>
+            <p class="text-sm opacity-50 mt-2 font-medium">{{ nextShift.Shift_Title || 'Standard Operational Duty' }}</p>
+          </div>
+          
+          <div v-else class="flex-1 flex items-center justify-center">
+            <p class="text-xs font-black uppercase opacity-30 tracking-[0.3em]">No Upcoming Shifts Found</p>
+          </div>
+        </div>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full"></div>
+      </div>
+    </div>
+
+    <!-- 3. Performance & Recent Logs -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Recent Check-ins List -->
+      <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+        <div class="flex justify-between items-center mb-8">
+          <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center">
+            <HistoryIcon class="w-4 h-4 mr-2 text-indigo-500" /> Recent Pulse History
+          </h3>
+          <router-link :to="`/${orgSlug}/history`" class="text-[9px] font-black text-indigo-600 uppercase border-b-2 border-indigo-50">View All Logs</router-link>
+        </div>
+
+        <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+          <div v-for="checkin in checkins" :key="checkin.Attend_ID" 
+            class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-white border border-transparent hover:border-slate-100 transition-all group">
+            <div class="flex items-center space-x-4">
+              <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm font-black text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                {{ checkin.Check_Type === 'IN' ? '↓' : '↑' }}
+              </div>
+              <div>
+                <p class="text-sm font-black text-slate-900">{{ checkin.Check_Type === 'IN' ? 'Clock In' : 'Clock Out' }}</p>
+                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">{{ formatDateTime(checkin.Check_in_time) }}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="px-3 py-1 bg-white border border-slate-100 text-[8px] font-black text-slate-500 rounded-full uppercase">
+                {{ checkin.Depart_Name || 'Main' }}
               </span>
             </div>
-            <p class="text-gray-600 mb-3">{{ shift.Shift_Description }}</p>
-            <div class="flex space-x-6 text-sm text-gray-500">
-              <span>{{ formatDate(shift.Start_Time) }}</span>
-              <span>→</span>
-              <span>{{ formatDate(shift.End_Time) }}</span>
-            </div>
           </div>
-        </div>
-        <div v-else class="text-center py-12 text-gray-500">
-          <span class="text-4xl mb-4 block">📭</span>
-          <p>No shifts scheduled</p>
+          
+          <div v-if="checkins.length === 0" class="text-center py-20 opacity-20 italic text-sm">No recent activity found</div>
         </div>
       </div>
-    </div>
 
-    <!-- Recent Check-ins -->
-    <div class="p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
-      <h3 class="text-xl font-bold mb-6">📍 Recent Check-ins</h3>
-      <div v-if="checkins.length" class="space-y-4">
-        <div v-for="checkin in checkins" :key="checkin.Attend_ID" class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-          <div class="flex items-center space-x-4">
-            <div class="w-12 h-12 bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl flex items-center justify-center text-white font-bold">
-              {{ checkin.initials }}
-            </div>
-            <div>
-              <p class="font-semibold">{{ checkin.Check_Type }}</p>
-              <p class="text-sm text-gray-500">{{ formatDateTime(checkin.Check_in_time) }}</p>
-            </div>
+      <!-- Weekly Progress (Cool Feature) -->
+      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm text-center space-y-6">
+        <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Weekly Commitment</h3>
+        
+        <div class="relative w-40 h-40 mx-auto flex items-center justify-center">
+          <!-- Simple SVG Circle Progress -->
+          <svg class="w-full h-full transform -rotate-90">
+            <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" class="text-slate-50" />
+            <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" 
+              class="text-indigo-600 transition-all duration-1000"
+              :stroke-dasharray="440"
+              :stroke-dashoffset="440 - (440 * weeklyProgress / 100)"
+              stroke-linecap="round" />
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <p class="text-3xl font-black text-slate-900">{{ weeklyProgress }}%</p>
+            <p class="text-[8px] font-black text-slate-400 uppercase">Target: 40h</p>
           </div>
-          <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
-            {{ checkin.Depart_Name }}
-          </span>
+        </div>
+        
+        <div class="pt-4 space-y-2">
+          <p class="text-xs font-bold text-slate-600">You've completed <span class="text-indigo-600">{{ currentWeeklyHours }}h</span> this week.</p>
+          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Keep it up! 🚀</p>
         </div>
       </div>
-      <div v-else class="text-center py-12 text-gray-500">
-        <span class="text-4xl mb-4 block">⏰</span>
-        <p>No check-ins yet</p>
-      </div>
+
     </div>
   </div>
 </template>
@@ -79,48 +140,71 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
+import api from '@/utils/api'
+import { useRoute } from 'vue-router'
+import { ClockIcon, CalendarIcon, HistoryIcon, MapPinIcon } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
+const route = useRoute()
+const orgSlug = computed(() => route.params.orgSlug)
+const user = computed(() => authStore.user)
 
-const userName = computed(() => `${authStore.user?.firstName || ''} ${authStore.user?.lastName || ''}`.trim() || 'User')
-const todayStatus = ref('Checked Out')
+// Data State
+const todayStatus = ref('Away')
 const todayTime = ref('--:--')
 const shifts = ref([])
 const checkins = ref([])
+const totalMonthlyHours = ref(0)
+const currentWeeklyHours = ref(0)
+const weeklyProgress = ref(0)
 
-onMounted(async () => {
-  await loadUserData()
-})
+// Computed Styles
+const statusColor = computed(() => todayStatus.value === 'Checked In' ? 'bg-green-500' : 'bg-slate-400')
+const statusBadge = computed(() => todayStatus.value === 'Checked In' ? 'bg-green-50 text-green-600' : 'bg-slate-50 text-slate-500')
+const statusMessage = computed(() => todayStatus.value === 'Checked In' ? 'Your shift is currently being recorded.' : 'Not currently clocked into a work zone.')
+
+const nextShift = computed(() => shifts.value[0] || null)
 
 const loadUserData = async () => {
   try {
-    // My shifts
-    const shiftsRes = await fetch(`/api/org/shifts/my`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-    shifts.value = await shiftsRes.json()
-
-    // My checkins
-    const checkinsRes = await fetch(`/api/org/checkins/my`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-    const checkinsData = await checkinsRes.json()
-    checkins.value = checkinsData.map(c => ({
-      ...c,
-      initials: (c.First_Name[0] + c.SurName[0]).toUpperCase()
-    }))
-
-    // Today status
-    if (checkins.value.length) {
-      const today = checkins.value[0]
-      todayStatus.value = today.Check_Type === 'IN' ? 'Checked In' : 'Checked Out'
-      todayTime.value = new Date(today.Check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    // 1. Fetch current clock status
+    const statusRes = await api.get('/attendance/status')
+    if (statusRes.data.checkedIn) {
+      todayStatus.value = 'Checked In'
+      todayTime.value = new Date(statusRes.data.session.Check_in_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
+
+    // 2. Fetch Personal History
+    const historyRes = await api.get('/attendance/my-history')
+    checkins.value = historyRes.data.slice(0, 8) // Get last 8 entries
+
+    // 3. Fetch Shifts
+    const shiftsRes = await api.get('/org/shifts/my') // Ensure this route exists on backend
+    shifts.value = shiftsRes.data
+
+    // 4. Calculate Mock Metrics (Replace with real backend sums if available)
+    totalMonthlyHours.value = 142 // Example
+    currentWeeklyHours.value = 28.5 // Example
+    weeklyProgress.value = Math.round((28.5 / 40) * 100)
+
   } catch (error) {
-    console.error('User data load error:', error)
+    console.error('User Dashboard data sync failed:', error)
   }
 }
 
-const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString()
-const formatDateTime = (dateStr) => new Date(dateStr).toLocaleString()
+const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+const formatDateTime = (dateStr) => new Date(dateStr).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+
+onMounted(() => {
+  loadUserData()
+})
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 3px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+.list-enter-active, .list-leave-active { transition: all 0.5s ease; }
+.list-enter-from, .list-leave-to { opacity: 0; transform: translateX(-20px); }
+</style>

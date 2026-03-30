@@ -1,524 +1,265 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <!-- Sidebar -->
-    <aside :class="[
-        sidebarOpen ? 'w-64' : 'w-0 overflow-hidden',
-        'bg-gradient-to-b from-gray-700 to-gray-700 text-white shadow-xl flex flex-col transition-all duration-300'
-      ]">
-      <div class="p-6 border-b border-gray-600 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-            <span class="text-xl font-bold text-white">A</span>
+  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+    
+    <!-- 1. NAVIGATION SIDEBAR -->
+    <aside 
+      :class="[sidebarOpen ? 'w-72' : 'w-20', 'bg-slate-950 text-white shadow-2xl transition-all duration-500 ease-in-out flex flex-col z-40']"
+    >
+      <div class="p-6 border-b border-slate-800 flex items-center justify-between h-24">
+        <div v-if="sidebarOpen" class="flex items-center space-x-3 animate-in fade-in">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <ZapIcon class="w-6 h-6 text-white fill-white" />
           </div>
-          <span class="text-lg font-bold">TrackTimi</span>
+          <div class="flex flex-col">
+            <span class="text-xl font-black tracking-tighter uppercase leading-none italic">TrackTimi</span>
+            <span class="text-[8px] font-black text-indigo-400 uppercase tracking-[0.4em] mt-1">Registry Node</span>
+          </div>
         </div>
-        <button @click="toggleSidebar" class="p-1 rounded-lg bg-gray-700 hover:bg-gray-600">
-          <span v-if="sidebarOpen">←</span>
-          <span v-else>→</span>
+        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all">
+          <MenuIcon v-if="!sidebarOpen" class="w-5 h-5 text-slate-400" />
+          <ChevronLeftIcon v-else class="w-5 h-5 text-slate-400" />
         </button>
       </div>
 
-      <nav class="flex-1 py-8 px-4 space-y-2">
-        <router-link to="/superadmin" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>📊</span>
-          <span>Dashboard</span>
-        </router-link>
-        <router-link to="/superadmin/organizations" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all bg-orange-500 text-white shadow-lg">
-          <span>🏢</span>
-          <span>Organizations</span>
-        </router-link>
-        <router-link to="/superadmin/revenue" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-500">
-          <span>💰</span>
-          <span>Revenue</span>
-        </router-link>
-        <router-link to="/superadmin/subscriptions" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>📦</span>
-          <span>Subscriptions</span>
-        </router-link>
-        <router-link to="/superadmin/analytics" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>📈</span>
-          <span>Analytics</span>
-        </router-link>
-        <router-link to="/superadmin/monitoring" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>🔍</span>
-          <span>Monitoring</span>
-        </router-link>
-        <router-link to="/superadmin/audit-logs" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>📋</span>
-          <span>Audit Logs</span>
-        </router-link>
-        <router-link to="/superadmin/settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>⚙️</span>
-          <span>Settings</span>
+      <nav class="flex-1 py-8 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <router-link v-for="item in navItems" :key="item.path" :to="item.path"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group"
+          :class="[$route.path === item.path ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
+        >
+          <component :is="item.icon" class="w-5 h-5 shrink-0" />
+          <span v-if="sidebarOpen">{{ item.name }}</span>
         </router-link>
       </nav>
-
-      <div class="p-6 border-t border-gray-600">
-        <div class="flex items-center space-x-3 cursor-pointer hover:bg-gray-600 p-3 rounded-lg transition-all">
-          <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center font-bold">
-            JS
-          </div>
-          <div class="flex-1">
-            <div class="font-semibold text-sm">Jodell Suah</div>
-            <div class="text-xs text-orange-400">Super Admin</div>
-          </div>
-        </div>
-      </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-auto">
-      <div class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
-        <div class="px-8 py-8">
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="text-3xl font-bold text-slate-900">Organizations</h1>
-              <p class="text-slate-600 mt-2">Manage all organizations and their details</p>
-            </div>
-            <div class="flex items-center space-x-3">
-              <button class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-slate-700 rounded-lg font-semibold transition-all">
-                Filters
-              </button>
-              <button @click="handleLogout" class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-all">
-                Logout
-              </button>
-            </div>
-          </div>
+    <!-- 2. MAIN REGISTRY WORKSPACE -->
+    <main class="flex-1 flex flex-col min-w-0 relative">
+      <header class="h-24 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-10 sticky top-0 z-20">
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight italic uppercase">Tenant Registry</h1>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Platform-Wide Organization Audit</p>
         </div>
-      </div>
-
-      <div class="p-8">
-        <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-          {{ error }}
+        <div class="flex items-center space-x-4">
+          <div class="relative group">
+            <SearchIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+            <input v-model="searchQuery" placeholder="Filter by Name or Domain..." 
+              class="pl-14 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-[11px] font-bold shadow-sm w-80 focus:ring-4 focus:ring-indigo-50 transition-all outline-none" />
+          </div>
+          <button @click="loadOrganizations" :disabled="loading" class="p-4 bg-slate-900 text-white rounded-2xl hover:bg-indigo-600 transition-all active:scale-90 shadow-lg">
+             <RefreshCwIcon :class="{'animate-spin': loading}" class="w-5 h-5" />
+          </button>
         </div>
+      </header>
 
-        <div class="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-          <div class="mb-6">
-            <h2 class="text-2xl font-bold text-slate-900">All Organizations ({{ organizations.length }})</h2>
-            <p class="text-slate-600 mt-1">Manage all organizations on the platform</p>
-          </div>
-
-          <div v-if="loading" class="text-center py-12">
-            <div class="text-gray-500">Loading organizations...</div>
-          </div>
-
-          <div v-else-if="organizations.length === 0" class="text-center py-12">
-            <div class="text-6xl mb-4">📭</div>
-            <p class="text-slate-600">No organizations found</p>
-          </div>
-
-          <div v-else class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+      <div class="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar animate-in fade-in duration-1000">
+        
+        <div class="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
               <thead>
-                <tr class="border-b border-gray-300 bg-gray-50">
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Logo</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Organization Name</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Users</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Departments</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Plan</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Status</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Created</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Actions</th>
+                <tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-white border-b border-slate-50">
+                  <th class="px-10 py-6">Organization Signature</th>
+                  <th class="px-10 py-6">Infrastructure Node</th>
+                  <th class="px-10 py-6 text-center">Workforce Load</th>
+                  <th class="px-10 py-6 text-center">System Status</th>
+                  <th class="px-10 py-6 text-right">Operations</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="org in organizations" :key="org.Org_ID" class="border-b border-gray-200 hover:bg-gray-50 transition-all">
-                  <td class="py-4 px-4">
-                    <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center font-bold text-emerald-700">
-                      {{ org.initials }}
+              <tbody class="divide-y divide-slate-50">
+                <tr v-for="org in filteredOrgs" :key="org.Org_ID" class="group hover:bg-indigo-50/20 transition-all duration-300">
+                  <td class="px-10 py-8">
+                    <div class="flex items-center space-x-4">
+                      <div class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-indigo-400 shadow-xl group-hover:rotate-6 transition-transform uppercase">
+                        {{ org.Org_Name[0] }}
+                      </div>
+                      <div>
+                        <p class="text-sm font-black text-slate-900 leading-none mb-1.5">{{ org.Org_Name }}</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">ID: TT-NODE-{{ org.Org_ID }}</p>
+                      </div>
                     </div>
                   </td>
-                  <td class="py-4 px-4">
-                    <p class="font-semibold text-slate-900">{{ org.Org_Name }}</p>
-                    <p class="text-xs text-slate-500">{{ org.Org_Slug }}</p>
+                  <td class="px-10 py-8 font-mono text-[11px] font-black text-indigo-600 uppercase tracking-tighter">
+                    {{ org.Org_Domain }}.tracktimi.com
                   </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{{ org.userCount || 0 }}</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="text-slate-900 font-medium">{{ org.deptCount || 0 }}</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">{{ org.Plan_Name || 'Free' }}</span>
-                  </td>
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-2">
-                      <span v-if="org.Is_Active" class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">✅ Active</span>
-                      <span v-else class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">🔴 Inactive</span>
+                  <td class="px-10 py-8">
+                    <div class="flex flex-col items-center space-y-2">
+                       <span class="text-xs font-black text-slate-900">{{ org.userCount || 0 }} Members</span>
+                       <div class="h-1 w-24 bg-slate-100 rounded-full overflow-hidden">
+                          <div class="h-full bg-indigo-500" :style="{ width: Math.min((org.userCount/50)*100, 100) + '%' }"></div>
+                       </div>
                     </div>
                   </td>
-                  <td class="py-4 px-4 text-sm text-slate-600">
-                    {{ new Date(org.Created_at).toLocaleDateString() }}
+                  <td class="px-10 py-8 text-center">
+                    <div v-if="org.Is_Active" class="inline-flex items-center px-4 py-2 bg-green-50 text-green-600 rounded-full border border-green-100">
+                      <div class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                      <span class="text-[9px] font-black uppercase tracking-widest">Authorized</span>
+                    </div>
+                    <div v-else class="inline-flex items-center px-4 py-2 bg-red-50 text-red-600 rounded-full border border-red-100">
+                      <span class="text-[9px] font-black uppercase tracking-widest">Suspended</span>
+                    </div>
                   </td>
-                  <td class="py-4 px-4">
-                    <button @click="viewOrgDetails(org)" class="text-emerald-600 hover:text-emerald-700 font-semibold text-sm">
-                      👁️ View
+                  <td class="px-10 py-8 text-right">
+                    <button @click="inspectTenant(org.Org_ID)" class="px-6 py-3 bg-slate-950 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all active:scale-95 shadow-lg shadow-slate-200">
+                      Inspect
                     </button>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div v-if="organizations.length === 0" class="py-32 text-center opacity-30 italic text-sm font-black uppercase tracking-[0.4em]">Node Registry Empty</div>
         </div>
       </div>
-    </main>
 
-    <!-- Organization Detail Modal -->
-    <div v-if="selectedOrg" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <!-- Modal Header -->
-        <div class="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <div class="w-16 h-16 bg-white rounded-lg flex items-center justify-center font-bold text-emerald-600 text-2xl">
-              {{ selectedOrg.initials }}
-            </div>
-            <div>
-              <h2 class="text-2xl font-bold">{{ selectedOrg.Org_Name }}</h2>
-              <p class="text-emerald-100">{{ selectedOrg.Org_Domain }}</p>
-            </div>
-          </div>
-          <button @click="selectedOrg = null" class="text-2xl hover:bg-emerald-500 p-2 rounded">✕</button>
-        </div>
-
-        <!-- Modal Body -->
-        <div class="p-8 space-y-6">
-          <!-- Status Indicator -->
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p class="text-sm font-semibold text-blue-700 mb-2">Current Status</p>
-            <div class="flex items-center space-x-4">
-              <span v-if="selectedOrg.Is_Active" class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold">✅ Active</span>
-              <span v-else class="bg-red-100 text-red-800 px-4 py-2 rounded-lg font-bold">🔴 Inactive</span>
-              <p class="text-sm text-gray-600">Created: {{ new Date(selectedOrg.Created_at).toLocaleDateString() }}</p>
-            </div>
-          </div>
-
-          <!-- Organization Details Grid -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 font-semibold">Organization Type</p>
-              <p class="text-lg font-bold text-gray-900 mt-1">{{ selectedOrg.Org_Type_ID ? `Type ${selectedOrg.Org_Type_ID}` : 'N/A' }}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 font-semibold">Region</p>
-              <p class="text-lg font-bold text-gray-900 mt-1">{{ selectedOrg.Region_ID ? `Region ${selectedOrg.Region_ID}` : 'N/A' }}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 font-semibold">Email</p>
-              <p class="text-lg font-bold text-gray-900 mt-1">{{ selectedOrg.Email || 'N/A' }}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 font-semibold">Phone</p>
-              <p class="text-lg font-bold text-gray-900 mt-1">{{ selectedOrg.Phone_Num || 'N/A' }}</p>
-            </div>
-            <div class="bg-blue-50 p-4 rounded-lg">
-              <p class="text-sm text-blue-600 font-semibold">Total Users</p>
-              <p class="text-lg font-bold text-blue-900 mt-1">{{ selectedOrg.user_count || 0 }}</p>
-            </div>
-            <div class="bg-purple-50 p-4 rounded-lg">
-              <p class="text-sm text-purple-600 font-semibold">Departments</p>
-              <p class="text-lg font-bold text-purple-900 mt-1">{{ selectedOrg.dept_count || 0 }}</p>
-            </div>
-          </div>
-
-          <!-- Address -->
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-sm text-gray-600 font-semibold">Address</p>
-            <p class="text-gray-900 mt-2">{{ selectedOrg.Address || 'Not provided' }}</p>
-          </div>
-
-          <!-- Employees -->
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-sm text-gray-600 font-semibold">Number of Employees</p>
-            <p class="text-lg font-bold text-gray-900 mt-1">{{ selectedOrg.Num_of_Employee || 0 }}</p>
-          </div>
-
-          <!-- Theme Color -->
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-sm text-gray-600 font-semibold">Theme Color</p>
-            <div class="flex items-center space-x-3 mt-2">
-              <div class="w-12 h-12 rounded-lg border-2 border-gray-300" :style="{ backgroundColor: selectedOrg.Theme_Color }"></div>
-              <p class="text-lg font-mono text-gray-900">{{ selectedOrg.Theme_Color }}</p>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="border-t pt-6 space-y-3">
-            <p class="text-sm font-semibold text-gray-700 mb-4">Superadmin Actions</p>
-            <div class="grid grid-cols-2 gap-3">
-              <button @click="suspendOrg(selectedOrg.Org_ID)" :disabled="submitting" class="px-4 py-3 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-all">
-                ⏸️ {{ selectedOrg.Is_Active ? 'Suspend' : 'Activate' }}
-              </button>
-              <button @click="deleteOrg(selectedOrg.Org_ID)" :disabled="submitting" class="px-4 py-3 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-all">
-                🗑️ Delete Organization
-              </button>
-              <button @click="extendTrial(selectedOrg.Org_ID)" :disabled="submitting" class="px-4 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-all">
-                ⏳ Extend Trial
-              </button>
-              <button @click="viewUsers(selectedOrg.Org_ID)" :disabled="submitting" class="px-4 py-3 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white rounded-lg font-semibold transition-all">
-                👥 View Users
-              </button>
-            </div>
-          </div>
-
-          <div v-if="actionMessage" :class="['p-4 rounded-lg', actionMessageType === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800']">
-            {{ actionMessage }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Users Modal -->
-    <div v-if="showUsersModal && selectedOrgUsers" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 flex items-center justify-between">
-          <h2 class="text-2xl font-bold">Organization Users</h2>
-          <button @click="showUsersModal = false" class="text-2xl hover:bg-purple-500 p-2 rounded">✕</button>
-        </div>
-        <div class="p-6">
-          <div v-if="selectedOrgUsers.length === 0" class="text-center py-8">
-            <p class="text-gray-500">No users found</p>
-          </div>
-          <div v-else class="space-y-3">
-            <div v-for="user in selectedOrgUsers" :key="user.User_ID" class="border border-gray-200 p-4 rounded-lg hover:bg-gray-50">
-              <div class="flex justify-between items-start">
-                <div>
-                  <p class="font-bold text-gray-900">{{ user.First_Name }} {{ user.SurName }}</p>
-                  <p class="text-sm text-gray-600">{{ user.Email }}</p>
-                  <p class="text-xs text-gray-500 mt-1">{{ new Date(user.Created_at).toLocaleDateString() }}</p>
-                </div>
-                <span v-if="user.Is_Active" class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Active</span>
-                <span v-else class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Inactive</span>
+      <!-- 3. TENANT INSPECTION DRAWER (Deep Dive) -->
+      <Transition name="drawer">
+        <div v-if="selectedOrg" class="absolute inset-y-0 right-0 w-[600px] bg-white shadow-[-50px_0_100px_rgba(0,0,0,0.3)] z-50 flex flex-col border-l border-slate-100">
+          <div class="h-40 bg-slate-950 text-white flex items-center justify-between px-10 relative overflow-hidden shrink-0">
+            <div class="relative z-10">
+              <span class="text-[9px] font-black text-indigo-400 uppercase tracking-[0.5em] mb-2 block">Tenant Deep Dive</span>
+              <h2 class="text-3xl font-black tracking-tighter uppercase">{{ selectedOrg.info.Org_Name }}</h2>
+              <div class="flex items-center space-x-3 mt-3">
+                 <span class="text-[10px] font-bold text-slate-400 font-mono tracking-tighter">{{ selectedOrg.info.Org_Domain }}.tracktimi.com</span>
               </div>
             </div>
+            <button @click="selectedOrg = null" class="p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all relative z-10">
+                <XIcon class="w-6 h-6" />
+            </button>
+            <ZapIcon class="absolute -right-8 -bottom-8 w-48 h-48 text-white/5 rotate-12" />
+          </div>
+          
+          <div class="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar">
+            <!-- Global Overrides -->
+            <div class="grid grid-cols-2 gap-4">
+              <button @click="toggleOrgStatus(selectedOrg.info.Org_ID, selectedOrg.info.Is_Active)"
+                :class="selectedOrg.info.Is_Active ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100'"
+                class="py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest border transition-all">
+                {{ selectedOrg.info.Is_Active ? 'Revoke Platform Access' : 'Authorize Network Node' }}
+              </button>
+              <button @click="confirmDelete(selectedOrg.info.Org_ID)" class="bg-slate-900 text-white py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all">
+                Full Tenant Wipe
+              </button>
+            </div>
+
+            <!-- Dept Matrix -->
+            <section>
+              <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center">
+                <LayoutGridIcon class="w-4 h-4 mr-2 text-indigo-500" /> Organizational Units
+              </h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div v-for="dept in selectedOrg.departments" :key="dept.Dep_ID" class="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                   <p class="text-xs font-black text-slate-900 truncate uppercase">{{ dept.Depart_Name }}</p>
+                   <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">{{ dept.staff_count }} Personnel Assigned</p>
+                </div>
+              </div>
+              <div v-if="selectedOrg.departments.length === 0" class="text-center py-10 bg-slate-50 rounded-3xl opacity-30 italic text-xs">No departments provisioned</div>
+            </section>
+
+            <!-- Active Registry -->
+            <section>
+              <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center">
+                <UsersIcon class="w-4 h-4 mr-2 text-indigo-500" /> Member Registry
+              </h3>
+              <div class="space-y-3">
+                <div v-for="user in selectedOrg.users" :key="user.User_ID" class="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-3xl hover:border-indigo-200 transition-all group">
+                  <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-xs">{{ user.First_Name[0] }}</div>
+                    <div class="min-w-0">
+                      <p class="text-xs font-black text-slate-900 truncate">{{ user.First_Name }} {{ user.SurName }}</p>
+                      <p class="text-[10px] font-medium text-slate-400 truncate">{{ user.Email }}</p>
+                    </div>
+                  </div>
+                  <span class="text-[9px] font-black text-indigo-500 uppercase tracking-widest">{{ user.Job_Title || 'Staff' }}</span>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
-      </div>
+      </Transition>
+    </main>
+
+    <!-- Node Handshake Loading Overlay -->
+    <div v-if="loading && !selectedOrg" class="fixed inset-0 z-[100] bg-slate-900/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+       <div class="bg-slate-950 p-6 rounded-3xl shadow-3xl flex items-center space-x-4 text-white border border-white/10 animate-in zoom-in">
+          <RefreshCwIcon class="w-5 h-5 animate-spin text-indigo-400" />
+          <span class="text-[10px] font-black uppercase tracking-[0.4em]">Synchronizing Master Node</span>
+       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import { 
+  ZapIcon, MenuIcon, ChevronLeftIcon, BuildingIcon, 
+  UsersIcon, SearchIcon, RefreshCwIcon, XIcon, LayoutGridIcon 
+} from 'lucide-vue-next'
 
-const router = useRouter()
 const sidebarOpen = ref(true)
-const organizations = ref([])
 const loading = ref(false)
-const error = ref('')
+const searchQuery = ref('')
+const organizations = ref([])
 const selectedOrg = ref(null)
-const selectedOrgUsers = ref(null)
-const showUsersModal = ref(false)
-const submitting = ref(false)
-const actionMessage = ref('')
-const actionMessageType = ref('success')
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
+const navItems = [
+  { name: 'Dashboard', path: '/superadmin', icon: ZapIcon },
+  { name: 'Network Tenants', path: '/superadmin/organizations', icon: BuildingIcon },
+]
 
-const handleLogout = () => {
-  localStorage.removeItem('superAdminToken')
-  localStorage.removeItem('superAdminUser')
-  router.push('/superadmin/login')
-}
+const filteredOrgs = computed(() => {
+  const query = searchQuery.value.toLowerCase()
+  return organizations.value.filter(o => o.Org_Name.toLowerCase().includes(query) || o.Org_Domain.toLowerCase().includes(query))
+})
 
 const loadOrganizations = async () => {
   loading.value = true
-  error.value = ''
+  const token = localStorage.getItem('superAdminToken')
   try {
-    const token = localStorage.getItem('superAdminToken')
-    if (!token) {
-      router.push('/superadmin/login')
-      return
-    }
-
-    const response = await axios.get(
-      'http://localhost:4000/api/superadmin/organizations',
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-
-    if (response.data?.organizations) {
-      organizations.value = response.data.organizations.map(org => ({
-        ...org,
-        initials: org.Org_Name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2)
-      }))
-    }
-  } catch (err) {
-    console.error('Failed to load organizations:', err)
-    error.value = 'Failed to load organizations'
-  } finally {
-    loading.value = false
-  }
+    const res = await axios.get('http://localhost:4000/api/superadmin/organizations', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    organizations.value = res.data.organizations || []
+  } finally { loading.value = false }
 }
 
-const viewOrgDetails = async (org) => {
+const inspectTenant = async (id) => {
+  loading.value = true
+  const token = localStorage.getItem('superAdminToken')
   try {
-    const token = localStorage.getItem('superAdminToken')
-    const response = await axios.get(
-      `http://localhost:4000/api/superadmin/organizations/${org.Org_ID}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-    selectedOrg.value = {
-      ...response.data,
-      initials: org.initials
-    }
-    actionMessage.value = ''
-  } catch (err) {
-    console.error('Failed to load org details:', err)
-    error.value = 'Failed to load organization details'
-  }
+    const res = await axios.get(`http://localhost:4000/api/superadmin/organizations/${id}/details`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    selectedOrg.value = res.data
+  } finally { loading.value = false }
 }
 
-const suspendOrg = async (orgId) => {
-  submitting.value = true
-  try {
-    const token = localStorage.getItem('superAdminToken')
-    const newStatus = selectedOrg.value.Is_Active ? 'suspended' : 'active'
-    
-    await axios.put(
-      `http://localhost:4000/api/superadmin/organizations/${orgId}/status`,
-      { status: newStatus },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-    
-    selectedOrg.value.Is_Active = !selectedOrg.value.Is_Active
-    actionMessage.value = `✅ Organization ${newStatus} successfully`
-    actionMessageType.value = 'success'
-    
-    // Reload organizations
-    setTimeout(() => {
-      loadOrganizations()
-    }, 1500)
-  } catch (err) {
-    actionMessage.value = err.response?.data?.error || 'Failed to update status'
-    actionMessageType.value = 'error'
-  } finally {
-    submitting.value = false
-  }
-}
-
-const deleteOrg = async (orgId) => {
-  if (!confirm('⚠️ Are you sure you want to delete this organization? This action cannot be undone!')) {
-    return
-  }
-
-  submitting.value = true
-  try {
-    const token = localStorage.getItem('superAdminToken')
-    
-    await axios.delete(
-      `http://localhost:4000/api/superadmin/organizations/${orgId}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-    
-    actionMessage.value = '✅ Organization deleted successfully'
-    actionMessageType.value = 'success'
-    
-    setTimeout(() => {
-      selectedOrg.value = null
-      loadOrganizations()
-    }, 1500)
-  } catch (err) {
-    actionMessage.value = err.response?.data?.error || 'Failed to delete organization'
-    actionMessageType.value = 'error'
-  } finally {
-    submitting.value = false
-  }
-}
-
-const extendTrial = async (orgId) => {
-  submitting.value = true
-  try {
-    const token = localStorage.getItem('superAdminToken')
-    
-    await axios.put(
-      `http://localhost:4000/api/superadmin/organizations/${orgId}/extend-trial`,
-      {},
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-    
-    actionMessage.value = '✅ Trial extended by 30 days'
-    actionMessageType.value = 'success'
-  } catch (err) {
-    actionMessage.value = err.response?.data?.error || 'Failed to extend trial'
-    actionMessageType.value = 'error'
-  } finally {
-    submitting.value = false
-  }
-}
-
-const viewUsers = async (orgId) => {
-  submitting.value = true
-  try {
-    const token = localStorage.getItem('superAdminToken')
-    
-    const response = await axios.get(
-      `http://localhost:4000/api/superadmin/organizations/${orgId}/users`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-    
-    selectedOrgUsers.value = response.data
-    showUsersModal.value = true
-  } catch (err) {
-    actionMessage.value = err.response?.data?.error || 'Failed to load users'
-    actionMessageType.value = 'error'
-  } finally {
-    submitting.value = false
-  }
-}
-
-onMounted(() => {
+const toggleOrgStatus = async (id, current) => {
+  if (!confirm('Execute Node Authority Modification?')) return
+  const token = localStorage.getItem('superAdminToken')
+  await axios.put(`http://localhost:4000/api/superadmin/organizations/${id}/status`, { isActive: !current }, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (selectedOrg.value) inspectTenant(id)
   loadOrganizations()
-})
+}
+
+const confirmDelete = async (id) => {
+  if (!confirm('🚨 MASTER PURGE: Permanently wipe all data for this tenant?')) return
+  const token = localStorage.getItem('superAdminToken')
+  await axios.delete(`http://localhost:4000/api/superadmin/organizations/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  selectedOrg.value = null
+  loadOrganizations()
+}
+
+onMounted(loadOrganizations)
 </script>
 
 <style scoped>
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.drawer-enter-active, .drawer-leave-active { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.drawer-enter-from, .drawer-leave-to { transform: translateX(100%); opacity: 0; }
 </style>

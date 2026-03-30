@@ -1,4 +1,83 @@
 <template>
+  <div class="max-w-md mx-auto mt-12 p-6 bg-white rounded shadow">
+    <h2 class="text-xl font-semibold mb-4">Activate your account</h2>
+
+    <div v-if="loading">Loading invitation...</div>
+    <div v-else>
+      <div v-if="error" class="text-red-600 mb-3">{{ error }}</div>
+
+      <div class="mb-4">
+        <div class="text-sm text-gray-600">Invited email</div>
+        <div class="font-medium">{{ email }}</div>
+        <div v-if="firstName || surName" class="text-sm text-gray-500">{{ firstName }} {{ surName }}</div>
+      </div>
+
+      <form @submit.prevent="submit">
+        <label class="block mb-2">Choose a password</label>
+        <input v-model="password" type="password" class="w-full p-2 border rounded mb-3" placeholder="Password" />
+        <input v-model="confirm" type="password" class="w-full p-2 border rounded mb-3" placeholder="Confirm password" />
+
+        <div class="flex justify-end">
+          <button :disabled="submitting" class="px-4 py-2 bg-blue-600 text-white rounded">Activate</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import api from '@/utils/api'
+
+const route = useRoute()
+const router = useRouter()
+const token = route.params.token
+
+const loading = ref(true)
+const submitting = ref(false)
+const email = ref('')
+const firstName = ref('')
+const surName = ref('')
+const password = ref('')
+const confirm = ref('')
+const error = ref('')
+
+onMounted(async () => {
+  try {
+    const res = await api.get(`/auth/invitation/${token}`)
+    email.value = res.data.email || ''
+    firstName.value = res.data.firstName || ''
+    firstName.value = res.data.firstName || ''
+    surName.value = res.data.surName || ''
+  } catch (e) {
+    error.value = e.response?.data?.error || 'Invitation not found or expired.'
+  } finally {
+    loading.value = false
+  }
+})
+
+async function submit() {
+  error.value = ''
+  if (!password.value || password.value.length < 6) { error.value = 'Password must be at least 6 characters'; return }
+  if (password.value !== confirm.value) { error.value = 'Passwords do not match'; return }
+  submitting.value = true
+  try {
+    await api.post('/auth/activate', { token, password: password.value })
+    // success -> go to login
+    router.push({ name: 'Login' })
+  } catch (e) {
+    error.value = e.response?.data?.error || 'Activation failed'
+  } finally {
+    submitting.value = false
+  }
+}
+</script>
+
+<style scoped>
+.max-w-md { max-width: 520px; }
+</style>
+<template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
       <!-- Header -->

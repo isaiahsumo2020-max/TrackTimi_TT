@@ -1,26 +1,19 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');  // ✅ FIXED: Added import
+const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 const router = express.Router();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'tracktimi_secret_2026';
+
+// =============================================================
 // ⭐ SUPER ADMIN MIDDLEWARE
+// =============================================================
 const authenticateSuperAdmin = (req, res, next) => {
-  // Check both Authorization and X-SuperAdmin-Token headers
-  let authHeader = req.headers['authorization'];
-  let token = authHeader && authHeader.split(' ')[1];
-  
-  // Fallback to X-SuperAdmin-Token header
-  if (!token) {
-    authHeader = req.headers['x-superadmin-token'];
-    token = authHeader && authHeader.split(' ')[1];
-  }
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) {
-    return res.status(401).json({ error: 'Super Admin token required' });
-  }
+  if (!token) return res.status(401).json({ error: 'Super Admin token required' });
 
-  const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-  
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err || decoded.role !== 'SuperAdmin') {
       return res.status(403).json({ error: 'Super Admin access required' });
@@ -30,215 +23,170 @@ const authenticateSuperAdmin = (req, res, next) => {
   });
 };
 
-// PROTECTED ROUTES ONLY (no login)
 router.use(authenticateSuperAdmin);
 
-// GET /api/superadmin/dashboard - Main stats
+// =============================================================
+// 1. MASTER DASHBOARD & ANALYTICS (Matches Dashboard.vue & Analytics.vue)
+// =============================================================
 router.get('/dashboard', (req, res) => {
-  db.all(`
+  // SQL for Main Stats
+  const sqlStats = `
     SELECT 
-      COUNT(DISTINCT o.Org_ID) as totalOrgs,
-      COUNT(DISTINCT u.User_ID) as totalUsers,
-      COUNT(a.Attend_ID) as todayCheckins,
-      COUNT(DISTINCT d.Dep_ID) as totalDepts
-    FROM Organization o
-    LEFT JOIN User u ON u.Org_ID = o.Org_ID
-    LEFT JOIN Attendance a ON a.Org_ID = o.Org_ID AND DATE(a.Check_in_time) = DATE('now')
-    LEFT JOIN Department d ON d.Org_ID = o.Org_ID
-  `, (err, stats) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
+      (SELECT COUNT(*) FROM Organization) as totalOrgs,
+      (SELECT COUNT(*) FROM User) as totalUsers,
+      (SELECT COUNT(*) FROM Attendance WHERE DATE(Check_in_time) = DATE('now', 'localtime')) as todayCheckins,
+      (SELECT COUNT(*) FROM Department) as totalDepts
+  `;
+
+  // SQL for 7-Day Trend (For the Velocity Charts)
+  const sqlTrend = `
+    SELECT date(Check_in_time) as day, COUNT(*) as count 
+    FROM Attendance 
+    WHERE Check_in_time >= date('now', '-6 days')
+    GROUP BY day ORDER BY day ASC
+  `;
+
+  db.get(sqlStats, [], (err, stats) => {
+    if (err) return res.status(500).json({ error: err.message });
     
-    res.json({
-      success: true,
-      stats: stats[0] || { totalOrgs: 0, totalUsers: 0, todayCheckins: 0, totalDepts: 0 }
+    db.all(sqlTrend, [], (err2, trend) => {
+      res.json({ 
+        success: true, 
+        stats: stats || { totalOrgs: 0, totalUsers: 0, todayCheckins: 0, totalDepts: 0 },
+        trend: trend || []
+      });
     });
   });
 });
 
-// GET /api/superadmin/organizations - All organizations
+// =============================================================
+// 2. TENANT REGISTRY (Matches SuperAdminOrganizations.vue)
+// =============================================================
 router.get('/organizations', (req, res) => {
-  db.all(`
+  // We fetch Org details plus the count of users in each org
+  const sql = `
     SELECT 
-      o.Org_ID, o.Org_Name, o.Org_Slug, o.Created_at,
-      COUNT(u.User_ID) as userCount,
-      COUNT(DISTINCT d.Dep_ID) as deptCount,
-      sp.Plan_Name
+      o.Org_ID, o.Org_Name, o.Org_Domain, o.Created_at, o.Is_Active,
+      (SELECT COUNT(*) FROM User u WHERE u.Org_ID = o.Org_ID) as userCount,
+      -- We assume a default plan if none exists to prevent front-end crashes
+      COALESCE(o.Theme_Color, 'Starter') as Plan_Name 
     FROM Organization o
-    LEFT JOIN User u ON u.Org_ID = o.Org_ID AND u.Is_Active = 1
-    LEFT JOIN Department d ON d.Org_ID = o.Org_ID
-    LEFT JOIN OrganizationSubscription os ON os.Org_ID = o.Org_ID
-    LEFT JOIN SubscriptionPlan sp ON sp.Plan_ID = os.Plan_ID
-    GROUP BY o.Org_ID
     ORDER BY o.Created_at DESC
-    LIMIT 50
-  `, (err, organizations) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
-    
-    res.json({
-      success: true,
-      organizations: organizations.map(org => ({
-        ...org,
-        initials: org.Org_Name.slice(0, 2).toUpperCase(),
-        created: new Date(org.Created_at).toLocaleDateString()
-      }))
-    });
+  `;
+
+  db.all(sql, [], (err, organizations) => {
+    if (err) return res.status(500).json({ error: 'Database error: ' + err.message });
+    res.json({ success: true, organizations });
   });
 });
 
-// GET /api/superadmin/users - All users across orgs
-router.get('/users', (req, res) => {
-  db.all(`
+// =============================================================
+// 3. TENANT DEEP DIVE (Matches the "Inspect" Drawer logic)
+// =============================================================
+// GET: Detailed dive into one organization
+router.get('/organizations/:id/details', authenticateSuperAdmin, (req, res) => {
+  const orgId = req.params.id;
+
+  const queries = {
+    info: `SELECT * FROM Organization WHERE Org_ID = ?`,
+    departments: `SELECT Dep_ID, Depart_Name, (SELECT COUNT(*) FROM User WHERE Dep_ID = d.Dep_ID) as staff_count FROM Department d WHERE Org_ID = ?`,
+    users: `SELECT User_ID, First_Name, SurName, Email, Job_Title, Is_Active FROM User WHERE Org_ID = ?`,
+    stats: `SELECT COUNT(*) as checkinsToday FROM Attendance WHERE Org_ID = ? AND date(Check_in_time) = date('now', 'localtime')`
+  };
+
+  const pInfo = new Promise(r => db.get(queries.info, [orgId], (e, row) => r(row)));
+  const pDepts = new Promise(r => db.all(queries.departments, [orgId], (e, rows) => r(rows)));
+  const pUsers = new Promise(r => db.all(queries.users, [orgId], (e, rows) => r(rows)));
+  const pStats = new Promise(r => db.get(queries.stats, [orgId], (e, row) => r(row)));
+
+  Promise.all([pInfo, pDepts, pUsers, pStats]).then(([info, departments, users, stats]) => {
+    if (!info) return res.status(404).json({ error: 'Organization not found' });
+    res.json({ info, departments, users, stats });
+  }).catch(err => res.status(500).json({ error: err.message }));
+});
+// =============================================================
+// 4. NETWORK AUDIT LEDGER (Matches SuperAdminAuditLogs.vue)
+// =============================================================
+router.get('/audit-logs', (req, res) => {
+  const sql = `
     SELECT 
-      u.User_ID, u.First_Name, u.SurName, u.Email, u.Is_Active,
-      o.Org_Name, o.Org_Slug,
-      r.Role_Name, d.Depart_Name
+      al.Log_ID, al.Action, al.Created_at, al.Table_Name, al.IP_Address, al.New_Data,
+      u.Email as User_Email,
+      o.Org_Name
+    FROM Audit_Log al
+    LEFT JOIN User u ON al.User_ID = u.User_ID
+    LEFT JOIN Organization o ON al.Org_ID = o.Org_ID
+    ORDER BY al.Created_at DESC
+    LIMIT 500
+  `;
+
+  db.all(sql, [], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Audit log fetch failed' });
+    res.json({ success: true, logs: rows });
+  });
+});
+
+// =============================================================
+// 5. GLOBAL USERS (Matches Global Users page)
+// =============================================================
+router.get('/users', (req, res) => {
+  const sql = `
+    SELECT 
+      u.User_ID, u.First_Name, u.SurName, u.Email, u.Is_Active, u.Job_Title,
+      o.Org_Name, o.Org_Domain
     FROM User u
     JOIN Organization o ON u.Org_ID = o.Org_ID
-    LEFT JOIN Role r ON u.Role_ID = r.Role_ID
-    LEFT JOIN Department d ON u.Depart_ID = d.Dep_ID
     ORDER BY u.Created_at DESC
-    LIMIT 100
-  `, (err, users) => {
-    if (err) return res.status(500).json({ error: 'Database error' });
-    
-    res.json({
-      success: true,
-      users: users.map(user => ({
-        ...user,
-        fullName: `${user.First_Name} ${user.SurName}`,
-        initials: (user.First_Name[0] + user.SurName[0]).toUpperCase()
-      }))
-    });
+    LIMIT 200
+  `;
+
+  db.all(sql, [], (err, users) => {
+    if (err) return res.status(500).json({ error: 'User fetch failed' });
+    res.json({ success: true, users });
   });
 });
 
-// DELETE /api/superadmin/organizations/:orgId - Delete org + cascade
-router.delete('/organizations/:orgId', (req, res) => {
-  const { orgId } = req.params;
-  
-  db.run(
-    'DELETE FROM Organization WHERE Org_ID = ?', [orgId],
-    function(err) {
-      if (err) return res.status(500).json({ error: 'Failed to delete organization' });
-      
-      res.json({
-        success: true,
-        message: `Organization deleted successfully (${this.changes} affected)`,
-        deletedOrgId: orgId
-      });
-    }
-  );
-});
+// =============================================================
+// 6. AUTHORITY OVERRIDES (Suspend / Activate / Global)
+// =============================================================
 
-// GET /api/superadmin/organizations/:id - Get organization details
-router.get('/organizations/:id', (req, res) => {
-  try {
-    const orgId = req.params.id;
-    console.log('SuperAdmin fetching org details:', orgId);
-
-    db.get('SELECT * FROM Organization WHERE Org_ID = ?', [orgId], (err, org) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (!org) return res.status(404).json({ error: 'Organization not found' });
-
-      // Get user count
-      db.get('SELECT COUNT(*) as user_count FROM User WHERE Org_ID = ?', [orgId], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
-
-        // Get department count
-        db.get('SELECT COUNT(*) as dept_count FROM Department WHERE Org_ID = ?', [orgId], (err, deptResult) => {
-          if (err) return res.status(500).json({ error: err.message });
-
-          res.json({
-            ...org,
-            user_count: result.user_count,
-            dept_count: deptResult.dept_count
-          });
-        });
-      });
-    });
-  } catch (error) {
-    console.error('Get org details error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// PUT /api/superadmin/organizations/:id/status - Update organization status
+// Toggle Single Org
 router.put('/organizations/:id/status', (req, res) => {
-  try {
-    const orgId = req.params.id;
-    const { status } = req.body; // 'active', 'suspended', 'paused'
-
-    console.log('SuperAdmin updating org status:', orgId, 'to', status);
-
-    if (!['active', 'suspended', 'paused'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status. Use: active, suspended, or paused' });
-    }
-
-    // Map status to Is_Active field
-    const isActive = status === 'active' ? 1 : 0;
-
-    db.run(
-      `UPDATE Organization SET Is_Active = ?, Updated_at = CURRENT_TIMESTAMP WHERE Org_ID = ?`,
-      [isActive, orgId],
-      function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ error: 'Organization not found' });
-        
-        res.json({ 
-          message: `✅ Organization ${status} successfully`,
-          status: status,
-          Org_ID: orgId
-        });
-      }
-    );
-  } catch (error) {
-    console.error('Update org status error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  const { isActive } = req.body;
+  db.run(`UPDATE Organization SET Is_Active = ? WHERE Org_ID = ?`, [isActive ? 1 : 0, req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: 'Update failed' });
+    res.json({ success: true, message: 'Node status updated' });
+  });
 });
 
-// GET /api/superadmin/organizations/:id/users - Get organization users
-router.get('/organizations/:id/users', (req, res) => {
-  try {
-    const orgId = req.params.id;
+// Global Kill-Switch
+router.put('/organizations/status/global', (req, res) => {
+  const { isActive } = req.body;
+  const statusValue = isActive ? 1 : 0;
 
-    db.all(
-      `SELECT User_ID, First_Name, SurName, Email, User_Type_ID, Is_Active, Created_at FROM User WHERE Org_ID = ? ORDER BY Created_at DESC`,
-      [orgId],
-      (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-      }
-    );
-  } catch (error) {
-    console.error('Get users error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+  db.run(`UPDATE Organization SET Is_Active = ?`, [statusValue], function(err) {
+    if (err) return res.status(500).json({ error: 'Global update failed' });
+    
+    // Log the massive action
+    db.run(`INSERT INTO Audit_Log (Action, Table_Name, New_Data) VALUES ('GLOBAL_STATUS_OVERRIDE', 'Organization', ?)`, 
+           [JSON.stringify({ active: isActive })]);
+
+    res.json({ success: true, message: `System-wide status set to ${isActive ? 'Active' : 'Suspended'}` });
+  });
 });
 
-// PUT /api/superadmin/organizations/:id/extend-trial - Extend trial by 30 days
-router.put('/organizations/:id/extend-trial', (req, res) => {
-  try {
-    const orgId = req.params.id;
-    console.log('SuperAdmin extending trial for org:', orgId);
-
-    db.run(
-      `UPDATE Organization SET Updated_at = CURRENT_TIMESTAMP WHERE Org_ID = ?`,
-      [orgId],
-      function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ error: 'Organization not found' });
-
-        res.json({
-          message: '✅ Trial extended by 30 days',
-          Org_ID: orgId
-        });
-      }
-    );
-  } catch (error) {
-    console.error('Extend trial error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+// Delete Organization (Wipe)
+router.delete('/organizations/:id', (req, res) => {
+  const orgId = req.params.id;
+  // SQLite doesn't support easy cascading in all versions, so we delete carefully
+  db.serialize(() => {
+    db.run(`DELETE FROM User WHERE Org_ID = ?`, [orgId]);
+    db.run(`DELETE FROM Attendance WHERE Org_ID = ?`, [orgId]);
+    db.run(`DELETE FROM Organization WHERE Org_ID = ?`, [orgId], function(err) {
+      if (err) return res.status(500).json({ error: 'Wipe failed' });
+      res.json({ success: true, message: 'Tenant node fully purged.' });
+    });
+  });
 });
 
 module.exports = router;

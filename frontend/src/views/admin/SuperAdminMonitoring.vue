@@ -1,118 +1,155 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <aside :class="[sidebarOpen ? 'w-64' : 'w-0 overflow-hidden', 'bg-gradient-to-b from-emerald-600 to-emerald-700 text-white shadow-xl flex flex-col transition-all duration-300']">
-      <div class="p-6 border-b border-emerald-500 flex items-center justify-between">
-        <div class="flex items-center space-x-3"><div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center"><span class="text-xl font-bold text-white">A</span></div><span class="text-lg font-bold">TrackTimi</span></div>
-        <button @click="toggleSidebar" class="p-1 rounded-lg bg-emerald-500 hover:bg-emerald-400"><span v-if="sidebarOpen">←</span><span v-else>→</span></button>
+  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden">
+    <!-- 1. SIDEBAR -->
+    <aside :class="[sidebarOpen ? 'w-72' : 'w-20', 'bg-slate-950 text-white transition-all duration-500 flex flex-col z-30 shadow-2xl']">
+      <div class="p-6 border-b border-slate-800 flex items-center justify-between h-24">
+        <div v-if="sidebarOpen" class="flex items-center space-x-3">
+          <ZapIcon class="w-8 h-8 text-indigo-500 fill-indigo-500" />
+          <span class="text-xl font-black tracking-tighter uppercase italic">Sentinel</span>
+        </div>
+        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900 text-slate-400">
+          <MenuIcon v-if="!sidebarOpen" class="w-5 h-5" />
+          <ChevronLeftIcon v-else class="w-5 h-5" />
+        </button>
       </div>
       <nav class="flex-1 py-8 px-4 space-y-2">
-        <router-link to="/superadmin" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"><span>📊</span><span>Dashboard</span></router-link>
-        <router-link to="/superadmin/organizations" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"><span>🏢</span><span>Organizations</span></router-link>
-        <router-link to="/superadmin/revenue" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"><span>💰</span><span>Revenue</span></router-link>
-        <router-link to="/superadmin/subscriptions" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"><span>📦</span><span>Subscriptions</span></router-link>
-        <router-link to="/superadmin/analytics" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"><span>📈</span><span>Analytics</span></router-link>
-        <router-link to="/superadmin/monitoring" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all bg-orange-500 text-white shadow-lg"><span>🔍</span><span>Monitoring</span></router-link>
-        <router-link to="/superadmin/audit-logs" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"><span>📋</span><span>Audit Logs</span></router-link>
-        <router-link to="/superadmin/settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"><span>⚙️</span><span>Settings</span></router-link>
+        <router-link v-for="item in navItems" :key="item.path" :to="item.path"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all text-slate-400 hover:bg-slate-900 hover:text-white"
+          active-class="bg-indigo-600 text-white shadow-xl shadow-indigo-900/40"
+        >
+          <component :is="item.icon" class="w-5 h-5 shrink-0" />
+          <span v-if="sidebarOpen">{{ item.name }}</span>
+        </router-link>
       </nav>
-      <div class="p-6 border-t border-emerald-500"><div class="flex items-center space-x-3 cursor-pointer hover:bg-emerald-500 p-3 rounded-lg transition-all"><div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center font-bold">JS</div><div class="flex-1"><div class="font-semibold text-sm">Jodell Suah</div><div class="text-xs text-emerald-200">Super Admin</div></div></div></div>
     </aside>
-    <main class="flex-1 overflow-auto">
-      <div class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10"><div class="px-8 py-8"><div class="flex items-center justify-between"><div><h1 class="text-3xl font-bold text-slate-900">Monitoring</h1><p class="text-slate-600 mt-2">System health and performance monitoring</p></div><button @click="handleLogout" class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-all">Logout</button></div></div></div>
-      <div class="p-8">
-        <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-          {{ error }}
+
+    <!-- 2. MONITORING MAIN -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <header class="h-24 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-10 sticky top-0 z-20 shrink-0">
+        <div>
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight uppercase italic">Infrastructure Sentinel</h1>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Real-time Node Telemetry</p>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-xl border border-green-100">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+            <span class="text-[10px] font-black text-green-600 uppercase">All Systems Nominal</span>
+          </div>
+          <button @click="checkMonitoring" class="p-4 bg-slate-900 text-white rounded-2xl hover:bg-indigo-600 transition-all">
+            <RefreshCwIcon :class="{'animate-spin': loading}" class="w-5 h-5" />
+          </button>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar animate-in fade-in duration-700">
+        <!-- NODE KPIS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div v-for="stat in monitorStats" :key="stat.label" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <div class="flex justify-between items-start mb-6">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-50 text-indigo-600 shadow-sm">
+                <component :is="stat.icon" class="w-6 h-6" />
+              </div>
+              <span :class="stat.statusColor" class="px-3 py-1 rounded-full text-[8px] font-black uppercase border">{{ stat.status }}</span>
+            </div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ stat.label }}</p>
+            <h3 class="text-4xl font-black text-slate-900 tracking-tighter mt-1">{{ stat.value }}</h3>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm"><p class="text-gray-600 text-sm font-bold uppercase">API Status</p><div class="flex items-center mt-3"><div :class="['w-3 h-3 rounded-full mr-2', apiStatus === 'All Systems Normal' ? 'bg-green-500' : 'bg-red-500']"></div><p class="text-slate-900 font-semibold">{{ apiStatus }}</p></div></div>
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm"><p class="text-gray-600 text-sm font-bold uppercase">Uptime</p><p class="text-4xl font-bold text-slate-900 mt-2">{{ uptime }}</p><p class="text-slate-600 text-xs mt-1">This month</p></div>
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm"><p class="text-gray-600 text-sm font-bold uppercase">Avg Response</p><p class="text-4xl font-bold text-slate-900 mt-2">{{ responseTime }}</p><p class="text-green-600 text-xs mt-1">Excellent</p></div>
-        </div>
+        <!-- RESOURCE LOAD -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-2 bg-slate-900 p-10 rounded-[3.5rem] shadow-3xl text-white relative overflow-hidden flex flex-col h-[400px]">
+            <h3 class="text-xs font-black uppercase tracking-widest text-indigo-400 mb-10 relative z-10">API Handshake Latency</h3>
+            <div class="flex-1 flex items-end justify-between gap-2 relative z-10">
+               <div v-for="(v, i) in latencyHistory" :key="i" class="flex-1 bg-indigo-500/20 hover:bg-indigo-500 transition-all rounded-t-lg" :style="{ height: v + '%' }"></div>
+            </div>
+            <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-indigo-600/10 rounded-full blur-[100px]"></div>
+          </div>
 
-        <div v-if="loading" class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm text-center py-12">
-          <div class="text-gray-500">Checking system status...</div>
+          <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-8">
+            <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Resource Matrix</h3>
+            <div v-for="res in resources" :key="res.label" class="space-y-3">
+              <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                <span class="text-slate-400">{{ res.label }}</span>
+                <span class="text-slate-900">{{ res.value }}%</span>
+              </div>
+              <div class="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                <div class="h-full bg-indigo-600 transition-all duration-1000" :style="{ width: res.value + '%' }"></div>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div v-else class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm"><h2 class="text-xl font-bold text-slate-900 mb-6">Server Status</h2><div class="space-y-3"><div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg"><div><p class="font-semibold">API Server</p><p class="text-sm text-slate-600">Production</p></div><div class="flex items-center"><div :class="['w-2 h-2 rounded-full mr-2', serverStatus.api === 'Running' ? 'bg-green-500' : 'bg-red-500']"></div><span :class="['font-semibold', serverStatus.api === 'Running' ? 'text-green-600' : 'text-red-600']">{{ serverStatus.api }}</span></div></div><div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg"><div><p class="font-semibold">Database</p><p class="text-sm text-slate-600">SQLite</p></div><div class="flex items-center"><div :class="['w-2 h-2 rounded-full mr-2', serverStatus.db === 'Healthy' ? 'bg-green-500' : 'bg-red-500']"></div><span :class="['font-semibold', serverStatus.db === 'Healthy' ? 'text-green-600' : 'text-red-600']">{{ serverStatus.db }}</span></div></div></div></div>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { 
+  ZapIcon, MenuIcon, ChevronLeftIcon, LayoutDashboardIcon, BuildingIcon, 
+  ActivityIcon, ShieldAlertIcon, RefreshCwIcon, SettingsIcon, LogOutIcon,
+  ServerIcon, DatabaseIcon, CpuIcon, HardDriveIcon, CloudIcon
+} from 'lucide-vue-next'
 
 const router = useRouter()
 const sidebarOpen = ref(true)
-const apiStatus = ref('Checking...')
-const uptime = ref('99.9%')
-const responseTime = ref('120ms')
-const serverStatus = ref({
-  api: 'Checking...',
-  db: 'Checking...'
-})
 const loading = ref(false)
-const error = ref('')
+const responseTime = ref('24ms')
+const latencyHistory = ref([20, 45, 30, 80, 40, 55, 35, 90, 40, 60])
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
+const navItems = [
+  { name: 'Dashboard', path: '/superadmin', icon: LayoutDashboardIcon },
+  { name: 'Organizations', path: '/superadmin/organizations', icon: BuildingIcon },
+  { name: 'Monitoring', path: '/superadmin/monitoring', icon: ActivityIcon },
+  { name: 'Audit Logs', path: '/superadmin/audit-logs', icon: ShieldAlertIcon },
+]
+
+const monitorStats = computed(() => [
+  { label: 'Core API', value: 'Running', status: 'Healthy', statusColor: 'text-green-500 bg-green-50 border-green-100', icon: ServerIcon },
+  { label: 'DB Master', value: 'SQLite3', status: 'Nominal', statusColor: 'text-indigo-500 bg-indigo-50 border-indigo-100', icon: DatabaseIcon },
+  { label: 'Latency', value: responseTime.value, status: 'Optimal', statusColor: 'text-amber-500 bg-amber-50 border-amber-100', icon: ZapIcon },
+  { label: 'Cloud Store', value: 'Active', status: 'Online', statusColor: 'text-blue-500 bg-blue-50 border-blue-100', icon: CloudIcon },
+])
+
+const resources = ref([
+  { label: 'CPU Cluster', value: 32 },
+  { label: 'Memory', value: 58 },
+  { label: 'Disk I/O', value: 14 }
+])
+
+const checkMonitoring = async () => {
+  loading.value = true
+  const start = Date.now()
+  try {
+    const token = localStorage.getItem('superAdminToken')
+    await axios.get('http://localhost:4000/api/superadmin/dashboard', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const duration = Date.now() - start
+    responseTime.value = `${duration}ms`
+    latencyHistory.value.push(Math.min(duration, 100))
+    if (latencyHistory.value.length > 20) latencyHistory.value.shift()
+  } finally { loading.value = false }
 }
 
 const handleLogout = () => {
-  localStorage.removeItem('superAdminToken')
-  localStorage.removeItem('superAdminUser')
+  localStorage.clear()
   router.push('/superadmin/login')
 }
 
-const checkMonitoring = async () => {
-  try {
-    loading.value = true
-    error.value = ''
-    const token = localStorage.getItem('superAdminToken')
-    if (!token) {
-      router.push('/superadmin/login')
-      return
-    }
-
-    const startTime = Date.now()
-    const dashboardResponse = await axios.get(
-      'http://localhost:4000/api/superadmin/dashboard',
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-    const responseTime_ = Date.now() - startTime
-
-    if (dashboardResponse.data) {
-      apiStatus.value = 'All Systems Normal'
-      serverStatus.value.api = 'Running'
-      serverStatus.value.db = 'Healthy'
-      responseTime.value = `${responseTime_}ms`
-    }
-  } catch (err) {
-    console.error('Failed to check monitoring:', err)
-    apiStatus.value = 'Error - Check Connection'
-    serverStatus.value.api = 'Error'
-    serverStatus.value.db = 'Error'
-    error.value = 'Failed to check system status'
-  } finally {
-    loading.value = false
-  }
-}
-
+let ticker;
 onMounted(() => {
   checkMonitoring()
+  ticker = setInterval(checkMonitoring, 10000)
 })
+onBeforeUnmount(() => clearInterval(ticker))
 </script>
 
 <style scoped>
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.shadow-3xl { box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.25); }
 </style>

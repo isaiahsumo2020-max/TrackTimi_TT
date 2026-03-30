@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS Pending_Employee (
   Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID),
   FOREIGN KEY (Invitation_ID) REFERENCES Invitation(Invitation_ID),
-  FOREIGN KEY (Depart_ID) REFERENCES Department(Depart_ID),
+  FOREIGN KEY (Depart_ID) REFERENCES Department(Dep_ID),
   FOREIGN KEY (User_Type_ID) REFERENCES User_Type(User_Type_ID)
 );
 

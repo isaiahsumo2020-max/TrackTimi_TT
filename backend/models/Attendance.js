@@ -2,18 +2,26 @@ const db = require('../config/db');
 
 const Attendance = {
   checkIn: (checkInData, callback) => {
+    console.log('Attendance.checkIn called with:', checkInData);
     const sql = `
-      INSERT INTO Attendance (User_ID, Check_in_time, Status_ID, Method_ID, Latitude, Longitude)
-      VALUES (?, datetime('now'), ?, ?, ?, ?)
+      INSERT INTO Attendance (User_ID, Org_ID, Device_ID, Check_in_time, Status_ID, Method_ID, Latitude, Longitude)
+      VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?)
     `;
-    db.run(sql, [
+    const params = [
       checkInData.userId,
+      checkInData.orgId,
+      checkInData.deviceId || null,
       checkInData.statusId || 1,
       checkInData.methodId || 1,
       checkInData.latitude,
       checkInData.longitude
-    ], function(err) {
-      if (err) return callback(err);
+    ];
+    console.log('Attendance.insert params:', params);
+    db.run(sql, params, function(err) {
+      if (err) {
+        console.error('DB error inserting attendance:', err.message);
+        return callback(err);
+      }
       callback(null, { Attend_ID: this.lastID, ...checkInData });
     });
   },

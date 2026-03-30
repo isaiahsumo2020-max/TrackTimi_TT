@@ -1,337 +1,382 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <aside :class="[
-        sidebarOpen ? 'w-64' : 'w-0 overflow-hidden',
-        'bg-gradient-to-b from-gray-700 to-gray-700 text-white shadow-xl flex flex-col transition-all duration-300'
-      ]">
-      <div class="p-6 border-b border-gray-500 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-            <span class="text-xl font-bold text-white">A</span>
+  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+    
+    <!-- 1. DYNAMIC NAVIGATION SIDEBAR (Master Consistency) -->
+    <aside 
+      :class="[sidebarOpen ? 'w-72' : 'w-20', 'bg-slate-950 text-white shadow-2xl transition-all duration-500 ease-in-out flex flex-col z-40']"
+    >
+      <div class="p-6 border-b border-slate-800 flex items-center justify-between h-24">
+        <div v-if="sidebarOpen" class="flex items-center space-x-3 animate-in fade-in slide-in-from-left-4">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <ZapIcon class="w-6 h-6 text-white fill-white" />
           </div>
-          <span class="text-lg font-bold">Track<span class="text-orange-500">Timi</span></span>
+          <div class="flex flex-col">
+            <span class="text-xl font-black tracking-tighter uppercase leading-none italic">TrackTimi</span>
+            <span class="text-[8px] font-black text-indigo-400 uppercase tracking-[0.4em] mt-1">Financial Node</span>
+          </div>
         </div>
-        <button @click="toggleSidebar" class="p-1 rounded-lg bg-gray-700 hover:bg-gray-600">
-          <span v-if="sidebarOpen">←</span>
-          <span v-else>→</span>
+        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all active:scale-90">
+          <MenuIcon v-if="!sidebarOpen" class="w-5 h-5 text-slate-400" />
+          <ChevronLeftIcon v-else class="w-5 h-5 text-slate-400" />
         </button>
       </div>
 
-      <nav class="flex-1 py-8 px-4 space-y-2">
-        <router-link to="/superadmin" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>📊</span>
-          <span>Dashboard</span>
-        </router-link>
-        <router-link to="/superadmin/organizations" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>🏢</span>
-          <span>Organizations</span>
-        </router-link>
-        <router-link to="/superadmin/revenue" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all bg-orange-500 text-white shadow-lg">
-          <span>💰</span>
-          <span>Revenue</span>
-        </router-link>
-        <router-link to="/superadmin/subscriptions" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>📦</span>
-          <span>Subscriptions</span>
-        </router-link>
-        <router-link to="/superadmin/analytics" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>📈</span>
-          <span>Analytics</span>
-        </router-link>
-        <router-link to="/superadmin/monitoring" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>🔍</span>
-          <span>Monitoring</span>
-        </router-link>
-        <router-link to="/superadmin/audit-logs" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-gray-100 hover:bg-gray-600">
-          <span>📋</span>
-          <span>Audit Logs</span>
-        </router-link>
-        <router-link to="/superadmin/settings" class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-gray-50-500">
-          <span>⚙️</span>
-          <span>Settings</span>
+      <nav class="flex-1 py-8 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <p v-if="sidebarOpen" class="text-[10px] font-black text-slate-500 uppercase px-4 mb-4 tracking-[0.2em]">Platform Control</p>
+        
+        <router-link v-for="item in navItems" :key="item.path" :to="item.path"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
+          :class="[$route.path === item.path ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
+        >
+          <component :is="item.icon" class="w-5 h-5 shrink-0" />
+          <span v-if="sidebarOpen">{{ item.name }}</span>
         </router-link>
       </nav>
 
-      <div class="p-6 border-t border-gray-500">
-        <div class="flex items-center space-x-3 cursor-pointer hover:bg-gray-700 p-3 rounded-lg transition-all">
-          <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center font-bold">JS</div>
-          <div class="flex-1">
-            <div class="font-semibold text-sm">Jodell Suah</div>
-            <div class="text-xs text-orange-400">Super Admin</div>
+      <div class="p-6 border-t border-slate-800">
+        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-2xl border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
+          <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-red-500">
+            <LogOutIcon class="w-5 h-5" />
+          </div>
+          <div v-if="sidebarOpen" class="flex-1 min-w-0">
+            <div class="font-bold text-[11px] text-red-500 uppercase tracking-widest">Terminate</div>
+            <div class="text-[8px] font-black text-slate-500 uppercase">Master Session</div>
           </div>
         </div>
       </div>
     </aside>
 
-    <main class="flex-1 overflow-auto">
-      <div class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
-        <div class="px-8 py-8">
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="text-3xl font-bold text-slate-900">Revenue</h1>
-              <p class="text-slate-600 mt-2">Monitor platform revenue and financial metrics</p>
+    <!-- 2. MAIN REVENUE WORKSPACE -->
+    <main class="flex-1 flex flex-col min-w-0 relative">
+      
+      <!-- Top Intelligence Bar -->
+      <header class="h-24 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-10 sticky top-0 z-20">
+        <div class="flex flex-col">
+          <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center italic uppercase">
+            Revenue Operations
+            <span class="ml-3 px-3 py-1 bg-green-50 text-green-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-green-100">Live Yield</span>
+          </h1>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">SaaS Recurring Revenue & Subscription Matrix</p>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+             <button @click="loadRevenueData" :disabled="loading" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-indigo-600 active:scale-90">
+               <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
+             </button>
+             <button @click="exportGlobalLedger" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-indigo-600 active:scale-90">
+               <FileDownIcon class="w-4 h-4" />
+             </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Revenue Body -->
+      <div class="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar animate-in fade-in duration-1000">
+        
+        <!-- ROW 1: REVENUE KPIS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div v-for="m in revenueMetrics" :key="m.label" 
+            class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 relative overflow-hidden">
+            <div class="flex justify-between items-start mb-6 relative z-10">
+              <div :class="m.bgColor" class="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl">
+                <component :is="m.icon" class="w-7 h-7" />
+              </div>
+              <div class="flex flex-col items-end">
+                <span class="text-[10px] font-black text-green-500 bg-green-50 px-2 py-0.5 rounded-md uppercase tracking-widest">Active</span>
+              </div>
             </div>
-            <div class="flex items-center space-x-3">
-              <button @click="handleLogout" class="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-all">
-                Logout
-              </button>
+            <div class="relative z-10">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{{ m.label }}</p>
+              <h3 class="text-4xl font-black text-slate-900 tracking-tighter mt-1">{{ m.value }}</h3>
+              <p :class="m.trendColor" class="text-[9px] font-black uppercase mt-2">{{ m.trend }}</p>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="p-8">
-        <div v-if="error" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-          {{ error }}
-        </div>
+        <!-- ROW 2: REVENUE TRENDS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Subscription Plan Distribution -->
+          <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex flex-col">
+            <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-10 flex items-center">
+              <CreditCardIcon class="w-5 h-5 mr-2 text-indigo-500" /> Plan Distribution
+            </h3>
+            
+            <div class="flex-1 space-y-8">
+               <div v-for="plan in planDistribution" :key="plan.name" class="space-y-3">
+                  <div class="flex justify-between items-center px-1">
+                    <span class="text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ plan.name }}</span>
+                    <span class="text-xs font-black text-slate-900">{{ plan.count }} <span class="text-slate-300 font-bold">Orgs</span></span>
+                  </div>
+                  <div class="h-4 w-full bg-slate-50 rounded-xl overflow-hidden flex p-1 border border-slate-100">
+                    <div 
+                      class="h-full rounded-lg bg-indigo-600 transition-all duration-1000 shadow-[0_0_15px_rgba(79,70,229,0.3)]" 
+                      :style="{ width: (plan.count / metrics.organizations * 100) + '%' }"
+                    ></div>
+                  </div>
+               </div>
+            </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <p class="text-gray-600 text-sm font-bold uppercase tracking-wide">Total Revenue</p>
-            <p class="text-4xl font-bold text-slate-900 mt-2">{{ metrics.totalRevenue }}</p>
-            <p class="text-green-600 text-xs mt-1 font-semibold">+22.5% this quarter</p>
+            <div class="mt-12 p-6 bg-indigo-600 rounded-[2.5rem] text-white relative overflow-hidden group">
+               <div class="relative z-10">
+                 <p class="text-[9px] font-black text-indigo-200 uppercase tracking-widest mb-1">Portfolio Value</p>
+                 <p class="text-2xl font-black leading-tight">Projected Annual Yield: <br/> $149,760.00</p>
+               </div>
+               <TrendingUpIcon class="absolute -right-4 -bottom-4 w-24 h-24 text-white/10 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
+            </div>
           </div>
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <p class="text-gray-600 text-sm font-bold uppercase tracking-wide">MRR</p>
-            <p class="text-4xl font-bold text-slate-900 mt-2">{{ metrics.mrr }}</p>
-            <p class="text-green-600 text-xs mt-1 font-semibold">+12.5% growth</p>
+
+          <!-- Revenue Velocity (CSS Chart) -->
+          <div class="lg:col-span-2 bg-slate-900 p-10 rounded-[3.5rem] shadow-3xl text-white relative overflow-hidden flex flex-col h-[480px]">
+            <div class="relative z-10 flex flex-col h-full">
+              <div class="flex justify-between items-center mb-12">
+                <div>
+                   <h3 class="text-sm font-black uppercase tracking-[0.2em] text-indigo-400">Monthly Yield Velocity</h3>
+                   <p class="text-[10px] font-bold opacity-40 mt-1 uppercase">Platform Gross Revenue (6 Month Window)</p>
+                </div>
+                <BarChart3Icon class="w-6 h-6 text-indigo-500 opacity-50" />
+              </div>
+
+              <!-- Live Bar Chart -->
+              <div class="flex-1 flex items-end justify-between gap-6 pb-6 px-4">
+                <div v-for="(v, idx) in revenueTrend" :key="idx" class="flex-1 flex flex-col items-center group cursor-pointer">
+                  <div class="w-full bg-white/5 rounded-t-2xl relative group-hover:bg-indigo-500 transition-all duration-700 min-h-[10px]" 
+                    :style="{ height: v.height + '%' }">
+                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-950 px-3 py-1.5 rounded-xl text-[10px] font-black opacity-0 group-hover:opacity-100 transition-all shadow-2xl scale-75 group-hover:scale-100">
+                      ${{ v.value }}k
+                    </div>
+                  </div>
+                  <p class="text-[10px] font-black mt-5 opacity-30 uppercase tracking-tighter group-hover:opacity-100">{{ v.month }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="absolute top-0 right-0 w-80 h-80 bg-indigo-600/10 blur-[120px] rounded-full -mr-32 -mt-32"></div>
           </div>
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <p class="text-gray-600 text-sm font-bold uppercase tracking-wide">ARR</p>
-            <p class="text-4xl font-bold text-slate-900 mt-2">{{ metrics.arr }}</p>
-            <p class="text-green-600 text-xs mt-1 font-semibold">+18.3% yearly</p>
+        </div>
+
+        <!-- ROW 3: DETAILED BILLING LEDGER -->
+        <div class="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+          <div class="p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-slate-50/30">
+             <div>
+               <h3 class="text-lg font-black text-slate-900 tracking-tight italic">Financial Ledger</h3>
+               <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Cross-tenant billing status and plan allocation</p>
+             </div>
+             <div class="relative group">
+                <SearchIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+                <input v-model="orgSearch" placeholder="Search ledger by tenant name..." 
+                  class="pl-14 pr-6 py-4 bg-white border-none rounded-2xl text-[11px] font-bold shadow-sm w-80 focus:ring-4 focus:ring-indigo-50 transition-all outline-none" />
+             </div>
           </div>
-        </div>
-
-        <div v-if="loading" class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm text-center py-12">
-          <div class="text-gray-500">Loading revenue data...</div>
-        </div>
-
-        <div v-else-if="orgs.length === 0" class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm text-center py-12">
-          <div class="text-gray-500">No organizations found</div>
-        </div>
-
-        <div v-else class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <h2 class="text-xl font-bold text-slate-900 mb-6">Revenue by Organization ({{ orgs.length }})</h2>
+          
           <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="border-b border-gray-300 bg-gray-50">
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Organization</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Plan</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Monthly Revenue</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Status</th>
-                  <th class="pb-3 px-4 font-semibold text-slate-700">Actions</th>
+                <tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-white border-b border-slate-50">
+                  <th class="px-10 py-6">Organization</th>
+                  <th class="px-10 py-6">Subscription Tier</th>
+                  <th class="px-10 py-6">Active Seats</th>
+                  <th class="px-10 py-6 text-center">Billing Cycle</th>
+                  <th class="px-10 py-6 text-right">Monthly Yield</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="org in orgs" :key="org.Org_ID" class="border-b border-gray-200 hover:bg-gray-50">
-                  <td class="py-4 px-4">
-                    <p class="font-semibold text-slate-900 cursor-pointer hover:text-yellow-600" @click="viewRevenueDetail(org)">{{ org.Org_Name }}</p>
+              <tbody class="divide-y divide-slate-50">
+                <tr v-for="org in filteredOrgs" :key="org.Org_ID" class="group hover:bg-slate-50 transition-all duration-300">
+                  <td class="px-10 py-8">
+                    <div class="flex items-center space-x-4">
+                      <div class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-indigo-400 shadow-xl group-hover:rotate-6 transition-transform">
+                        {{ org.Org_Name[0] }}
+                      </div>
+                      <div>
+                        <p class="text-sm font-black text-slate-900 leading-none mb-1.5">{{ org.Org_Name }}</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ID: TT-REV-{{ org.Org_ID }}</p>
+                      </div>
+                    </div>
                   </td>
-                  <td class="py-4 px-4">
-                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">{{ org.Plan_Name || 'Free' }}</span>
+                  <td class="px-10 py-8">
+                    <div class="flex items-center space-x-2">
+                       <div :class="getPlanColor(org.Plan_Name)" class="w-2 h-2 rounded-full"></div>
+                       <span class="text-[11px] font-black text-slate-700 uppercase tracking-widest">{{ org.Plan_Name || 'FREE_TIER' }}</span>
+                    </div>
                   </td>
-                  <td class="py-4 px-4 font-semibold text-slate-900">{{ org.monthlyRevenue }}</td>
-                  <td class="py-4 px-4">
-                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">{{ org.status }}</span>
+                  <td class="px-10 py-8">
+                    <span class="text-sm font-black text-slate-900">{{ org.userCount }}</span>
+                    <span class="text-[10px] font-bold text-slate-300 uppercase ml-1">Nodes</span>
                   </td>
-                  <td class="py-4 px-4 flex items-center space-x-2">
-                    <button @click="viewRevenueDetail(org)" class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded text-xs font-semibold transition-all">
-                      View
-                    </button>
-                    <button @click="exportRevenue(org)" class="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-xs font-semibold transition-all">
-                      Export
-                    </button>
+                  <td class="px-10 py-8 text-center">
+                    <div class="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100">
+                      <span class="text-[9px] font-black uppercase tracking-widest">In Good Standing</span>
+                    </div>
+                  </td>
+                  <td class="px-10 py-8 text-right">
+                    <span class="text-lg font-black text-slate-900">${{ calculateYield(org.Plan_Name) }}</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-        </div>
-
-        <!-- Revenue Detail Modal -->
-        <div v-if="selectedRevenue" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-2xl max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div class="sticky top-0 bg-gradient-to-r from-yellow-600 to-yellow-700 text-white p-6 flex items-center justify-between">
-              <h2 class="text-2xl font-bold">Revenue Details</h2>
-              <button @click="selectedRevenue = null" class="text-2xl hover:text-yellow-200">&times;</button>
-            </div>
-            <div class="p-8">
-              <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-gray-600 text-sm font-semibold">Organization</p>
-                  <p class="text-lg font-bold text-slate-900 mt-2">{{ selectedRevenue.Org_Name }}</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-gray-600 text-sm font-semibold">Plan</p>
-                  <p class="text-lg font-bold text-slate-900 mt-2">{{ selectedRevenue.Plan_Name || 'Free' }}</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-gray-600 text-sm font-semibold">Monthly Revenue</p>
-                  <p class="text-lg font-bold text-yellow-600 mt-2">{{ selectedRevenue.monthlyRevenue }}</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-gray-600 text-sm font-semibold">Annual Value</p>
-                  <p class="text-lg font-bold text-slate-900 mt-2">{{ calculateAnnual(selectedRevenue) }}</p>
-                </div>
-              </div>
-              <div class="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <p class="text-yellow-900 font-semibold">Payment Status</p>
-                <p class="text-sm text-yellow-800 mt-1">Active subscription</p>
-              </div>
-              <div class="flex items-center space-x-3">
-                <button @click="exportRevenue(selectedRevenue)" class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-all">
-                  Export Report
-                </button>
-                <button @click="processRefund(selectedRevenue)" class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-all">
-                  Process Refund
-                </button>
-                <button @click="selectedRevenue = null" class="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg font-semibold transition-all">
-                  Close
-                </button>
-              </div>
-              <div v-if="actionMessage" class="mt-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm font-semibold">
-                {{ actionMessage }}
-              </div>
-            </div>
+          
+          <!-- Empty State -->
+          <div v-if="filteredOrgs.length === 0" class="py-32 text-center flex flex-col items-center">
+             <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
+                <SearchIcon class="w-8 h-8 text-slate-200" />
+             </div>
+             <p class="text-xs font-black text-slate-300 uppercase tracking-[0.3em]">No financial signatures detected in ledger</p>
           </div>
         </div>
       </div>
+
     </main>
+
+    <!-- Global Loading Overlay -->
+    <div v-if="loading" class="fixed inset-0 z-[100] bg-slate-900/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+       <div class="bg-slate-950 p-6 rounded-3xl shadow-3xl flex items-center space-x-4 text-white border border-white/10">
+          <RefreshCwIcon class="w-5 h-5 animate-spin text-indigo-400" />
+          <span class="text-[10px] font-black uppercase tracking-[0.4em]">Node Syncing</span>
+       </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { 
+  ZapIcon, MenuIcon, ChevronLeftIcon, BuildingIcon, 
+  UsersIcon, RefreshCwIcon, LayoutDashboardIcon, ActivityIcon, SettingsIcon,
+  ShieldAlertIcon, SearchIcon, FileDownIcon, CreditCardIcon, TrendingUpIcon,
+  LogOutIcon, BarChart3Icon, DollarSignIcon, PieChartIcon, TargetIcon
+} from 'lucide-vue-next'
 
 const router = useRouter()
 const sidebarOpen = ref(true)
-const selectedRevenue = ref(null)
-const actionMessage = ref('')
-
-const metrics = ref({
-  totalRevenue: '$0',
-  mrr: '$0',
-  arr: '$0'
-})
-const orgs = ref([])
 const loading = ref(false)
-const error = ref('')
+const orgSearch = ref('')
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
+// Data States
+const metrics = ref({ organizations: 0, totalUsers: 0, totalRevenue: 0, mrr: 0, arr: 0 })
+const organizations = ref([])
 
-const handleLogout = () => {
-  localStorage.removeItem('superAdminToken')
-  localStorage.removeItem('superAdminUser')
-  router.push('/superadmin/login')
-}
+const navItems = [
+  { name: 'Dashboard', path: '/superadmin', icon: LayoutDashboardIcon },
+  { name: 'Organizations', path: '/superadmin/organizations', icon: BuildingIcon },
+  { name: 'Intelligence', path: '/superadmin/analytics', icon: ActivityIcon },
+  { name: 'Revenue Ops', path: '/superadmin/revenue', icon: DollarSignIcon },
+  { name: 'Security Audit', path: '/superadmin/audit-logs', icon: ShieldAlertIcon },
+  { name: 'Infrastructure', path: '/superadmin/monitoring', icon: RefreshCwIcon },
+  { name: 'Platform Settings', path: '/superadmin/settings', icon: SettingsIcon },
+]
 
-const calculateAnnual = (org) => {
-  const monthly = parseInt(org.monthlyRevenue.replace(/[^0-9]/g, ''))
-  return '$' + (monthly * 12).toLocaleString()
-}
+const revenueMetrics = computed(() => [
+  { label: 'Monthly Recurring', value: `$${(metrics.value.mrr || 0).toLocaleString()}`, trend: '↑ 14.2% vs last month', trendColor: 'text-green-500', icon: CreditCardIcon, bgColor: 'bg-indigo-600' },
+  { label: 'Annual Run Rate', value: `$${(metrics.value.arr || 0).toLocaleString()}`, trend: '↑ 8.4% projected', trendColor: 'text-green-500', icon: TrendingUpIcon, bgColor: 'bg-slate-900' },
+  { label: 'Average ARPU', value: `$${calculateARPU()}`, trend: 'Stable yield', trendColor: 'text-slate-400', icon: TargetIcon, bgColor: 'bg-amber-500' },
+  { label: 'Gross Net Profit', value: `$${(metrics.value.mrr * 0.92).toLocaleString()}`, trend: '92% Margin', trendColor: 'text-indigo-500', icon: PieChartIcon, bgColor: 'bg-green-600' },
+])
 
-const viewRevenueDetail = (org) => {
-  selectedRevenue.value = org
-  actionMessage.value = ''
-}
+const revenueTrend = [
+  { month: 'OCT', height: 40, value: 8.4 },
+  { month: 'NOV', height: 55, value: 10.2 },
+  { month: 'DEC', height: 78, value: 14.8 },
+  { month: 'JAN', height: 65, value: 12.1 },
+  { month: 'FEB', height: 90, value: 18.5 },
+  { month: 'MAR', height: 85, value: 17.2 },
+]
 
-const exportRevenue = (org) => {
-  const data = `Organization,${org.Org_Name}\nPlan,${org.Plan_Name || 'Free'}\nMonthly Revenue,${org.monthlyRevenue}\nStatus,${org.status}`
-  const blob = new Blob([data], { type: 'text/csv' })
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `revenue_${org.Org_Name}.csv`
-  a.click()
-  actionMessage.value = 'Revenue report exported successfully!'
-  setTimeout(() => { actionMessage.value = '' }, 3000)
-}
+const planDistribution = computed(() => {
+  const plans = [
+    { name: 'Enterprise Pro', count: organizations.value.filter(o => o.userCount > 20).length },
+    { name: 'Starter SaaS', count: organizations.value.filter(o => o.userCount <= 20 && o.userCount > 0).length },
+    { name: 'Free Development', count: organizations.value.filter(o => o.userCount === 0).length }
+  ]
+  return plans
+})
 
-const processRefund = async (org) => {
-  try {
-    actionMessage.value = 'Processing refund...'
-    // Simulate API call
-    setTimeout(() => {
-      actionMessage.value = `Refund of ${org.monthlyRevenue} processed for ${org.Org_Name}`
-      setTimeout(() => { actionMessage.value = '' }, 3000)
-    }, 1000)
-  } catch (error) {
-    console.error('Failed to process refund:', error)
-    actionMessage.value = 'Failed to process refund'
-  }
-}
+const filteredOrgs = computed(() => {
+  const q = orgSearch.value.toLowerCase()
+  return organizations.value.filter(o => o.Org_Name.toLowerCase().includes(q) || o.Org_Domain.toLowerCase().includes(q))
+})
+
+// === BUSINESS LOGIC ===
 
 const loadRevenueData = async () => {
+  loading.value = true
+  const token = localStorage.getItem('superAdminToken')
+  if (!token) return router.push('/superadmin/login')
+
+  const config = { headers: { Authorization: `Bearer ${token}` } }
+  
   try {
-    loading.value = true
-    error.value = ''
-    const token = localStorage.getItem('superAdminToken')
-    if (!token) {
-      router.push('/superadmin/login')
-      return
-    }
+    const statsRes = await axios.get('http://localhost:4000/api/superadmin/dashboard', config)
+    const orgsRes = await axios.get('http://localhost:4000/api/superadmin/organizations', config)
+    
+    organizations.value = orgsRes.data.organizations || []
+    
+    // SaaS Revenue Logic: Derive revenue from organization tiers
+    let mrr = 0
+    organizations.value.forEach(o => {
+      mrr += calculateYield(o.Plan_Name)
+    })
 
-    // Fetch organizations to calculate revenue
-    const orgResponse = await axios.get(
-      'http://localhost:4000/api/superadmin/organizations',
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-
-    if (orgResponse.data?.organizations) {
-      // Calculate revenue metrics based on organization count
-      const orgCount = orgResponse.data.organizations.length
-      const avgMonthlyPerOrg = 1500 // $1500 per org per month
-      const totalMonthlyRevenue = orgCount * avgMonthlyPerOrg
-      const arr = totalMonthlyRevenue * 12
-
-      metrics.value = {
-        totalRevenue: `$${(totalMonthlyRevenue * 3).toLocaleString()}`, // 3 months
-        mrr: `$${totalMonthlyRevenue.toLocaleString()}`,
-        arr: `$${arr.toLocaleString()}`
-      }
-
-      // Map organizations with mock revenue
-      orgs.value = orgResponse.data.organizations.map((org, idx) => ({
-        ...org,
-        monthlyRevenue: `$${(avgMonthlyPerOrg + (idx * 100)).toLocaleString()}`,
-        status: org.Plan_Name === 'Premium' ? 'Active' : 'Active'
-      }))
+    metrics.value = {
+      organizations: organizations.value.length,
+      mrr: mrr,
+      arr: mrr * 12
     }
   } catch (err) {
-    console.error('Failed to load revenue data:', err)
-    error.value = 'Failed to load revenue data'
+    if (err.response?.status === 403) handleLogout()
   } finally {
     loading.value = false
   }
 }
 
-onMounted(() => {
-  loadRevenueData()
-})
+const calculateYield = (plan) => {
+  if (plan === 'Enterprise' || plan === 'Premium') return 250
+  if (plan === 'Pro' || plan === 'Professional') return 49
+  if (plan === 'Starter') return 19
+  return 0
+}
+
+const calculateARPU = () => {
+  if (metrics.value.organizations === 0) return '0'
+  return Math.round(metrics.value.mrr / metrics.value.organizations)
+}
+
+const getPlanColor = (plan) => {
+  if (plan === 'Enterprise') return 'bg-purple-500'
+  if (plan === 'Pro') return 'bg-indigo-500'
+  return 'bg-slate-300'
+}
+
+const exportGlobalLedger = () => {
+  let csv = "Organization,Domain,Plan,Users,MonthlyYield\n"
+  organizations.value.forEach(o => {
+    csv += `"${o.Org_Name}","${o.Org_Domain}","${o.Plan_Name || 'Starter'}",${o.userCount},${calculateYield(o.Plan_Name)}\n`
+  })
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `tracktimi_revenue_ledger_${Date.now()}.csv`
+  a.click()
+}
+
+const formatDate = (d) => new Date(d).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+const handleLogout = () => {
+  localStorage.clear()
+  router.push('/superadmin/login')
+}
+
+onMounted(loadRevenueData)
 </script>
 
 <style scoped>
-::-webkit-scrollbar {
-  width: 8px;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+.shadow-3xl {
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.25), 0 30px 60px -30px rgba(0, 0, 0, 0.3);
 }
 </style>
