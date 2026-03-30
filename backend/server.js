@@ -73,6 +73,7 @@ app.use('/api/org', require('./routes/org.routes'));
 
 // 3. Attendance (require JWT)
 app.use('/api/attendance', authenticateToken);
+// server.js
 app.use('/api/attendance', require('./routes/attendance.routes'));
 
 // Other routes...
@@ -87,11 +88,13 @@ app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/landing', require('./routes/landing.routes'));
 
 // ⭐ 5. SUPER ADMIN LOGIN (PUBLIC) - Must be BEFORE /api/superadmin to match first
+/// server.js
+
+// 1. The public login route for you
 app.use('/api/superadmin/auth', require('./routes/superadmin-auth.routes'));
 
-// ⭐ 5.5 SUPER ADMIN (SEPARATE JWT) - After auth so protected routes work
+// 2. The protected dashboard route (where the data is)
 app.use('/api/superadmin', require('./routes/superadmin.routes'));
-
 // 404 Handler
 app.use((req, res) => {
   res.status(404).json({

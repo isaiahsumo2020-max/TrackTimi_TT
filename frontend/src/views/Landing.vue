@@ -1,330 +1,302 @@
 <template>
-  <div class="min-h-screen bg-white text-gray-900 flex flex-col">
-    <!-- NAVBAR -->
-    <header class="w-full fixed top-0 left-0 z-30 bg-white/90 backdrop-blur border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
-        <!-- Logo -->
-        <div class="flex items-center space-x-2">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
-            <span class="text-sm font-extrabold">TT</span>
+  <div class="min-h-screen bg-[#FDFDFD] text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-700">
+    
+    <!-- 1. NAVIGATION (Glassmorphism) -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100">
+      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center space-x-3 group cursor-pointer">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:rotate-6 transition-transform">
+            <ZapIcon class="w-6 h-6 text-white fill-white" />
           </div>
-          <span class="font-bold tracking-tight text-sm sm:text-base">TrackTimi</span>
+          <span class="font-black text-2xl tracking-tighter text-slate-900">TrackTimi<span class="text-indigo-600">.</span></span>
         </div>
 
-        <!-- Links -->
-        <nav class="hidden md:flex items-center space-x-6 text-sm sm:text-base text-gray-700">
-          <a href="#features" class="hover:text-orange-400 transition">Features</a>
-          <a href="#how-it-works" class="hover:text-orange-400 transition">How it works</a>
-          <a href="#pricing" class="hover:text-orange-400 transition">Pricing</a>
-          <a href="#support" class="hover:text-orange-400 transition">Support</a>
-        </nav>
+        <div class="hidden lg:flex items-center space-x-10 text-[11px] font-black uppercase tracking-widest text-slate-400">
+          <a href="#features" class="hover:text-indigo-600 transition-colors">Solutions</a>
+          <a href="#geofence" class="hover:text-indigo-600 transition-colors">Geofencing</a>
+          <a href="#pricing" class="hover:text-indigo-600 transition-colors">Pricing</a>
+          <router-link to="/login" class="text-slate-900 hover:text-indigo-600 transition-colors">Sign In</router-link>
+        </div>
 
-        <!-- Auth buttons -->
-        <div class="flex items-center space-x-2">
-          <router-link
-            to="/login"
-            class="hidden sm:inline-flex px-4 py-2 rounded-xl text-sm sm:text-base font-semibold text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition"
-          >
-            Sign in
-          </router-link>
-          <router-link
-            to="/register-org"
-            class="inline-flex px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-sm sm:text-base font-bold shadow-lg hover:shadow-orange-500/40 hover:-translate-y-0.5 transition"
-          >
-            Start Free Trial
-          </router-link>
+        <router-link to="/register-org" class="px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-indigo-600 hover:shadow-xl hover:shadow-indigo-200 transition-all active:scale-95">
+          Start Free Trial
+        </router-link>
+      </div>
+    </nav>
+
+    <!-- 2. HERO SECTION -->
+    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+        
+        <div class="space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000">
+          <div class="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-50 rounded-full border border-indigo-100">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+            </span>
+            <span class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em]">Live Workforce Intelligence</span>
+          </div>
+
+          <h1 class="text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter">
+            Every second <br />
+            <span class="text-indigo-600 italic">accounted for.</span>
+          </h1>
+
+          <p class="text-lg text-slate-500 font-medium max-w-lg leading-relaxed">
+            The multi-tenant attendance SaaS for modern organizations. Enforce GPS boundaries, automate payroll logs, and monitor your workforce in high-definition.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-4">
+            <router-link to="/register-org" class="px-10 py-5 bg-indigo-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-2xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 transition-all flex items-center justify-center">
+              Deploy TrackTimi Free
+              <ArrowRightIcon class="w-4 h-4 ml-2" />
+            </router-link>
+            <button class="px-10 py-5 bg-white text-slate-900 border border-slate-200 rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-slate-50 transition-all">
+              Watch Demo
+            </button>
+          </div>
+        </div>
+
+        <!-- HERO ACTION: Live Preview & Simulated Pulse -->
+        <div class="relative animate-in fade-in slide-in-from-right-8 duration-1000 delay-200">
+          <div class="relative z-10 bg-slate-900 rounded-[3rem] p-4 shadow-3xl border-[12px] border-slate-800 aspect-video flex items-center justify-center overflow-hidden">
+             <!-- Simulated Dashboard Image or Component -->
+             <div class="w-full h-full bg-slate-800 rounded-2xl p-6 space-y-4">
+                <div class="h-4 w-1/3 bg-slate-700 rounded-full"></div>
+                <div class="grid grid-cols-3 gap-4">
+                  <div class="h-20 bg-indigo-600/20 rounded-2xl border border-indigo-500/30"></div>
+                  <div class="h-20 bg-slate-700 rounded-2xl"></div>
+                  <div class="h-20 bg-slate-700 rounded-2xl"></div>
+                </div>
+                <div class="h-32 bg-slate-700 rounded-2xl"></div>
+             </div>
+          </div>
+
+          <!-- FLOATING LIVE PULSE (The "Cool" Feature) -->
+          <Transition name="notification">
+            <div v-if="currentPulse" class="absolute -top-4 -right-4 z-20 bg-white p-4 rounded-2xl shadow-2xl border border-slate-100 flex items-center space-x-4 min-w-[240px]">
+              <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-black text-xs">
+                {{ currentPulse.name[0] }}
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-slate-900 leading-none">{{ currentPulse.name }}</p>
+                <p class="text-[9px] font-bold text-green-500 uppercase mt-1">Clocked In · {{ currentPulse.location }}</p>
+              </div>
+            </div>
+          </Transition>
+
+          <!-- Background Blobs -->
+          <div class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-400/20 rounded-full blur-[100px]"></div>
+          <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-amber-400/20 rounded-full blur-[100px]"></div>
         </div>
       </div>
     </header>
-    <!-- MAIN -->
-    <main class="flex-1 mt-1">
-      <!-- HERO (white, full width) -->
-      <section class="relative bg-white text-gray-900">
-        <div class="relative max-w-5xl mx-auto px-4 lg:px-8 py-20 lg:py-28 text-center space-y-8">
-          <p class="uppercase tracking-[0.2em] text-sm sm:text-base text-orange-400 font-semibold">
-            Workforce Attendance • Analytics • Automation
-          </p>
 
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight text-gray-900">
-            <span class="block">Streamline Your Workforce</span>
-            <span class="block">
-              <span class="text-orange-400">Attendance</span> Management
-            </span>
-          </h1>
-
-          <p class="max-w-2xl mx-auto text-base sm:text-lg text-gray-600">
-            Track, manage, and analyze employee attendance with real‑time dashboards, geofenced check‑ins,
-            and multi‑tenant controls designed for modern organizations.
-          </p>
-
-          <!-- Hero CTA -->
-          <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
-            <router-link to="/register-org"
-              class="px-6 sm:px-8 py-3 rounded-2xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-sm sm:text-base font-bold shadow-xl hover:shadow-orange-500/60 hover:-translate-y-0.5 transition">
-              Start Free Trial
-            </router-link>
-            <a href="#features"
-              class="px-6 sm:px-8 py-3 rounded-2xl border border-gray-300 bg-gray-100 text-sm sm:text-base font-semibold text-gray-900 hover:bg-gray-200 transition">
-              Learn More
-            </a>
-          </div>
-
-          <!-- Hero stats -->
-          <div class="mt-10 grid grid-cols-3 gap-4 max-w-md mx-auto text-sm sm:text-base text-gray-600">
-            <div class="flex flex-col space-y-1">
-              <span class="text-base sm:text-lg font-bold text-gray-900">5,000+</span>
-              <span>Employees tracked</span>
-            </div>
-            <div class="flex flex-col space-y-1">
-              <span class="text-base sm:text-lg font-bold text-gray-900">99.9%</span>
-              <span>Check‑in uptime</span>
-            </div>
-            <div class="flex flex-col space-y-1">
-              <span class="text-base sm:text-lg font-bold text-gray-900">24/7</span>
-              <span>Support</span>
-            </div>
+    <!-- 3. TRUST COUNTER -->
+    <section class="bg-white border-y border-slate-50 py-12">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div v-for="stat in heroStats" :key="stat.label">
+            <p class="text-3xl font-black text-slate-900 tracking-tighter">{{ stat.value }}</p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ stat.label }}</p>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- FEATURES STRIP (white) -->
-      <section id="features" class="relative bg-white text-gray-900 py-16 sm:py-20">
-        <div class="relative max-w-6xl mx-auto px-4 lg:px-8 text-center space-y-10">
-          <div>
-            <p class="uppercase tracking-[0.25em] text-sm sm:text-base font-semibold text-orange-500 mb-2">
-              FEATURES
-            </p>
-            <h2 class="text-2xl sm:text-3xl font-extrabold mb-2">Everything you need to manage attendance</h2>
-            <p class="max-w-2xl mx-auto text-sm sm:text-base text-gray-600">
-              Powerful tools designed for every role in your organization.
-            </p>
-          </div>
-
-          <!-- Six feature cards (2 rows of 3) -->
-          <div class="grid gap-4 sm:gap-6 md:grid-cols-3">
-            <div v-for="card in featureCards" :key="card.title"
-              class="bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5 text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition">
-              <div class="flex items-center mb-3 space-x-3">
-                <div class="w-8 h-8 rounded-xl bg-orange-100 flex items-center justify-center text-lg text-orange-600">
-                  {{ card.icon }}
+    <!-- 4. GEOFENCING PREVIEW -->
+    <section id="geofence" class="py-24 lg:py-32 bg-[#F8FAFC]">
+      <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
+        <div class="order-2 lg:order-1">
+            <div class="bg-white p-4 rounded-[3rem] shadow-2xl border border-slate-100 relative">
+                <!-- Visual Map Representation -->
+                <div class="bg-slate-50 rounded-[2.5rem] h-[400px] overflow-hidden relative flex items-center justify-center">
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:20px_20px]"></div>
+                    <!-- The Geofence Circle -->
+                    <div class="w-64 h-64 rounded-full border-4 border-indigo-500 bg-indigo-500/10 animate-pulse flex items-center justify-center">
+                        <div class="w-2 h-2 bg-indigo-600 rounded-full shadow-[0_0_20px_rgba(79,70,229,1)]"></div>
+                    </div>
+                    <div class="absolute bottom-10 left-10 right-10 bg-white p-4 rounded-2xl shadow-xl flex items-center justify-between border border-slate-100">
+                        <div class="flex items-center space-x-3">
+                          <MapPinIcon class="w-5 h-5 text-indigo-600" />
+                          <span class="text-xs font-black uppercase tracking-tight">Main HQ Zone</span>
+                        </div>
+                        <span class="text-[10px] font-black text-green-600 bg-green-50 px-3 py-1 rounded-full uppercase">Active</span>
+                    </div>
                 </div>
-                <h3 class="text-base sm:text-lg font-bold">{{ card.title }}</h3>
-              </div>
-              <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
-                {{ card.description }}
-              </p>
             </div>
-          </div>
         </div>
-      </section>
-
-      <!-- HOW IT WORKS (white band) -->
-      <section id="how-it-works" class="bg-white text-gray-900 py-16 sm:py-20">
-        <div class="max-w-5xl mx-auto px-4 lg:px-8 text-center space-y-10">
-          <div>
-            <p class="uppercase tracking-[0.25em] text-sm sm:text-base font-semibold text-orange-500 mb-2">
-              HOW IT WORKS
-            </p>
-            <h2 class="text-2xl sm:text-3xl font-extrabold mb-2">Get started in minutes</h2>
-            <p class="max-w-2xl mx-auto text-sm sm:text-base text-gray-500">
-              A simple, intuitive process to set up your attendance management system.
-            </p>
-          </div>
-
-          <!-- 3 steps horizontal -->
-          <div class="grid gap-6 md:grid-cols-3">
-            <div v-for="step in steps" :key="step.title" class="flex flex-col items-center text-center space-y-3">
-              <div
-                class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold shadow-lg">
-                {{ step.number }}
-              </div>
-              <h3 class="text-base sm:text-lg font-bold">{{ step.title }}</h3>
-              <p class="text-sm sm:text-base text-gray-500 max-w-xs">
-                {{ step.description }}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- CTA WHITE BAND -->
-      <section id="pricing" class="bg-white text-gray-900 py-16 sm:py-20">
-        <div class="max-w-4xl mx-auto px-4 lg:px-8 text-center space-y-6">
-          <h2 class="text-2xl sm:text-3xl font-extrabold">
-            Ready to transform your attendance management?
+        <div class="space-y-8 order-1 lg:order-2">
+          <h2 class="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-none">
+            Built-in <br /><span class="text-indigo-600">Location Intelligence.</span>
           </h2>
-          <p class="text-sm sm:text-base max-w-2xl mx-auto text-gray-600">
-            Join organizations that trust TrackTimi to automate their workforce tracking.
-            Launch your first site in under 15 minutes with no credit card required.
+          <p class="text-slate-500 font-medium leading-relaxed">
+            Eliminate "Buddy Punching" forever. Our GPS verification engine ensures that employees can only check in when they are within the authorized work zone defined by you.
           </p>
-          <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
-            <router-link to="/register-org"
-              class="px-6 sm:px-8 py-3 rounded-2xl bg-orange-500 text-sm sm:text-base font-bold shadow-xl hover:shadow-orange-500/50 hover:-translate-y-0.5 transition border border-orange-600 text-white">
-              Get Started Today
-            </router-link>
-            <a href="#support"
-              class="px-6 sm:px-8 py-3 rounded-2xl bg-transparent border-2 border-gray-300 text-sm sm:text-base font-semibold text-gray-900 hover:bg-gray-100 transition">
-              View Features
-            </a>
-          </div>
+          <ul class="space-y-4">
+            <li v-for="item in geoFeatures" :key="item" class="flex items-center space-x-3 text-sm font-bold text-slate-700 uppercase tracking-tight">
+              <CheckCircleIcon class="w-5 h-5 text-indigo-500" />
+              <span>{{ item }}</span>
+            </li>
+          </ul>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
 
-    <!-- FOOTER (gray) -->
-    <footer id="support" class="bg-gray-700 text-orange-500 py-10 border-t border-gray-100">
-      <div class="max-w-6xl mx-auto px-4 lg:px-8">
-        <div class="flex flex-col md:flex-row md:justify-between gap-8 text-sm sm:text-base">
-          <!-- Brand -->
-          <div class="space-y-3 max-w-xs">
-            <div class="flex items-center space-x-2">
-              <div
-                class="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
-                <span class="text-sm font-extrabold">TT</span>
-              </div>
-              <span class="font-bold tracking-tight">TrackTimi</span>
+    <!-- 5. FEATURES GRID -->
+    <section id="features" class="py-24 lg:py-32 bg-white">
+      <div class="max-w-7xl mx-auto px-6 text-center mb-20 space-y-4">
+        <p class="text-xs font-black text-indigo-600 uppercase tracking-[0.4em]">Enterprise Core</p>
+        <h2 class="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">Everything in one pulse.</h2>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div v-for="feature in featureCards" :key="feature.title" class="group p-10 rounded-[3rem] bg-slate-50 hover:bg-slate-900 transition-all duration-500 border border-slate-100">
+          <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-8 shadow-sm group-hover:bg-indigo-600 transition-colors">
+            <component :is="feature.icon" class="w-6 h-6 text-indigo-600 group-hover:text-white" />
+          </div>
+          <h3 class="text-xl font-black text-slate-900 group-hover:text-white mb-4">{{ feature.title }}</h3>
+          <p class="text-slate-500 group-hover:text-slate-400 font-medium text-sm leading-relaxed">
+            {{ feature.description }}
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. FINAL CTA -->
+    <section class="py-20 px-6">
+        <div class="max-w-5xl mx-auto bg-slate-900 rounded-[4rem] p-12 lg:p-24 text-center space-y-10 relative overflow-hidden">
+            <div class="relative z-10">
+                <h2 class="text-4xl lg:text-6xl font-black text-white tracking-tight">Ready to take control?</h2>
+                <p class="text-slate-400 text-lg max-w-xl mx-auto">Join 500+ organizations automating their workforce management with TrackTimi.</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4 pt-6">
+                    <router-link to="/register-org" class="px-10 py-5 bg-indigo-600 text-white rounded-3xl font-black text-sm uppercase tracking-widest shadow-xl hover:bg-indigo-500 transition-all">Start 14-Day Free Trial</router-link>
+                    <router-link to="/login" class="px-10 py-5 bg-white/10 text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-white/20 transition-all">Sign In</router-link>
+                </div>
             </div>
-            <p class="text-gray-600">
-              Modern attendance management for distributed, on‑site, and hybrid teams.
-            </p>
-          </div>
-
-          <!-- Columns -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            <div v-for="column in footerColumns" :key="column.title" class="space-y-2">
-              <h4 class="font-semibold text-gray-900 mb-1 text-sm">{{ column.title }}</h4>
-              <ul class="space-y-1">
-                <li v-for="item in column.items" :key="item">
-                  <a href="#" class="hover:text-orange-400 transition">{{ item }}</a>
-                </li>
-              </ul>
-            </div>
-          </div>
+            <!-- Glows -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 blur-[100px]"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 blur-[100px]"></div>
         </div>
+    </section>
 
-        <div
-          class="mt-8 pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between text-sm text-gray-600">
-          <span>© {{ new Date().getFullYear() }} TrackTimi. All rights reserved.</span>
-          <span class="mt-2 sm:mt-0">Made for organizations that want every second accounted for.</span>
+    <!-- 7. FOOTER -->
+    <footer class="py-12 border-t border-slate-100">
+      
+      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
+            <ZapIcon class="w-4 h-4 text-white fill-white" />
+          </div>
+          <span class="font-black text-xl tracking-tighter">TrackTimi.</span>
         </div>
+        <div class="flex space-x-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <a href="#" class="hover:text-indigo-600">Privacy</a>
+            <a href="#" class="hover:text-indigo-600">Security</a>
+            <a href="#" class="hover:text-indigo-600">Status</a>
+        </div>
+        <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">© 2026 TrackTimi Systems Liberia</p>
       </div>
     </footer>
   </div>
+  <Footer />
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useAuthStore } from '@/stores/auth.js'
 
-const authStore = useAuthStore()
+import Footer from '@/components/Footer.vue'
+import { ref, onMounted } from 'vue'
+import { 
+  ZapIcon, ArrowRightIcon, MapPinIcon, CheckCircleIcon, 
+  UsersIcon, BarChart3Icon, ShieldIcon, LayersIcon, LayoutIcon, GlobeIcon
+} from 'lucide-vue-next'
 
-const userName = computed(() => authStore.user?.name || 'Team')
-const orgName = computed(() => authStore.user?.orgName || 'TrackTimi')
+// Simulated Real-time Data for the Pulse Feature
+const pulses = [
+  { name: 'Abraham Fallah Jr.', location: 'Main HQ' },
+  { name: 'Sarah Konneh', location: 'Branch Office' },
+  { name: 'John Massaquoi', location: 'Security Post' },
+  { name: 'Musu Sirleaf', location: 'Warehouse A' },
+]
+const currentPulse = ref(null)
 
-const today = new Date()
+const heroStats = [
+  { label: 'Minutes Tracked', value: '12M+' },
+  { label: 'Daily Pulses', value: '85k' },
+  { label: 'Active Tenants', value: '450+' },
+  { label: 'Verification %', value: '99.9' },
+]
 
-const formatDate = (d) =>
-  d.toLocaleDateString(undefined, {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  })
+const geoFeatures = [
+  'Custom Radial Fencing',
+  'Multi-site Zone Support',
+  'Satellite Coordinate Locking',
+  'Zero-Latency Verification'
+]
 
 const featureCards = [
   {
-    icon: '⏱',
-    title: 'Smart Check‑ins',
-    description:
-      'GPS‑aware, one‑tap check‑ins from any device with full audit trails for each employee and location.'
+    icon: LayoutIcon,
+    title: 'Multi-Tenant SaaS',
+    description: 'Completely isolated data environments for every organization under your control.'
   },
   {
-    icon: '📊',
-    title: 'Role‑Based Dashboards',
-    description:
-      'Give managers, HR, and executives the exact insights they need without exposing sensitive data.'
+    icon: ShieldIcon,
+    title: 'GPS Hard-Lock',
+    description: 'Prevent off-site clock-ins with rigorous coordinate validation math.'
   },
   {
-    icon: '📈',
-    title: 'Powerful Analytics',
-    description:
-      'Spot absentee trends, overtime spikes, and late check‑ins before they become compliance issues.'
+    icon: BarChart3Icon,
+    title: 'Actionable Metrics',
+    description: 'View health scores and attendance trends with beautiful real-time charts.'
   },
   {
-    icon: '🛡',
-    title: 'Enterprise‑grade Security',
-    description:
-      'Single sign‑on ready with device‑level security, encrypted tokens, and fine‑grained access control.'
+    icon: UsersIcon,
+    title: 'Workforce Directory',
+    description: 'Manage staff, departments, and roles with a high-definition management interface.'
   },
   {
-    icon: '🌐',
-    title: 'Flexible Multi‑Tenant',
-    description:
-      'Separate data per organization with centralized control for partners, franchises, or campuses.'
+    icon: LayersIcon,
+    title: 'Audit Logging',
+    description: 'Every system change and attendance pulse is tracked for total compliance.'
   },
   {
-    icon: '⚙️',
-    title: 'Automation‑Ready',
-    description:
-      'Connect attendance data to payroll, HRIS, and alerts with webhooks and API integration.'
+    icon: GlobeIcon,
+    title: 'Cloud Ready',
+    description: 'Access from anywhere in the world with automatic timezone synchronization.'
   }
 ]
 
-const steps = [
-  {
-    number: 1,
-    title: 'Register Your Organization',
-    description:
-      'Create your TrackTimi org in a few clicks, configure locations, and define your attendance rules.'
-  },
-  {
-    number: 2,
-    title: 'Add Your Team',
-    description:
-      'Invite employees by email or bulk import, assign departments, and set roles in minutes.'
-  },
-  {
-    number: 3,
-    title: 'Track Attendance',
-    description:
-      'Go live with real‑time dashboards, automated reports, and accurate check‑ins from day one.'
-  }
-]
-
-const footerColumns = [
-  {
-    title: 'Product',
-    items: ['Overview', 'Attendance', 'Analytics', 'Mobile App']
-  },
-  {
-    title: 'Solutions',
-    items: ['SMEs', 'Schools', 'Field Teams', 'Multi‑site Orgs']
-  },
-  {
-    title: 'Company',
-    items: ['About', 'Blog', 'Careers', 'Contact']
-  },
-  {
-    title: 'Legal',
-    items: ['Privacy Policy', 'Terms', 'Security', 'Status']
-  }
-]
-
-const quickCheckIn = () => {
-  // you can route to check-in page later
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
-const addUser = () => {
-  // you can push to /:orgSlug/users if needed
-  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
-}
-
+onMounted(() => {
+  // Rotate simulated notifications every 4 seconds
+  let i = 0
+  setInterval(() => {
+    currentPulse.value = null // Fade out
+    setTimeout(() => {
+      currentPulse.value = pulses[i]
+      i = (i + 1) % pulses.length
+    }, 500)
+  }, 5000)
+})
 </script>
 
 <style scoped>
-/* optional: smooth scroll for anchor links */
-html {
-  scroll-behavior: smooth;
+/* Custom Shadow for Hero */
+.shadow-3xl {
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.25), 0 30px 60px -30px rgba(0, 0, 0, 0.3);
 }
+
+/* Notification Animation */
+.notification-enter-active, .notification-leave-active {
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.notification-enter-from { opacity: 0; transform: translateY(20px) scale(0.9); }
+.notification-leave-to { opacity: 0; transform: translateY(-20px) scale(0.9); }
+
+/* Smooth Section Movement */
+html { scroll-behavior: smooth; }
+
+/* Pulse Animation Logic */
+.list-enter-active, .list-leave-active { transition: all 0.5s ease; }
+.list-enter-from, .list-leave-to { opacity: 0; transform: translateX(30px); }
 </style>

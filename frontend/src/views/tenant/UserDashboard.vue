@@ -1,52 +1,45 @@
 <template>
   <div class="max-w-xl mx-auto py-12 px-6 space-y-8">
-    <!-- Header -->
     <div class="text-center space-y-4">
-      <div class="w-20 h-20 mx-auto bg-indigo-600 rounded-[2rem] flex items-center justify-center shadow-xl">
+      <div class="w-20 h-20 mx-auto bg-indigo-600 rounded-3xl flex items-center justify-center shadow-xl">
         <MapPinIcon class="w-10 h-10 text-white" />
       </div>
-      <h1 class="text-4xl font-black text-slate-900 tracking-tight">Clock In</h1>
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Satellite Verification Active</p>
+      <h1 class="text-4xl font-black text-slate-900 tracking-tight">
+        {{ isCheckedIn ? 'Clock Out' : 'Clock In' }}
+      </h1>
+      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Verification: Satellite GPS</p>
     </div>
 
-    <!-- Status Card -->
+    <!-- Accuracy Box -->
     <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm space-y-6">
       <div class="grid grid-cols-2 gap-4">
-        <div :class="location ? 'bg-green-50 border-green-100' : 'bg-slate-50 border-slate-100'" class="p-4 rounded-2xl border-2 text-center transition-all">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Signal</p>
+        <div :class="location ? 'bg-green-50 border-green-100' : 'bg-slate-50 border-slate-100'" class="p-5 rounded-2xl border-2 text-center transition-all">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">GPS Signal</p>
           <p class="text-xs font-bold" :class="location ? 'text-green-600' : 'text-slate-400'">{{ location ? 'LOCKED' : 'SEARCHING' }}</p>
         </div>
-        <div :class="inRange ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'" class="p-4 rounded-2xl border-2 text-center transition-all">
-          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Zone</p>
+        <div :class="inRange ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'" class="p-5 rounded-2xl border-2 text-center transition-all">
+          <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Work Zone</p>
           <p class="text-xs font-bold" :class="inRange ? 'text-green-600' : 'text-red-600'">{{ inRange ? 'IN RANGE' : 'OUTSIDE' }}</p>
         </div>
       </div>
 
-      <!-- 🛠️ DEBUGGER (VERY IMPORTANT FOR YOU NOW) -->
-      <div v-if="location" class="pt-4 border-t border-slate-50 text-center space-y-2">
-        <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
-          <span class="text-[9px] font-black text-slate-400 uppercase">Distance to Office:</span>
-          <span class="text-sm font-black text-slate-900">{{ distance }} meters</span>
-        </div>
-        <div v-if="geofences.length > 0" class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
-          <span class="text-[9px] font-black text-slate-400 uppercase">Allowed Radius:</span>
-          <span class="text-sm font-black text-indigo-600">{{ geofences[0].Radius }}m</span>
-        </div>
-      </div>
-
-      <div v-if="locationError" class="p-4 bg-red-50 text-red-600 text-[10px] font-black rounded-2xl text-center uppercase">
-        ⚠️ {{ locationError }}
+      <!-- Distance Readout -->
+      <div v-if="location" class="text-center py-6 bg-slate-50 rounded-[2rem]">
+        <div class="text-4xl font-black text-slate-900">{{ distance }}m</div>
+        <p class="text-[9px] font-bold text-slate-400 uppercase">Distance to target office</p>
       </div>
     </div>
 
-    <!-- Main Button -->
+    <!-- Action Button -->
     <button 
-      @click="submit" 
+      @click="handleSubmit" 
       :disabled="!inRange || loading"
-      class="w-full py-8 rounded-[2.5rem] font-black text-2xl shadow-2xl transition-all active:scale-95 disabled:opacity-30 disabled:grayscale"
+      class="w-full py-8 rounded-[2.5rem] font-black text-2xl shadow-2xl transition-all active:scale-95"
       :class="inRange ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-slate-200 text-slate-400 cursor-not-allowed'"
     >
-      {{ loading ? 'SYNCING...' : 'CONFIRM CHECK IN' }}
+      <span v-if="loading">PROCESSING...</span>
+      <span v-else-if="isCheckedIn">END WORK SHIFT</span>
+      <span v-else>START WORK SHIFT</span>
     </button>
   </div>
 </template>
@@ -57,14 +50,13 @@ import api from '@/utils/api'
 import { MapPinIcon } from 'lucide-vue-next'
 
 const location = ref(null)
-const geofences = ref([]) 
-const locationError = ref('')
+const geofences = ref([])
+const isCheckedIn = ref(false)
 const loading = ref(false)
 
-// Accurate Math Engine
+// Precise Haversine distance math
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371e3 // meters
-  // FORCE PARSING TO FLOAT
+  const R = 6371e3
   const pLat1 = parseFloat(lat1); const pLon1 = parseFloat(lon1);
   const pLat2 = parseFloat(lat2); const pLon2 = parseFloat(lon2);
 
@@ -72,51 +64,61 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const Δφ = (pLat2 - pLat1) * Math.PI/180;
   const Δλ = (pLon2 - pLon1) * Math.PI/180;
   const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return Math.round(R * c)
 }
 
 const distance = computed(() => {
-  if (!location.value || geofences.value.length === 0) return 9999
-  const dists = geofences.value.map(f => calculateDistance(location.value.latitude, location.value.longitude, f.Latitude, f.Longitude))
-  return Math.min(...dists)
-})
+  if (!location.value || !geofences.value.length) return 9999;
+  const dists = geofences.value.map(f => calculateDistance(location.value.latitude, location.value.longitude, f.Latitude, f.Longitude));
+  return Math.min(...dists);
+});
 
 const inRange = computed(() => {
-  if (!location.value || geofences.value.length === 0) return false
-  // Check if you are within the radius defined in the DATABASE for the nearest zone
-  const nearest = geofences.value.reduce((prev, curr) => {
-    const dPrev = calculateDistance(location.value.latitude, location.value.longitude, prev.Latitude, prev.Longitude)
-    const dCurr = calculateDistance(location.value.latitude, location.value.longitude, curr.Latitude, curr.Longitude)
-    return dPrev < dCurr ? prev : curr
-  })
-  return distance.value <= nearest.Radius
-})
+  if (!location.value || !geofences.value.length) return false;
+  return geofences.value.some(f => {
+    const d = calculateDistance(location.value.latitude, location.value.longitude, f.Latitude, f.Longitude);
+    return d <= f.Radius; // Use the dynamic radius from Admin settings
+  });
+});
 
-const getLocation = () => {
-  navigator.geolocation.getCurrentPosition(
-    p => location.value = { latitude: p.coords.latitude, longitude: p.coords.longitude },
-    e => locationError.value = "Please allow GPS",
-    { enableHighAccuracy: true }
-  )
+const fetchStatus = async () => {
+  try {
+    // This must match the router.get('/status', ...) in the backend
+    const res = await api.get('/attendance/status'); 
+    isCheckedIn.value = res.data.checkedIn;
+  } catch (err) {
+    console.error("Status check failed:", err.response?.status);
+    // If you see a 404 here in the console, the route above is wrong
+  }
 }
 
 onMounted(async () => {
-  getLocation()
+  // Get Current Location
+  navigator.geolocation.getCurrentPosition(p => {
+    location.value = { latitude: p.coords.latitude, longitude: p.coords.longitude }
+  }, () => alert("Please allow GPS access"))
+  
+  // Load Work Zones and Status
+  fetchStatus()
   const res = await api.get('/org/geofences')
   geofences.value = res.data
 })
 
-const submit = async () => {
+const handleSubmit = async () => {
   loading.value = true
+  const action = isCheckedIn.value ? 'checkout' : 'checkin'
   try {
-    await api.post('/attendance/checkin', {
-      latitude: location.value.latitude,
-      longitude: location.value.longitude
+    await api.post(`/attendance/${action}`, { 
+      latitude: location.value.latitude, 
+      longitude: location.value.longitude 
     })
-    alert("✅ Success!")
+    await fetchStatus()
+    alert("✅ Attendance Recorded!")
   } catch (e) {
-    alert(e.response?.data?.error)
-  } finally { loading.value = false }
+    alert(e.response?.data?.error || "Request Failed")
+  } finally {
+    loading.value = false
+  }
 }
 </script>

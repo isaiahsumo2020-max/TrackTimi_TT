@@ -5,17 +5,18 @@
       <div class="space-y-2">
         <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em]">System Settings</p>
         <h1 class="text-4xl font-black text-slate-900 tracking-tight">Work Zones</h1>
-        <p class="text-sm text-slate-500 font-medium">Authorized locations for personnel check-in</p>
+        <p class="text-sm text-slate-500 font-medium">Create authorized locations where staff are allowed to clock in.</p>
       </div>
+      <!-- THIS IS THE BUTTON YOU ARE LOOKING FOR -->
       <button @click="showAddModal = true" class="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-xs hover:bg-black transition-all shadow-xl active:scale-95">
         Establish New Zone +
       </button>
     </div>
 
-    <!-- Active Zones Grid -->
+    <!-- Active Zones List -->
     <div v-if="zones.length === 0" class="py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[3rem] text-center">
       <MapPinIcon class="w-10 h-10 text-slate-300 mx-auto mb-4" />
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">No Authorized Zones Established</p>
+      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">No Authorized Zones Found</p>
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -28,18 +29,12 @@
             <TrashIcon class="w-4 h-4" />
           </button>
         </div>
-        
         <h3 class="text-xl font-black text-slate-900">{{ zone.Location_Name }}</h3>
-        <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-1">Radius: {{ zone.Radius }} meters</p>
-        
+        <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-1">Radius: {{ zone.Radius }}m</p>
         <div class="mt-8 pt-6 border-t border-slate-50 space-y-2">
-          <div class="flex justify-between text-[10px] font-mono text-slate-400 font-bold">
-            <span>LATITUDE</span>
-            <span class="text-slate-900">{{ zone.Latitude.toFixed(6) }}</span>
-          </div>
-          <div class="flex justify-between text-[10px] font-mono text-slate-400 font-bold">
-            <span>LONGITUDE</span>
-            <span class="text-slate-900">{{ zone.Longitude.toFixed(6) }}</span>
+          <div class="flex justify-between text-[10px] font-mono text-slate-400 font-bold uppercase">
+            <span>Lat: {{ zone.Latitude?.toFixed(4) }}</span>
+            <span>Lng: {{ zone.Longitude?.toFixed(4) }}</span>
           </div>
         </div>
       </div>
@@ -48,31 +43,22 @@
     <!-- Add Zone Modal -->
     <div v-if="showAddModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-6" @click.self="showAddModal = false">
       <div class="bg-white rounded-[3rem] p-12 max-w-lg w-full shadow-2xl relative animate-in zoom-in duration-300">
-        <h2 class="text-2xl font-black text-slate-900 mb-2 tracking-tight">Zone Configuration</h2>
-        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-8">Define physical work boundaries</p>
-        
+        <h2 class="text-2xl font-black text-slate-900 mb-6 tracking-tight">Create Work Zone</h2>
         <form @submit.prevent="saveZone" class="space-y-4">
           <input v-model="form.locationName" type="text" placeholder="Branch Name (e.g. Main Office)" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm" required />
-          
           <div class="grid grid-cols-2 gap-4">
             <input v-model="form.latitude" type="number" step="any" placeholder="Latitude" class="p-4 bg-slate-50 rounded-2xl border-none text-sm" required />
             <input v-model="form.longitude" type="number" step="any" placeholder="Longitude" class="p-4 bg-slate-50 rounded-2xl border-none text-sm" required />
           </div>
-
-          <!-- THE MAGIC BUTTON -->
+          <!-- AUTO DETECT BUTTON -->
           <button type="button" @click="detectGPS" class="w-full py-3 text-[10px] font-black text-indigo-600 uppercase bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-all">
             📍 Use My Current Location
           </button>
-
-          <div class="space-y-1">
-            <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Allowed Radius (Meters)</label>
-            <input v-model="form.radius" type="number" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm" required />
-          </div>
-
+          <input v-model="form.radius" type="number" placeholder="Radius (meters) e.g. 500" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm" required />
           <div class="flex gap-4 pt-6">
-            <button type="button" @click="showAddModal = false" class="flex-1 py-4 font-bold text-slate-400 text-xs uppercase">Cancel</button>
+            <button type="button" @click="showAddModal = false" class="flex-1 py-4 font-bold text-slate-400 text-xs">CANCEL</button>
             <button type="submit" :disabled="loading" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase shadow-lg shadow-indigo-100">
-              {{ loading ? 'Saving...' : 'Establish Zone' }}
+              {{ loading ? 'SAVING...' : 'SAVE ZONE' }}
             </button>
           </div>
         </form>
@@ -89,20 +75,18 @@ import { MapPinIcon, TrashIcon } from 'lucide-vue-next'
 const zones = ref([])
 const showAddModal = ref(false)
 const loading = ref(false)
-const form = reactive({ locationName: '', latitude: null, longitude: null, radius: 200 })
+const form = reactive({ locationName: '', latitude: null, longitude: null, radius: 500 })
 
 const fetchZones = async () => {
-  try {
-    const res = await api.get('/org/geofences')
-    zones.value = res.data
-  } catch (e) { console.error("Failed to load zones") }
+  const res = await api.get('/org/geofences')
+  zones.value = res.data
 }
 
 const detectGPS = () => {
   navigator.geolocation.getCurrentPosition(pos => {
     form.latitude = pos.coords.latitude
     form.longitude = pos.coords.longitude
-  }, () => alert("GPS Permission Denied"))
+  })
 }
 
 const saveZone = async () => {
@@ -110,24 +94,18 @@ const saveZone = async () => {
   try {
     await api.post('/org/geofences', form)
     showAddModal.value = false
-    Object.assign(form, { locationName: '', latitude: null, longitude: null, radius: 200 })
-    fetchZones()
-  } catch (e) {
-    alert(e.response?.data?.error || "Save Failed")
-  } finally {
-    loading.value = false
-  }
+    Object.assign(form, { locationName: '', latitude: null, longitude: null, radius: 500 })
+    await fetchZones()
+  } catch (e) { alert("Failed to save zone") }
+  finally { loading.value = false }
 }
 
 const deleteZone = async (id) => {
-  if (!confirm("Are you sure? Personnel won't be able to clock in here.")) return
-  try {
+  if (confirm("Delete this zone? Staff won't be able to clock in here.")) {
     await api.delete(`/org/geofences/${id}`)
     fetchZones()
-  } catch (e) { alert("Delete failed") }
+  }
 }
-
-
 
 onMounted(fetchZones)
 </script>

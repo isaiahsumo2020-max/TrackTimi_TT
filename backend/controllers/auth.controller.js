@@ -14,13 +14,12 @@ exports.registerOrg = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Check if email exists
     const existing = await new Promise((resolve) => {
       db.get('SELECT Email FROM User WHERE Email = ?', [adminEmail.toLowerCase()], (err, row) => resolve(row));
     });
     if (existing) return res.status(400).json({ error: 'Email already registered' });
 
-    // Transaction-like logic: Create Org then Create User
+    // Create Organization
     const orgId = await new Promise((resolve, reject) => {
       db.run(`INSERT INTO Organization (Org_Name, Org_Domain, Org_Type_ID, Region_ID, Email) VALUES (?, ?, 1, 1, ?)`,
         [orgName, orgSlug.toLowerCase(), adminEmail.toLowerCase()], function(err) { 
@@ -39,13 +38,26 @@ exports.registerOrg = async (req, res) => {
         if (err) return res.status(500).json({ error: 'Admin creation failed' });
 
         const token = jwt.sign(
-          { userId: this.lastID, orgId: orgId, userTypeId: 1, role: 'Admin', orgSlug: orgSlug.toLowerCase() },
+          { 
+            userId: this.lastID, 
+            orgId: orgId, 
+            userTypeId: 1, 
+            role: 'Admin', 
+            orgSlug: orgSlug.toLowerCase() 
+          },
           JWT_SECRET, { expiresIn: '12h' }
         );
 
         res.status(201).json({ 
           token, 
-          user: { userId: this.lastID, orgId: orgId, orgSlug, role: 'Admin' } 
+          user: { 
+            userId: this.lastID, 
+            orgId: orgId, 
+            orgName: orgName, // Return name for sidebar
+            orgSlug: orgSlug.toLowerCase(), 
+            role: 'Admin',
+            firstName: names[0]
+          } 
         });
       });
     });
@@ -54,12 +66,17 @@ exports.registerOrg = async (req, res) => {
   }
 };
 
-// 2. UNIVERSAL LOGIN
+// 2. UNIVERSAL LOGIN (Now with Permanent Branding Support)
 exports.login = (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required' });
+  }
+
+  // CRITICAL: We JOIN with Organization to get the most updated Org_Name and Logo_Path
   const sql = `
-    SELECT u.*, o.Org_Domain, o.Org_Name 
+    SELECT u.*, o.Org_Name, o.Org_Domain, o.Logo_Path, o.Logo_MIME_Type, o.Theme_Color
     FROM User u 
     LEFT JOIN Organization o ON u.Org_ID = o.Org_ID 
     WHERE u.Email = ? AND u.Is_Active = 1
@@ -72,32 +89,38 @@ exports.login = (req, res) => {
     const match = await bcrypt.compare(password, user.Password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
-    // Make sure your JWT sign looks like this:
-const token = jwt.sign(
-  { 
-    userId: user.User_ID, 
-    orgId: user.Org_ID,      // <--- Standardized key
-    userTypeId: user.User_Type_ID, 
-    role: user.User_Type_ID === 1 ? 'Admin' : 'Staff' 
-  },
-  JWT_SECRET,
-  { expiresIn: '24h' }
-);
+    // Standardized JWT Payload
+    const token = jwt.sign(
+      { 
+        userId: user.User_ID, 
+        orgId: user.Org_ID,
+        orgSlug: user.Org_Domain,
+        userTypeId: user.User_Type_ID, 
+        role: user.User_Type_ID === 1 ? 'Admin' : 'Staff' 
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
 
+    // Return everything needed for the Sidebar and Dashboard
     res.json({
       token,
       user: {
         userId: user.User_ID,
         firstName: user.First_Name,
+        surName: user.SurName,
         orgId: user.Org_ID,
-        orgSlug: user.Org_Domain,
-        role: user.User_Type_ID === 1 ? 'Admin' : 'Staff'
+        orgName: user.Org_Name,     // <--- Fetches updated name from settings
+        orgSlug: user.Org_Domain,   // <--- Required for routing
+        orgLogo: user.Logo_Path,    // <--- Fetches updated logo
+        role: user.User_Type_ID === 1 ? 'Admin' : 'Staff',
+        themeColor: user.Theme_Color
       }
     });
   });
 };
 
-// 3. GET PROFILE (Fixes the undefined error in routes)
+// 3. GET PROFILE
 exports.getProfile = (req, res) => {
   res.json({ success: true, user: req.user });
 };

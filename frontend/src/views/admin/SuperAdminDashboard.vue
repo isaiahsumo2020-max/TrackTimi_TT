@@ -1,436 +1,228 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <!-- Sidebar -->
-    <aside :class="[
-        sidebarOpen ? 'w-64' : 'w-0 overflow-hidden',
-        'bg-gradient-to-b from-gray-600 to-emerald-700 text-white shadow-xl flex flex-col transition-all duration-300'
-      ]">
-      <!-- Logo -->
-      <div class="p-6 border-b border-emerald-500 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-            <span class="text-xl font-bold text-white">A</span>
+  <div class="flex h-screen bg-[#F8FAFC] font-sans">
+    
+    <!-- 1. NAVIGATION SIDEBAR (SaaS Identity) -->
+    <aside :class="[sidebarOpen ? 'w-72' : 'w-20', 'bg-slate-950 text-white shadow-2xl transition-all duration-500 ease-in-out flex flex-col z-20']">
+      <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+        <div v-if="sidebarOpen" class="flex items-center space-x-3 animate-in fade-in">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <ZapIcon class="w-6 h-6 text-white fill-white" />
           </div>
-          <span class="text-lg font-bold">TrackTimi</span>
+          <span class="text-xl font-black tracking-tighter uppercase">TrackTimi<span class="text-indigo-500">.</span></span>
         </div>
-        <button @click="toggleSidebar" class="p-1 rounded-lg bg-emerald-500 hover:bg-emerald-400">
-          <span v-if="sidebarOpen">←</span>
-          <span v-else>→</span>
+        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors">
+          <MenuIcon v-if="!sidebarOpen" class="w-5 h-5" />
+          <ChevronLeftIcon v-else class="w-5 h-5" />
         </button>
       </div>
-      <!-- <div class="p-6 border-b border-emerald-500">
-        <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-            <span class="text-xl font-bold text-white">A</span>
-          </div>
-          <span class="text-lg font-bold">TrackTimi</span>
-        </div>
-      </div> -->
 
-      <!-- Navigation -->
-      <nav class="flex-1 py-8 px-4 space-y-2">
-        <router-link
-          to="/superadmin"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all"
-          :class="[$route.path === '/superadmin' ? 'bg-orange-500 text-white shadow-lg' : 'text-emerald-100 hover:bg-emerald-500']"
+      <nav class="flex-1 py-8 px-4 space-y-2 overflow-y-auto custom-scrollbar">
+        <p v-if="sidebarOpen" class="text-[10px] font-black text-slate-500 uppercase px-4 mb-4 tracking-[0.2em]">Platform Control</p>
+        
+        <router-link v-for="item in navItems" :key="item.path" :to="item.path"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group"
+          :class="[$route.path === item.path ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
         >
-          <span>📊</span>
-          <span>Dashboard</span>
-        </router-link>
-
-        <router-link
-          to="/superadmin/organizations"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"
-        >
-          <span>🏢</span>
-          <span>Organizations</span>
-        </router-link>
-
-        <router-link
-          to="/superadmin/revenue"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"
-        >
-          <span>💰</span>
-          <span>Revenue</span>
-        </router-link>
-
-        <router-link
-          to="/superadmin/subscriptions"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"
-        >
-          <span>📦</span>
-          <span>Subscriptions</span>
-        </router-link>
-
-        <router-link
-          to="/superadmin/analytics"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"
-        >
-          <span>📈</span>
-          <span>Analytics</span>
-        </router-link>
-
-        <router-link
-          to="/superadmin/monitoring"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"
-        >
-          <span>🔍</span>
-          <span>Monitoring</span>
-        </router-link>
-
-        <router-link
-          to="/superadmin/audit-logs"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"
-        >
-          <span>📋</span>
-          <span>Audit Logs</span>
-        </router-link>
-
-        <router-link
-          to="/superadmin/settings"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all text-emerald-100 hover:bg-emerald-500"
-        >
-          <span>⚙️</span>
-          <span>Settings</span>
+          <component :is="item.icon" class="w-5 h-5 shrink-0" />
+          <span v-if="sidebarOpen">{{ item.name }}</span>
         </router-link>
       </nav>
 
-      <!-- User Profile -->
-      <div class="p-6 border-t border-emerald-500">
-        <div class="flex items-center space-x-3 cursor-pointer hover:bg-emerald-500 p-3 rounded-lg transition-all">
-          <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center font-bold">
-            JS
+      <!-- SuperAdmin Profile -->
+      <div class="p-6 border-t border-slate-800">
+        <div class="flex items-center space-x-3 bg-slate-900/50 p-3 rounded-2xl border border-slate-800">
+          <div class="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center font-black shadow-lg">SA</div>
+          <div v-if="sidebarOpen" class="flex-1 min-w-0">
+            <div class="font-bold text-xs truncate">TrackTimi Admin</div>
+            <div class="text-[9px] font-black text-indigo-400 uppercase">Master Control</div>
           </div>
-          <div class="flex-1">
-            <div class="font-semibold text-sm">Jodell Suah</div>
-            <div class="text-xs text-emerald-200">Super Admin</div>
-          </div>
-          <span>→</span>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-auto">
-      <!-- Header -->
-      <div class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
-        <div class="px-8 py-8">
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
-              <p class="text-slate-600 mt-2">Platform overview and key metrics</p>
-            </div>
-            <div class="flex items-center space-x-3">
-              <button
-                @click="refreshData"
-                class="flex items-center space-x-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold transition-all shadow-sm"
-              >
-                <span>🔄</span>
-                <span>Refresh</span>
-              </button>
-              <button class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-slate-700 rounded-lg font-semibold transition-all">
-                Settings
-              </button>
-              <button @click="handleLogout" class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-all">
-                Logout
-              </button>
-            </div>
-          </div>
+    <!-- 2. MAIN VIEWPORT -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <!-- Top Bar -->
+      <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-10 sticky top-0 z-10">
+        <div>
+          <h1 class="text-xl font-black text-slate-900 tracking-tight">SuperAdmin Command Center</h1>
         </div>
-      </div>
+        <div class="flex items-center space-x-4">
+          <button @click="refreshData" class="p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all text-slate-400 hover:text-indigo-600">
+            <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
+          </button>
+          <button @click="handleLogout" class="px-6 py-2.5 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all">
+            Terminate Session
+          </button>
+        </div>
+      </header>
 
-      <!-- Content -->
-      <div class="p-8">
-        <!-- Metrics Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <!-- Organizations Card -->
-          <div @click="viewOrganizationsDetail" class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-emerald-300">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-gray-600 text-sm font-bold uppercase tracking-wide">Organizations</p>
-                <p class="text-4xl font-bold text-slate-900 mt-2">{{ metrics.organizations }}</p>
-                <p class="text-gray-500 text-xs mt-1">Click to view details</p>
+      <!-- Scrollable Content -->
+      <div class="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
+        
+        <!-- Metrics Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div v-for="stat in stats" :key="stat.label" class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:shadow-xl transition-all">
+            <div class="flex justify-between items-start mb-4">
+              <div :class="stat.bgColor" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                <component :is="stat.icon" class="w-6 h-6" />
               </div>
-              <div class="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center">
-                <span class="text-3xl">🏢</span>
-              </div>
+              <span class="text-[10px] font-black text-green-500 bg-green-50 px-2 py-1 rounded-lg uppercase">Live</span>
             </div>
-          </div>
-
-          <!-- Total Employees Card -->
-          <div @click="viewEmployeesDetail" class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-blue-300">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-gray-600 text-sm font-bold uppercase tracking-wide">Total Employees</p>
-                <p class="text-4xl font-bold text-slate-900 mt-2">{{ metrics.employees }}</p>
-                <p class="text-gray-500 text-xs mt-1">Click to view details</p>
-              </div>
-              <div class="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center">
-                <span class="text-3xl">👥</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Today's Check-ins Card -->
-          <div @click="viewCheckinsDetail" class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-purple-300">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-gray-600 text-sm font-bold uppercase tracking-wide">Today's Check-ins</p>
-                <p class="text-4xl font-bold text-slate-900 mt-2">{{ metrics.checkins }}</p>
-                <p class="text-gray-500 text-xs mt-1">Click to view details</p>
-              </div>
-              <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center">
-                <span class="text-3xl">👤</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- MRR Card -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-gray-600 text-sm font-bold uppercase tracking-wide">MRR</p>
-                <p class="text-4xl font-bold text-slate-900 mt-2">{{ metrics.mrr }}</p>
-                <p class="text-emerald-600 text-xs mt-1 font-semibold">+12.5% from last month</p>
-              </div>
-              <div class="w-16 h-16 bg-yellow-100 rounded-xl flex items-center justify-center">
-                <span class="text-3xl">📈</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Active Subscriptions Card -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-gray-600 text-sm font-bold uppercase tracking-wide">Active Subscriptions</p>
-                <p class="text-4xl font-bold text-slate-900 mt-2">{{ metrics.subscriptions }}</p>
-                <p class="text-gray-500 text-xs mt-1">95 paid</p>
-              </div>
-              <div class="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center">
-                <span class="text-3xl">📦</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Churn Rate Card -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-gray-600 text-sm font-bold uppercase tracking-wide">Churn Rate</p>
-                <p class="text-4xl font-bold text-slate-900 mt-2">{{ metrics.churnRate }}</p>
-                <p class="text-red-600 text-xs mt-1 font-semibold">Last 30 days</p>
-              </div>
-              <div class="w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center">
-                <span class="text-3xl">📉</span>
-              </div>
-            </div>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ stat.label }}</p>
+            <h3 class="text-4xl font-black text-slate-900 tracking-tighter mt-1">{{ stat.value }}</h3>
           </div>
         </div>
 
-        <!-- Charts Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Organization Growth Chart -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-slate-900">Organization Growth (6 Months)</h2>
-              <a href="#" class="text-emerald-600 font-semibold text-sm hover:text-emerald-700">View Details →</a>
+        <!-- Middle Section: Org List & Platform Health -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Recent Organizations (Live Data) -->
+          <div class="lg:col-span-2 bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-8">
+            <div class="flex justify-between items-center">
+              <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Recent Network Tenants</h3>
+              <router-link to="/superadmin/organizations" class="text-[10px] font-black text-indigo-600 uppercase border-b-2 border-indigo-50">View Registry</router-link>
             </div>
-            <div class="h-64 bg-gradient-to-b from-gray-100 to-gray-50 rounded-lg flex items-end justify-center space-x-1 p-4">
-              <div v-for="(value, idx) in chartData.growth" :key="idx" class="flex flex-col items-center flex-1">
-                <div 
-                  class="w-full bg-gradient-to-t from-slate-400 to-slate-300 rounded-t opacity-70 transition-all hover:opacity-100"
-                  :style="{ height: (value / 35) * 100 + '%' }"
-                ></div>
-              </div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-600 mt-4 px-2">
-              <span>Sep</span>
-              <span>Oct</span>
-              <span>Nov</span>
-              <span>Dec</span>
-              <span>Jan</span>
-              <span>Feb</span>
-            </div>
-          </div>
-
-          <!-- Revenue Trend Chart -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-slate-900">Revenue Trend (MRR)</h2>
-              <a href="#" class="text-emerald-600 font-semibold text-sm hover:text-emerald-700">View Details →</a>
-            </div>
-            <div class="h-64 bg-gradient-to-b from-gray-100 to-gray-50 rounded-lg flex items-end justify-center space-x-2 p-4">
-              <div v-for="(value, idx) in chartData.revenue" :key="idx" class="flex-1">
-                <div 
-                  class="w-full bg-gradient-to-t from-yellow-400 to-yellow-300 rounded-t transition-all hover:opacity-80"
-                  :style="{ height: (value / 200000) * 100 + '%' }"
-                ></div>
-              </div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-600 mt-4 px-2">
-              <span>Sep</span>
-              <span>Oct</span>
-              <span>Nov</span>
-              <span>Dec</span>
-              <span>Jan</span>
-              <span>Feb</span>
+            
+            <div class="overflow-hidden rounded-3xl border border-slate-50">
+              <table class="w-full text-left">
+                <thead class="bg-slate-50/50">
+                  <tr class="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                    <th class="px-6 py-4">Organization</th>
+                    <th class="px-6 py-4">Domain</th>
+                    <th class="px-6 py-4">Users</th>
+                    <th class="px-6 py-4 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                  <tr v-for="org in organizationsList.slice(0, 5)" :key="org.Org_ID" class="hover:bg-slate-50/50 transition-colors">
+                    <td class="px-6 py-4">
+                      <p class="text-xs font-black text-slate-900">{{ org.Org_Name }}</p>
+                      <p class="text-[9px] text-slate-400 font-bold uppercase">{{ formatDate(org.Created_at) }}</p>
+                    </td>
+                    <td class="px-6 py-4 font-mono text-[10px] text-indigo-600 font-bold tracking-tighter">
+                      {{ org.Org_Domain }}.tracktimi.com
+                    </td>
+                    <td class="px-6 py-4">
+                      <span class="text-xs font-black text-slate-900">{{ org.userCount }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <span class="px-3 py-1 bg-green-50 text-green-600 rounded-full text-[8px] font-black uppercase">Provisioned</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <!-- Global Attendance Trend -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-slate-900">Global Attendance Trend</h2>
-              <a href="#" class="text-emerald-600 font-semibold text-sm hover:text-emerald-700">View Details →</a>
-            </div>
-            <div class="h-64 bg-gradient-to-b from-gray-100 to-gray-50 rounded-lg flex items-end justify-center p-4">
-              <svg class="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
-                <polyline
-                  points="0,180 50,160 100,140 150,120 200,100 250,90 300,80 350,70 400,60"
-                  fill="none"
-                  stroke="#06b6d4"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </div>
-          </div>
-
-          <!-- Subscription Plan Distribution -->
-          <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-slate-900">Subscription Plan Distribution</h2>
-              <a href="#" class="text-emerald-600 font-semibold text-sm hover:text-emerald-700">View Details →</a>
-            </div>
-            <div class="h-64 flex items-center justify-center">
-              <div class="relative w-48 h-48 rounded-full" style="background: conic-gradient(#2563eb 0deg 90deg, #000000 90deg 270deg, #0ea5e9 270deg);">
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center text-center">
-                    <div>
-                      <p class="text-sm text-gray-600">Active</p>
-                      <p class="text-2xl font-bold text-slate-900">85%</p>
-                    </div>
+          <!-- Platform Load Health -->
+          <div class="bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl text-white relative overflow-hidden flex flex-col justify-between">
+            <div class="relative z-10">
+              <h3 class="text-xs font-black uppercase tracking-widest opacity-50 mb-8 text-indigo-400">Platform Saturation</h3>
+              <div class="space-y-8">
+                <div>
+                  <div class="flex justify-between mb-2">
+                    <span class="text-[10px] font-bold uppercase opacity-60">Global Check-in Density</span>
+                    <span class="text-[10px] font-black text-indigo-400">{{ densityScore }}%</span>
+                  </div>
+                  <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)]" :style="{ width: densityScore + '%' }"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between mb-2">
+                    <span class="text-[10px] font-bold uppercase opacity-60">Server Uptime</span>
+                    <span class="text-[10px] font-black text-green-400">99.9%</span>
+                  </div>
+                  <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div class="h-full bg-green-500" style="width: 99.9%"></div>
                   </div>
                 </div>
               </div>
             </div>
+            <div class="pt-10 border-t border-white/5 relative z-10">
+              <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Database Master</p>
+              <p class="text-xs font-bold text-white">tracktimi_production.db</p>
+            </div>
+            <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full"></div>
           </div>
         </div>
 
-        <!-- Organizations Detail Modal -->
-        <div v-if="selectedModalType === 'organizations'" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-2xl max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div class="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 flex items-center justify-between">
-              <h2 class="text-2xl font-bold">Organizations Overview</h2>
-              <button @click="selectedModalType = null" class="text-2xl hover:text-emerald-200">&times;</button>
-            </div>
-            <div class="p-8">
-              <div v-if="organizationsList.length" class="space-y-3">
-                <div v-for="org in organizationsList.slice(0, 10)" :key="org.Org_ID" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-emerald-300 transition-all">
-                  <div class="flex-1">
-                    <p class="font-semibold text-slate-900">{{ org.Org_Name }}</p>
-                    <p class="text-xs text-gray-600">ID: {{ org.Org_ID }}</p>
-                  </div>
-                  <div class="flex items-center space-x-4">
-                    <span :class="['px-3 py-1 rounded-full text-xs font-semibold', org.Is_Active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800']">
-                      {{ org.Is_Active ? 'Active' : 'Inactive' }}
-                    </span>
-                    <router-link :to="`/superadmin/organizations`" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-semibold transition-all text-sm">
-                      Manage
-                    </router-link>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="text-center py-12">
-                <p class="text-gray-500">No organizations found</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Employees Detail Modal -->
-        <div v-if="selectedModalType === 'employees'" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-2xl max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div class="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex items-center justify-between">
-              <h2 class="text-2xl font-bold">Employees Overview</h2>
-              <button @click="selectedModalType = null" class="text-2xl hover:text-blue-200">&times;</button>
-            </div>
-            <div class="p-8">
-              <div v-if="employeesList.length" class="space-y-3">
-                <div v-for="emp in employeesList.slice(0, 10)" :key="emp.User_ID" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div class="flex-1">
-                    <p class="font-semibold text-slate-900">{{ emp.Full_Name }}</p>
-                    <p class="text-xs text-gray-600">{{ emp.Email }}</p>
-                  </div>
-                  <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">{{ emp.Role }}</span>
-                </div>
-              </div>
-              <div v-else class="text-center py-12">
-                <p class="text-gray-500">No employees found</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Check-ins Detail Modal -->
-        <div v-if="selectedModalType === 'checkins'" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-2xl max-w-2xl w-full max-h-screen overflow-y-auto">
-            <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 flex items-center justify-between">
-              <h2 class="text-2xl font-bold">Today's Check-ins</h2>
-              <button @click="selectedModalType = null" class="text-2xl hover:text-purple-200">&times;</button>
-            </div>
-            <div class="p-8">
-              <div v-if="checkinsList.length" class="space-y-3">
-                <div v-for="(checkin, idx) in checkinsList.slice(0, 10)" :key="idx" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div class="flex-1">
-                    <p class="font-semibold text-slate-900">{{ checkin.employeeId }}</p>
-                    <p class="text-xs text-gray-600">{{ checkin.time }}</p>
-                  </div>
-                  <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Checked In</span>
-                </div>
-              </div>
-              <div v-else class="text-center py-12">
-                <p class="text-gray-500">No check-ins found for today</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { 
+  ZapIcon, MenuIcon, ChevronLeftIcon, BuildingIcon, 
+  UsersIcon, ClockIcon, BarChart3Icon, ShieldAlertIcon,
+  RefreshCwIcon, LayoutDashboardIcon, ActivityIcon, SettingsIcon
+} from 'lucide-vue-next'
 
 const router = useRouter()
-
 const sidebarOpen = ref(true)
-const selectedModalType = ref(null)
+const loading = ref(false)
+
+// Data State
+const metrics = ref({ totalOrgs: 0, totalUsers: 0, todayCheckins: 0, totalDepts: 0 })
 const organizationsList = ref([])
-const employeesList = ref([])
-const checkinsList = ref([])
-
-const metrics = ref({
-  organizations: 0,
-  employees: 0,
-  checkins: 0,
-  mrr: '$0',
-  subscriptions: 0,
-  churnRate: '0%'
+const densityScore = computed(() => {
+  if (metrics.value.totalUsers === 0) return 0
+  return Math.round((metrics.value.todayCheckins / metrics.value.totalUsers) * 100)
 })
 
-const chartData = ref({
-  growth: [12, 18, 15, 23, 20, 32],
-  revenue: [25000, 28000, 26000, 32000, 35000, 180000]
-})
+const navItems = [
+  { name: 'Dashboard', path: '/superadmin', icon: LayoutDashboardIcon },
+  { name: 'Organizations', path: '/superadmin/organizations', icon: BuildingIcon },
+  { name: 'Global Users', path: '/superadmin/users', icon: UsersIcon },
+  { name: 'Infrastructure', path: '/superadmin/monitoring', icon: ActivityIcon },
+  { name: 'Audit Matrix', path: '/superadmin/audit-logs', icon: ShieldAlertIcon },
+  { name: 'System Settings', path: '/superadmin/settings', icon: SettingsIcon },
+]
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
+const stats = computed(() => [
+  { label: 'Network Tenants', value: metrics.value.totalOrgs, icon: BuildingIcon, bgColor: 'bg-indigo-600 shadow-indigo-100' },
+  { label: 'Global Workforce', value: metrics.value.totalUsers, icon: UsersIcon, bgColor: 'bg-slate-900 shadow-slate-200' },
+  { label: 'Pulses Today', value: metrics.value.todayCheckins, icon: ClockIcon, bgColor: 'bg-amber-500 shadow-amber-100' },
+  { label: 'Global Units', value: metrics.value.totalDepts, icon: BarChart3Icon, bgColor: 'bg-green-500 shadow-green-100' },
+])
+
+const refreshData = async () => {
+  loading.value = true
+  try {
+    const token = localStorage.getItem('superAdminToken')
+    if (!token) {
+      router.push('/superadmin/login')
+      return
+    }
+
+    const config = { headers: { Authorization: `Bearer ${token}` } }
+    
+    // Fetch Live Dashboard Stats
+    const statsRes = await axios.get('http://localhost:4000/api/superadmin/dashboard', config)
+    metrics.value = statsRes.data.stats
+
+    // Fetch Recent Organizations
+    const orgsRes = await axios.get('http://localhost:4000/api/superadmin/organizations', config)
+    organizationsList.value = orgsRes.data.organizations || []
+
+  } catch (error) {
+    console.error('SuperAdmin Data Sync Failed:', error)
+    if (error.response?.status === 403 || error.response?.status === 401) {
+      handleLogout()
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'Pending'
+  return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 const handleLogout = () => {
@@ -439,109 +231,14 @@ const handleLogout = () => {
   router.push('/superadmin/login')
 }
 
-const loadDashboardData = async () => {
-  try {
-    const token = localStorage.getItem('superAdminToken')
-    if (!token) {
-      router.push('/superadmin/login')
-      return
-    }
-
-    const response = await axios.get(
-      'http://localhost:4000/api/superadmin/dashboard',
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-
-    if (response.data?.stats) {
-      const stats = response.data.stats
-      metrics.value = {
-        organizations: stats.totalOrgs || 0,
-        employees: stats.totalUsers || 0,
-        checkins: stats.todayCheckins || 0,
-        mrr: '$' + (stats.mrr || 0).toLocaleString(),
-        subscriptions: stats.totalSubscriptions || 0,
-        churnRate: (stats.churnRate || 0).toFixed(1) + '%'
-      }
-    }
-  } catch (error) {
-    console.error('Failed to load dashboard data:', error)
-  }
-}
-
-const viewOrganizationsDetail = async () => {
-  try {
-    const token = localStorage.getItem('superAdminToken')
-    const response = await axios.get('http://localhost:4000/api/superadmin/organizations', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    organizationsList.value = response.data?.organizations || []
-    selectedModalType.value = 'organizations'
-  } catch (error) {
-    console.error('Failed to load organizations:', error)
-  }
-}
-
-const viewEmployeesDetail = async () => {
-  try {
-    const token = localStorage.getItem('superAdminToken')
-    const response = await axios.get('http://localhost:4000/api/superadmin/users', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    employeesList.value = response.data?.users || []
-    selectedModalType.value = 'employees'
-  } catch (error) {
-    console.error('Failed to load employees:', error)
-  }
-}
-
-const viewCheckinsDetail = async () => {
-  try {
-    const token = localStorage.getItem('superAdminToken')
-    // Simulate check-ins for today
-    const today = new Date().toDateString()
-    checkinsList.value = [
-      { employeeId: 'EMP001', time: 'Today 08:15 AM', org: 'Company A' },
-      { employeeId: 'EMP002', time: 'Today 08:22 AM', org: 'Company B' },
-      { employeeId: 'EMP003', time: 'Today 08:30 AM', org: 'Company C' },
-      { employeeId: 'EMP004', time: 'Today 08:45 AM', org: 'Company A' },
-      { employeeId: 'EMP005', time: 'Today 09:00 AM', org: 'Company D' }
-    ]
-    selectedModalType.value = 'checkins'
-  } catch (error) {
-    console.error('Failed to load check-ins:', error)
-  }
-}
-
-const refreshData = async () => {
-  console.log('Refreshing dashboard data...')
-  await loadDashboardData()
-}
-
-onMounted(() => {
-  loadDashboardData()
-})
+onMounted(refreshData)
 </script>
 
 <style scoped>
-::-webkit-scrollbar {
-  width: 8px;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 3px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
+.animate-spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>

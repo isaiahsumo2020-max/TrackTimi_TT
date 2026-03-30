@@ -160,22 +160,28 @@ router.post('/departments', requireAdmin, (req, res) => {
   });
 });
 
-// =============================================================
-// 3. DETAILED DASHBOARD METRICS (Real-time Name Tracking)
+/// =============================================================
+// 3. DETAILED DASHBOARD METRICS (PRODUCTION READY)
 // =============================================================
 
 router.get('/dashboard-metrics', requireAdmin, (req, res) => {
   const orgId = req.user.orgId;
-
-  // 1. Get ALL active staff members
+  
+  // 1. Get ALL active staff members for this Org
   const sqlAllStaff = `SELECT User_ID, First_Name, SurName, Job_Title FROM User WHERE Org_ID = ? AND Is_Active = 1`;
 
-  // 2. Get all attendance records for TODAY (local time)
+  // 2. Get all attendance records for TODAY (Removing strict localtime to be safe)
   const sqlAttendance = `
     SELECT a.*, u.First_Name, u.SurName, u.Job_Title 
     FROM Attendance a 
     JOIN User u ON a.User_ID = u.User_ID 
     WHERE a.Org_ID = ? AND date(a.Check_in_time) = date('now', 'localtime')`;
+
+  // 3. Get 7-Day Trend
+  const sqlTrend = `SELECT date(Check_in_time) as day, COUNT(*) as count FROM Attendance WHERE Org_ID = ? AND Check_in_time >= date('now', '-6 days') GROUP BY day`;
+
+  // 4. Get Departments
+  const sqlDepts = `SELECT d.Depart_Name as name, COUNT(u.User_ID) as staff_count FROM Department d LEFT JOIN User u ON d.Dep_ID = u.Dep_ID WHERE d.Org_ID = ? GROUP BY d.Dep_ID`;
 
   db.all(sqlAllStaff, [orgId], (err, allStaff) => {
     if (err) return res.status(500).json({ error: 'Staff fetch error' });
@@ -183,33 +189,52 @@ router.get('/dashboard-metrics', requireAdmin, (req, res) => {
     db.all(sqlAttendance, [orgId], (err, attendanceToday) => {
       if (err) return res.status(500).json({ error: 'Attendance fetch error' });
 
-      // Identify Present people
-      const presentList = attendanceToday.map(r => ({
-        name: `${r.First_Name} ${r.SurName}`,
-        job: r.Job_Title,
-        checkIn: r.Check_in_time,
-        checkOut: r.Check_out_time,
-        onSite: r.Check_out_time === null
-      }));
+      db.all(sqlTrend, [orgId], (err, trend) => {
+        db.all(sqlDepts, [orgId], (err, departments) => {
 
-      // Identify Absent people (Total Staff - Present Staff)
-      const presentIds = attendanceToday.map(a => a.User_ID);
-      const absentList = allStaff
-        .filter(s => !presentIds.includes(s.User_ID))
-        .map(s => ({
-          name: `${s.First_Name} ${s.SurName}`,
-          job: s.Job_Title
-        }));
+          // DEBUG LOGS - Check your terminal!
+          console.log(`SaaS Dashboard Sync [Org ${orgId}]:`);
+          console.log(`- Total Staff in DB: ${allStaff.length}`);
+          console.log(`- Check-ins Today: ${attendanceToday.length}`);
 
-      res.json({
-        metrics: {
-          totalEmployees: allStaff.length,
-          presentToday: presentList.length,
-          onSiteNow: presentList.filter(u => u.onSite).length,
-          absentToday: absentList.length
-        },
-        presentList,
-        absentList
+          // MAP PRESENT LIST
+          const presentList = attendanceToday.map(r => ({
+            name: `${r.First_Name} ${r.SurName}`,
+            job: r.Job_Title,
+            checkIn: r.Check_in_time,
+            checkOut: r.Check_out_time,
+            onSite: r.Check_out_time === null
+          }));
+
+          // MAP ABSENT LIST (People in allStaff who are NOT in attendanceToday)
+          const presentIds = attendanceToday.map(a => a.User_ID);
+          const absentList = allStaff
+            .filter(s => !presentIds.includes(s.User_ID))
+            .map(s => ({
+              name: `${s.First_Name} ${s.SurName}`,
+              job: s.Job_Title
+            }));
+
+          res.json({
+            metrics: {
+              total: allStaff.length,
+              present: presentList.length,
+              onSite: presentList.filter(u => u.onSite).length,
+              absent: absentList.length
+            },
+            presentList,
+            absentList,
+            departments: departments || [],
+            trend: trend || [],
+            // Add raw activity logs for the pulse feed
+            activityLogs: presentList.map(p => ({
+              type: 'attendance',
+              actor: p.name,
+              action: 'clocked in',
+              timestamp: p.checkIn
+            })).slice(0, 10)
+          });
+        });
       });
     });
   });
@@ -219,19 +244,17 @@ router.get('/dashboard-metrics', requireAdmin, (req, res) => {
 // GEOFENCING MANAGEMENT (Work Zones)
 // =============================================================
 
-// 1. GET all active work zones for this Org
-router.get('/geofences', requireAdmin, (req, res) => {
+// 1. GET: Fetch work zones (Accessible by BOTH Admin and Staff)
+router.get('/geofences', authenticateToken, (req, res) => {
   const orgId = req.user.orgId;
   const sql = `SELECT Fence_ID, Location_Name, Latitude, Longitude, Radius FROM Geofence WHERE Org_ID = ? AND Is_Active = 1`;
 
   db.all(sql, [orgId], (err, rows) => {
-    if (err) {
-      console.error("❌ Fetch Zones Error:", err.message);
-      return res.status(500).json({ error: 'Failed to fetch work zones' });
-    }
-    res.json(rows);
+    if (err) return res.status(500).json({ error: 'Database error' });
+    res.json(rows); // Abraham Fallah needs this list to calculate his distance!
   });
 });
+
 
 router.post('/geofences', requireAdmin, (req, res) => {
   const { locationName, latitude, longitude, radius } = req.body;
@@ -262,6 +285,41 @@ router.delete('/geofences/:id', requireAdmin, (req, res) => {
   db.run(`UPDATE Geofence SET Is_Active = 0 WHERE Fence_ID = ? AND Org_ID = ?`, [fenceId, orgId], function(err) {
     if (err || this.changes === 0) return res.status(500).json({ error: 'Delete failed' });
     res.json({ success: true, message: 'Zone removed' });
+  });
+});
+
+// --- ORGANIZATION SETTINGS MANAGEMENT ---
+
+// 1. GET: Fetch settings for the current Org
+router.get('/settings', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+  const sql = `SELECT * FROM Organization WHERE Org_ID = ?`;
+
+  db.get(sql, [orgId], (err, row) => {
+    if (err) return res.status(500).json({ error: 'Failed to load settings' });
+    res.json(row);
+  });
+});
+
+// 2. PUT: Update settings
+router.put('/settings', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+  const { orgName, email, phone, address, themeColor, logoPath, logoMimeType } = req.body;
+
+  const sql = `
+    UPDATE Organization 
+    SET Org_Name = ?, Email = ?, Phone_Num = ?, Address = ?, 
+        Theme_Color = ?, Logo_Path = ?, Logo_MIME_Type = ?, Updated_at = CURRENT_TIMESTAMP
+    WHERE Org_ID = ?`;
+
+  db.run(sql, [orgName, email, phone, address, themeColor, logoPath, logoMimeType, orgId], function(err) {
+    if (err) return res.status(500).json({ error: 'Database update failed' });
+    
+    // Add to Audit Log for SaaS tracking
+    db.run(`INSERT INTO Audit_Log (User_ID, Org_ID, Action, Table_Name) VALUES (?, ?, 'UPDATE_SETTINGS', 'Organization')`, 
+           [req.user.userId, orgId]);
+
+    res.json({ success: true, message: 'Settings updated' });
   });
 });
 module.exports = router;
