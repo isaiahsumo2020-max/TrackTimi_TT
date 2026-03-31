@@ -4,13 +4,13 @@
     <!-- 1. Header: Dynamic Org Name & Health Score -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-1">Intelligence Command</p>
+        <p class="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] mb-1">Intelligence Command</p>
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">
           {{ orgDisplayName }} <span class="font-light text-slate-400">Overview</span>
         </h1>
       </div>
       
-      <div class="flex items-center bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+      <div class="flex items-center bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
         <div class="px-5 py-2 text-center border-r border-slate-100">
           <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Daily Health</p>
           <p class="text-sm font-black" :class="healthColor">{{ healthScore }}%</p>
@@ -25,9 +25,9 @@
     <!-- 2. Interactive Metric Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div v-for="stat in stats" :key="stat.label" 
-        class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group cursor-default">
+        class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group cursor-default">
         <div class="flex items-center justify-between mb-4">
-          <div :class="stat.color" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:rotate-6 transition-transform">
+          <div :class="stat.color" class="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:rotate-6 transition-transform">
             <component :is="stat.icon" class="w-6 h-6" />
           </div>
           <div class="flex flex-col items-end">
@@ -46,21 +46,21 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       <!-- 7-Day Trend Card -->
-      <div class="lg:col-span-2 bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl text-white relative overflow-hidden flex flex-col h-[480px]">
+      <div class="lg:col-span-2 bg-slate-900 p-10 rounded-xl shadow-2xl text-white relative overflow-hidden flex flex-col h-[480px]">
         <div class="relative z-10 flex flex-col h-full">
           <div class="flex justify-between items-center mb-10">
             <div>
-              <h3 class="text-xs font-black uppercase tracking-[0.2em] text-indigo-400">7-Day Attendance Velocity</h3>
+              <h3 class="text-xs font-black uppercase tracking-[0.2em] text-orange-400">7-Day Attendance Velocity</h3>
               <p class="text-[10px] font-bold opacity-40 mt-1 uppercase">Aggregate workforce activity</p>
             </div>
             <div class="flex items-center space-x-2">
-              <div class="w-2 h-2 bg-indigo-500 rounded-full"></div>
+              <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
               <span class="text-[10px] font-bold opacity-60">Avg: {{ avgTrend }}%</span>
             </div>
           </div>
           <div class="flex items-end justify-between flex-1 gap-4">
             <div v-for="day in trendData" :key="day.date" class="flex-1 flex flex-col items-center group">
-              <div class="w-full bg-indigo-500/10 rounded-t-xl relative group-hover:bg-indigo-500 transition-all duration-500 min-h-[4px]" 
+              <div class="w-full bg-orange-500/10 rounded-t-xl relative group-hover:bg-orange-500 transition-all duration-500 min-h-[4px]" 
                 :style="{ height: metrics.total > 0 ? (day.count / metrics.total * 100) + '%' : '10%' }">
                 <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-slate-900 px-2 py-1 rounded-lg text-[9px] font-black opacity-0 group-hover:opacity-100 transition-all shadow-xl">
                   {{ day.count }}
@@ -70,23 +70,23 @@
             </div>
           </div>
         </div>
-        <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-indigo-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-orange-500/20 rounded-full blur-[100px]"></div>
       </div>
 
       <!-- Live Pulse Feed -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col h-[480px]">
+      <div class="bg-white p-8 rounded-xl border border-slate-100 shadow-sm flex flex-col h-[480px]">
         <div class="flex items-center justify-between mb-8">
           <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center">
             <ZapIcon class="w-4 h-4 mr-2 text-amber-500 fill-amber-500" />
             Activity Pulse
           </h3>
-          <div class="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></div>
+          <div class="w-2 h-2 bg-orange-500 rounded-full animate-ping"></div>
         </div>
         
         <div class="space-y-6 overflow-y-auto flex-1 pr-2 custom-scrollbar">
           <TransitionGroup name="list">
             <div v-for="(log, index) in activityLogs" :key="index" class="flex items-start space-x-3 group">
-              <div :class="log.type === 'attendance' ? 'bg-green-500 shadow-green-100' : 'bg-indigo-500 shadow-indigo-100'" 
+              <div :class="log.type === 'attendance' ? 'bg-green-500 shadow-green-100' : 'bg-orange-500 shadow-orange-100'" 
                    class="w-2 h-2 rounded-full mt-1.5 shrink-0 shadow-lg"></div>
               <div class="flex-1">
                 <p class="text-xs font-black text-slate-800 leading-tight">
@@ -105,12 +105,12 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       <!-- Present Members -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+      <div class="bg-white p-8 rounded-xl border border-slate-100 shadow-sm">
         <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center">
           <div class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div> Present Personnel
         </h3>
         <div class="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-          <div v-for="user in presentList" :key="user.name" class="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-indigo-100 hover:bg-white transition-all">
+          <div v-for="user in presentList" :key="user.name" class="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-transparent hover:border-orange-100 hover:bg-white transition-all">
             <div class="flex items-center space-x-3">
               <div class="w-9 h-9 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-[10px]">{{ user.name[0] }}</div>
               <div>
@@ -119,7 +119,7 @@
               </div>
             </div>
             <div class="text-right">
-              <p class="text-[9px] font-black text-indigo-600">{{ user.isSystemActive ? 'ONLINE' : formatTimeOnly(user.checkIn) }}</p>
+              <p class="text-[9px] font-black text-orange-500">{{ user.isSystemActive ? 'ONLINE' : formatTimeOnly(user.checkIn) }}</p>
               <p class="text-[7px] font-black text-slate-300 uppercase">{{ user.isSystemActive ? 'SYSTEM ADMIN' : 'Verified' }}</p>
             </div>
           </div>
@@ -127,7 +127,7 @@
       </div>
 
       <!-- Off-Duty Members -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+      <div class="bg-white p-8 rounded-xl border border-slate-100 shadow-sm">
         <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center">
           <div class="w-1.5 h-1.5 bg-slate-300 rounded-full mr-2"></div> Not In Today
         </h3>
@@ -143,7 +143,7 @@
       </div>
 
       <!-- Department Distribution -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+      <div class="bg-white p-8 rounded-xl border border-slate-100 shadow-sm">
         <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-8">Department Load</h3>
         <div class="space-y-7 mt-4">
           <div v-for="dept in departments" :key="dept.name" class="space-y-3">
@@ -152,7 +152,7 @@
               <span class="text-[10px] font-black text-slate-900">{{ dept.staff_count }}</span>
             </div>
             <div class="h-2 w-full bg-slate-50 rounded-full overflow-hidden p-0.5 border border-slate-100">
-              <div class="h-full bg-indigo-600 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(79,70,229,0.3)]" 
+              <div class="h-full bg-orange-500 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(79,70,229,0.3)]" 
                 :style="{ width: metrics.total > 0 ? (dept.staff_count / metrics.total * 100) + '%' : '0%' }"></div>
             </div>
           </div>
@@ -161,11 +161,11 @@
     </div>
 
     <!-- 5. ULTIMATE ATTENDANCE LEDGER (Historical Tracking) -->
-    <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-10">
+    <div class="bg-white p-10 rounded-xl border border-slate-100 shadow-sm space-y-10">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center">
-            <HistoryIcon class="w-4 h-4 mr-2 text-indigo-600" />
+            <HistoryIcon class="w-4 h-4 mr-2 text-orange-500" />
             Attendance Ledger
           </h3>
           <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Audit logs & complete history</p>
@@ -174,17 +174,17 @@
         <div class="flex flex-wrap items-center gap-3">
           <div class="relative">
             <SearchIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-            <input v-model="ledgerSearch" placeholder="Filter by name..." class="pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-none text-[11px] font-bold focus:ring-2 focus:ring-indigo-50 w-48 outline-none" />
+            <input v-model="ledgerSearch" placeholder="Filter by name..." class="pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-none text-[11px] font-bold focus:ring-2 focus:ring-orange-50 w-48 outline-none" />
           </div>
-          <input type="date" v-model="ledgerDate" class="px-4 py-3 bg-slate-50 rounded-xl border-none text-[11px] font-bold focus:ring-2 focus:ring-indigo-50 outline-none" />
-          <button @click="downloadCSV" class="px-5 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center">
+          <input type="date" v-model="ledgerDate" class="px-4 py-3 bg-slate-50 rounded-xl border-none text-[11px] font-bold focus:ring-2 focus:ring-orange-50 outline-none" />
+          <button @click="downloadCSV" class="px-5 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-500 transition-all flex items-center">
             <FileDownIcon class="w-3.5 h-3.5 mr-2" />
             Export Ledger
           </button>
         </div>
       </div>
 
-      <div class="overflow-hidden rounded-[2rem] border border-slate-50">
+      <div class="overflow-hidden rounded-lg border border-slate-50">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-slate-50/50 border-b border-slate-100">
@@ -199,7 +199,7 @@
             <tr v-for="log in filteredLedger" :key="log.Attend_ID" class="group hover:bg-slate-50/50 transition-colors">
               <td class="px-6 py-4">
                 <div class="flex items-center space-x-3">
-                  <div class="w-8 h-8 bg-white border border-slate-100 rounded-lg flex items-center justify-center font-black text-slate-400 text-[10px] group-hover:bg-indigo-600 group-hover:text-white transition-colors">{{ log.name[0] }}</div>
+                  <div class="w-8 h-8 bg-white border border-slate-100 rounded-lg flex items-center justify-center font-black text-slate-400 text-[10px] group-hover:bg-orange-500 group-hover:text-white transition-colors">{{ log.name[0] }}</div>
                   <div>
                     <p class="text-[11px] font-black text-slate-900">{{ log.name }}</p>
                     <p class="text-[8px] font-bold text-slate-400 uppercase">{{ log.job }}</p>
@@ -314,7 +314,7 @@ const avgTrend = computed(() => {
 })
 
 const stats = computed(() => [
-  { label: 'Workforce', value: metrics.value.total, icon: UsersIcon, color: 'bg-indigo-600 shadow-indigo-100' },
+  { label: 'Workforce', value: metrics.value.total, icon: UsersIcon, color: 'bg-orange-500 shadow-orange-100' },
   { label: 'Present Today', value: metrics.value.present, icon: CheckCircleIcon, color: 'bg-green-500 shadow-green-100' },
   { label: 'Currently On-Site', value: metrics.value.onSite, icon: ClockIcon, color: 'bg-orange-500 shadow-orange-100' },
   { label: 'Absent Today', value: metrics.value.absent, icon: XCircleIcon, color: 'bg-slate-400 shadow-slate-100' },

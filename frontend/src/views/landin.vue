@@ -21,7 +21,7 @@
         <router-link to="/login" class="btn-mobile px-4 py-2 text-sm font-bold hidden sm:block">
           Login
         </router-link>
-        <router-link to="/register-org" class="btn-orange px-4 py-2 text-sm font-bold text-black hover:text-white hidden sm:block">
+        <router-link to="/register-org" class="btn-orange px-4 py-2 text-sm font-bold text-gray-900 hover:text-white hidden sm:block">
           Start Trial
         </router-link>
         
@@ -44,7 +44,7 @@
       <router-link to="/team" @click="mobileMenuOpen = false" class="block py-3 px-4 rounded-xl font-semibold hover:bg-orange-50">Team</router-link>
       <router-link to="/contact" @click="mobileMenuOpen = false" class="block py-3 px-4 rounded-xl font-semibold hover:bg-orange-50">Contact</router-link>
       <div class="pt-4 border-t border-gray-200">
-        <router-link to="/login" @click="mobileMenuOpen = false" class="block w-full text-center py-3 px-4 bg-gray-900 text-white rounded-xl font-bold mb-3 hover:bg-black">
+        <router-link to="/login" @click="mobileMenuOpen = false" class="block w-full text-center py-3 px-4 bg-gray-900 text-white rounded-xl font-bold mb-3 hover:bg-gray-600">
           Login
         </router-link>
         <router-link to="/register-org" @click="mobileMenuOpen = false" class="block w-full text-center py-3 px-4 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600">
@@ -63,7 +63,7 @@
 
 
 <template>
-  <div class="min-h-screen bg-black text-white flex flex-col">
+  <div class="min-h-screen bg-gray-600 text-white flex flex-col">
     <!-- NAVBAR -->
     <header class="w-full fixed top-0 left-0 z-30 bg-gradient-to-b from-black/90 to-black/40 backdrop-blur border-b border-white/5">
       <div class="max-w-7xl mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
@@ -72,7 +72,7 @@
           <div class="w-8 h-8 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
             <span class="text-sm font-extrabold">TT</span>
           </div>
-          <span class="font-bold tracking-tight text-sm sm:text-base">TrackTimi</span>
+          <span class="font-bold tracking-tight text-sm sm:text-base">Track<span class="text-orange-500">Timi</span></span>
         </div>
 
         <!-- Links -->
@@ -131,13 +131,13 @@
           <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
             <router-link
               to="/register-org"
-              class="px-6 sm:px-8 py-3 rounded-2xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-sm sm:text-base font-bold shadow-xl hover:shadow-orange-500/60 hover:-translate-y-0.5 transition"
+              class="px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-sm sm:text-base font-bold shadow-xl hover:shadow-orange-500/60 hover:-translate-y-0.5 transition"
             >
               Start Free Trial
             </router-link>
             <a
               href="#features"
-              class="px-6 sm:px-8 py-3 rounded-2xl border border-white/15 bg-white/5 text-sm sm:text-base font-semibold text-gray-100 hover:bg-white/10 transition"
+              class="px-6 sm:px-8 py-3 rounded-xl border border-white/15 bg-white/5 text-sm sm:text-base font-semibold text-gray-100 hover:bg-white/10 transition"
             >
               Learn More
             </a>
@@ -183,7 +183,7 @@
             <div
               v-for="card in featureCards"
               :key="card.title"
-              class="bg-black/85 border border-white/10 rounded-2xl p-4 sm:p-5 text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition"
+              class="bg-gray-600/85 border border-white/10 rounded-xl p-4 sm:p-5 text-left shadow-xl hover:-translate-y-1 hover:shadow-2xl transition"
             >
               <div class="flex items-center mb-3 space-x-3">
                 <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-lg">
@@ -240,13 +240,13 @@
           <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
             <router-link
               to="/register-org"
-              class="px-6 sm:px-8 py-3 rounded-2xl bg-black text-sm sm:text-base font-bold shadow-xl hover:shadow-black/50 hover:-translate-y-0.5 transition border border-black/40"
+              class="px-6 sm:px-8 py-3 rounded-xl bg-gray-600 text-sm sm:text-base font-bold shadow-xl hover:shadow-gray-700/50 hover:-translate-y-0.5 transition border border-gray-700/40"
             >
               Get Started Today
             </router-link>
             <a
               href="#support"
-              class="px-6 sm:px-8 py-3 rounded-2xl bg-transparent border-2 border-white/70 text-sm sm:text-base font-semibold hover:bg-white/10 transition"
+              class="px-6 sm:px-8 py-3 rounded-xl bg-transparent border-2 border-white/70 text-sm sm:text-base font-semibold hover:bg-white/10 transition"
             >
               View Features
             </a>

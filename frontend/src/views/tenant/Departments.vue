@@ -5,20 +5,20 @@
         <h1 class="text-3xl font-black text-slate-900">Organizational Structure</h1>
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Manage Departments & Personnel</p>
       </div>
-      <button @click="showAddDeptModal = true" class="px-6 py-3 bg-orange-500 text-white rounded-2xl font-bold shadow-lg shadow-orange-100">
+      <button @click="showAddDeptModal = true" class="px-6 py-3 bg-orange-500 text-white rounded-xl font-bold shadow-lg shadow-orange-100">
         + New Department
       </button>
     </div>
 
     <!-- Department Cards -->
     <div class="grid grid-cols-1 gap-8">
-      <div v-for="dept in departments" :key="dept.id" class="bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
+      <div v-for="dept in departments" :key="dept.id" class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
         
         <!-- Header: Dept Name and Count -->
         <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
           <div>
             <h3 class="text-xl font-black text-slate-900">{{ dept.name }}</h3>
-            <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em]">Department</p>
+            <p class="text-[10px] font-bold text-orange-500 uppercase tracking-[0.2em]">Department</p>
           </div>
           <div class="text-right">
             <span class="text-3xl font-black text-slate-900">{{ dept.users.length }}</span>
@@ -49,9 +49,9 @@
                     </div>
                   </td>
                   <td class="py-4 px-2 text-xs font-medium text-slate-500">{{ user.email }}</td>
-                  <td class="py-4 px-2 text-[10px] font-black text-indigo-500 uppercase">{{ user.job || 'Staff' }}</td>
+                  <td class="py-4 px-2 text-[10px] font-black text-orange-500 uppercase">{{ user.job || 'Staff' }}</td>
                   <td class="py-4 px-2 text-right">
-                    <button class="text-slate-300 hover:text-indigo-600 transition-colors">
+                    <button class="text-slate-300 hover:text-orange-500 transition-colors">
                       <SettingsIcon class="w-4 h-4 inline" />
                     </button>
                   </td>
@@ -68,12 +68,12 @@
 
     <!-- Add Modal (Keep the same as before) -->
     <div v-if="showAddDeptModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-[3rem] p-10 w-full max-w-md shadow-2xl">
+      <div class="bg-white rounded-xl p-10 w-full max-w-md shadow-2xl">
         <h2 class="text-2xl font-black text-slate-900 mb-6">Create Department</h2>
-        <input v-model="newDeptName" class="w-full p-5 bg-slate-50 rounded-2xl mb-6 border-none" placeholder="e.g. Sales" />
+        <input v-model="newDeptName" class="w-full p-5 bg-slate-50 rounded-xl mb-6 border-none" placeholder="e.g. Sales" />
         <div class="flex gap-4">
           <button @click="showAddDeptModal = false" class="flex-1 py-4 font-bold text-slate-400">Cancel</button>
-          <button @click="addDepartment" class="flex-1 py-4 bg-orange-500 text-white rounded-2xl font-bold">Create</button>
+          <button @click="addDepartment" class="flex-1 py-4 bg-orange-500 text-white rounded-xl font-bold">Create</button>
         </div>
       </div>
     </div>

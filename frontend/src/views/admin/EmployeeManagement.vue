@@ -9,7 +9,7 @@
             <p class="text-sm text-gray-600 mt-1">Manage your organization's employees</p>
           </div>
           <button @click="showAddEmployeeModal = true"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                  class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -25,8 +25,8 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center">
-            <div class="p-2 bg-blue-100 rounded-lg">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="p-2 bg-orange-100 rounded-lg">
+              <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
               </svg>
             </div>
@@ -70,12 +70,12 @@
       <div class="mb-6">
         <nav class="flex space-x-8">
           <button @click="activeTab = 'employees'"
-                  :class="activeTab === 'employees' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                  :class="activeTab === 'employees' ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-500 hover:text-gray-700'"
                   class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
             Employees
           </button>
           <button @click="activeTab = 'invitations'"
-                  :class="activeTab === 'invitations' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                  :class="activeTab === 'invitations' ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-500 hover:text-gray-700'"
                   class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
             Invitations
           </button>
@@ -88,7 +88,7 @@
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium text-gray-900">All Employees</h3>
             <input v-model="searchQuery" type="text" placeholder="Search employees..."
-                   class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
           </div>
 
           <div class="overflow-x-auto">
@@ -134,7 +134,7 @@
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                    <button class="text-orange-500 hover:text-orange-600 mr-3">Edit</button>
                     <button class="text-red-600 hover:text-red-900">Deactivate</button>
                   </td>
                 </tr>
@@ -165,7 +165,7 @@
                   </span>
                   <button v-if="invitation.Status === 'Pending'"
                           @click="resendInvitation(invitation.Invitation_ID)"
-                          class="text-blue-600 hover:text-blue-900 text-sm">
+                          class="text-orange-500 hover:text-orange-600 text-sm">
                     Resend
                   </button>
                 </div>
@@ -193,25 +193,25 @@
             <div>
               <label class="block text-sm font-medium text-gray-700">First Name</label>
               <input v-model="newEmployee.firstName" type="text" required
-                     class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700">Last Name</label>
               <input v-model="newEmployee.surName" type="text" required
-                     class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700">Email</label>
               <input v-model="newEmployee.email" type="email" required
-                     class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700">Department</label>
               <select v-model="newEmployee.departmentId"
-                      class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <option value="">Select Department</option>
                 <option v-for="dept in departments" :key="dept.Depart_ID" :value="dept.Depart_ID">
                   {{ dept.Depart_Name }}
@@ -222,13 +222,13 @@
             <div>
               <label class="block text-sm font-medium text-gray-700">Job Title</label>
               <input v-model="newEmployee.jobTitle" type="text"
-                     class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700">Role</label>
               <select v-model="newEmployee.userTypeId"
-                      class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <option value="3">Staff</option>
                 <option value="2">Manager</option>
                 <option value="5">Supervisor</option>
@@ -241,7 +241,7 @@
                 Cancel
               </button>
               <button type="submit" :disabled="inviting"
-                      class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50">
+                      class="px-4 py-2 text-sm font-medium text-white bg-orange-500 border border-transparent rounded-md hover:bg-orange-600 disabled:opacity-50">
                 {{ inviting ? 'Sending...' : 'Send Invitation' }}
               </button>
             </div>

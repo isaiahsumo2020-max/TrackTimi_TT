@@ -18,7 +18,7 @@
         <input v-model="confirm" type="password" class="w-full p-2 border rounded mb-3" placeholder="Confirm password" />
 
         <div class="flex justify-end">
-          <button :disabled="submitting" class="px-4 py-2 bg-blue-600 text-white rounded">Activate</button>
+          <button :disabled="submitting" class="px-4 py-2 bg-orange-500 text-white rounded">Activate</button>
         </div>
       </form>
     </div>
@@ -78,11 +78,11 @@ async function submit() {
 .max-w-md { max-width: 520px; }
 </style>
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+  <div class="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full">
       <!-- Header -->
       <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div class="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
           <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
           </svg>

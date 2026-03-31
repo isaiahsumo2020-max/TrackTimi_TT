@@ -8,22 +8,22 @@
         <!-- Brand Identity -->
         <div class="space-y-6">
           <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
               <ZapIcon class="w-6 h-6 text-white fill-white" />
             </div>
-            <span class="text-2xl font-black tracking-tighter">TrackTimi<span class="text-indigo-500">.</span></span>
+            <span class="text-2xl font-black tracking-tighter">TrackTimi<span class="text-orange-500">.</span></span>
           </div>
           <p class="text-slate-400 text-sm leading-relaxed font-medium">
             The next-generation workforce intelligence platform. Secure GPS verification, multi-tenant architecture, and real-time attendance analytics for modern organizations.
           </p>
           <div class="flex space-x-4">
-            <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center hover:bg-indigo-600 transition-all text-slate-400 hover:text-white">
+            <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center hover:bg-orange-500 transition-all text-slate-400 hover:text-white">
               <TwitterIcon class="w-4 h-4" />
             </a>
-            <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center hover:bg-indigo-600 transition-all text-slate-400 hover:text-white">
+            <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center hover:bg-orange-500 transition-all text-slate-400 hover:text-white">
               <LinkedinIcon class="w-4 h-4" />
             </a>
-            <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center hover:bg-indigo-600 transition-all text-slate-400 hover:text-white">
+            <a href="#" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center hover:bg-orange-500 transition-all text-slate-400 hover:text-white">
               <GithubIcon class="w-4 h-4" />
             </a>
           </div>
@@ -31,7 +31,7 @@
 
         <!-- Product -->
         <div>
-          <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-8">Platform</h4>
+          <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 mb-8">Platform</h4>
           <ul class="space-y-4 text-sm font-bold text-slate-400">
             <li><router-link to="/" class="hover:text-white transition-colors">Overview</router-link></li>
             <li><a href="#geofence" class="hover:text-white transition-colors">Geofencing</a></li>
@@ -42,7 +42,7 @@
 
         <!-- Support -->
         <div>
-          <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-8">Resources</h4>
+          <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 mb-8">Resources</h4>
           <ul class="space-y-4 text-sm font-bold text-slate-400">
             <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
             <li><a href="#" class="hover:text-white transition-colors">API Reference</a></li>
@@ -53,14 +53,14 @@
 
         <!-- Contact -->
         <div>
-          <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-8">Global HQ</h4>
+          <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 mb-8">Global HQ</h4>
           <div class="space-y-6 text-sm font-bold text-slate-400">
             <div class="flex items-start space-x-3">
-              <MailIcon class="w-5 h-5 text-indigo-500 shrink-0" />
+              <MailIcon class="w-5 h-5 text-orange-500 shrink-0" />
               <a href="mailto:hello@tracktimi.com" class="hover:text-white transition-colors">hello@tracktimi.com</a>
             </div>
             <div class="flex items-start space-x-3">
-              <MapPinIcon class="w-5 h-5 text-indigo-500 shrink-0" />
+              <MapPinIcon class="w-5 h-5 text-orange-500 shrink-0" />
               <span>Monrovia, <br />Montserrado County, Liberia</span>
             </div>
             <div class="pt-4">
@@ -99,7 +99,7 @@ import {
 
 <style scoped>
 /* Optional: Subtle fade-in for the developer credit */
-span.text-indigo-500 {
+span.text-orange-500 {
   transition: color 0.3s ease;
 }
 </style>

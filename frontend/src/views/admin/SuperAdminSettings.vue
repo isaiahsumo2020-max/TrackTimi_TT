@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-orange-100 selection:text-orange-600">
     
     <!-- 1. PREMIUM SIDEBAR NAVIGATION -->
     <aside 
@@ -7,12 +7,12 @@
     >
       <div class="p-6 border-b border-slate-800 flex items-center justify-between h-24 text-white">
         <div v-if="sidebarOpen" class="flex items-center space-x-3 animate-in fade-in slide-in-from-left-4">
-          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
             <ZapIcon class="w-6 h-6 fill-white" />
           </div>
           <div class="flex flex-col">
             <span class="text-xl font-black tracking-tighter uppercase leading-none italic">TrackTimi</span>
-            <span class="text-[8px] font-black text-indigo-400 uppercase tracking-[0.4em] mt-1">Config Node</span>
+            <span class="text-[8px] font-black text-orange-400 uppercase tracking-[0.4em] mt-1">Config Node</span>
           </div>
         </div>
         <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all">
@@ -24,8 +24,8 @@
       <nav class="flex-1 py-8 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
         <p v-if="sidebarOpen" class="text-[10px] font-black text-slate-500 uppercase px-4 mb-4 tracking-[0.2em]">Platform Control</p>
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
-          :class="[$route.path === item.path ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all group relative"
+          :class="[$route.path === item.path ? 'bg-orange-500 text-white shadow-xl shadow-orange-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -33,7 +33,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-2xl border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
+        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-xl border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
           <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-red-500">
             <LogOutIcon class="w-5 h-5" />
           </div>
@@ -60,7 +60,7 @@
 
         <div class="flex items-center space-x-4">
           <button @click="saveSettings" :disabled="saving" 
-            class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all active:scale-95 flex items-center">
+            class="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white px-8 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-orange-100 transition-all active:scale-95 flex items-center">
             <SaveIcon v-if="!saving" class="w-4 h-4 mr-2" />
             <RefreshCwIcon v-else class="w-4 h-4 mr-2 animate-spin" />
             {{ saving ? 'Syncing...' : 'Commit Changes' }}
@@ -74,9 +74,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
           
           <!-- SECTION 1: GENERAL PLATFORM BRANDING -->
-          <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-8">
+          <div class="bg-white p-10 rounded-xl border border-slate-100 shadow-sm space-y-8">
             <div class="flex items-center space-x-3 mb-2">
-              <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
                 <LayoutIcon class="w-5 h-5" />
               </div>
               <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Identity Matrix</h2>
@@ -85,60 +85,60 @@
             <div class="space-y-6">
               <div class="space-y-2">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-[0.2em]">Platform Display Name</label>
-                <input v-model="settings.platformName" type="text" class="w-full p-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-indigo-50 transition-all outline-none" />
+                <input v-model="settings.platformName" type="text" class="w-full p-4 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-4 focus:ring-orange-50 transition-all outline-none" />
               </div>
               <div class="space-y-2">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-[0.2em]">Master Support Channel (Email)</label>
-                <input v-model="settings.supportEmail" type="email" class="w-full p-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-indigo-50 transition-all outline-none" />
+                <input v-model="settings.supportEmail" type="email" class="w-full p-4 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-4 focus:ring-orange-50 transition-all outline-none" />
               </div>
               <div class="grid grid-cols-2 gap-6">
                 <div class="space-y-2">
                   <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-[0.2em]">Node Capacity</label>
-                  <input v-model.number="settings.maxOrganizations" type="number" class="w-full p-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-indigo-50 outline-none" />
+                  <input v-model.number="settings.maxOrganizations" type="number" class="w-full p-4 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-4 focus:ring-orange-50 outline-none" />
                 </div>
                 <div class="space-y-2">
                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-[0.2em]">Default Radius (M)</label>
-                   <input v-model.number="settings.defaultRadius" type="number" class="w-full p-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-indigo-50 outline-none" />
+                   <input v-model.number="settings.defaultRadius" type="number" class="w-full p-4 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-4 focus:ring-orange-50 outline-none" />
                 </div>
               </div>
             </div>
           </div>
 
           <!-- SECTION 2: SECURITY & GATEWAY PROTOCOLS -->
-          <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-8">
+          <div class="bg-white p-10 rounded-xl border border-slate-100 shadow-sm space-y-8">
             <div class="flex items-center space-x-3 mb-2">
-              <div class="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-600">
+              <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-600">
                 <ShieldCheckIcon class="w-5 h-5" />
               </div>
               <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Security Protocols</h2>
             </div>
 
             <div class="space-y-4">
-              <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-transparent hover:border-indigo-100 transition-all group">
+              <div class="flex items-center justify-between p-5 bg-slate-50 rounded-xl border border-transparent hover:border-orange-100 transition-all group">
                 <div class="flex-1">
                   <p class="text-xs font-black text-slate-900 uppercase tracking-tighter mb-1">Enforce 2FA</p>
                   <p class="text-[10px] font-bold text-slate-400 leading-none">Mandatory for all SuperAdmin nodes</p>
                 </div>
                 <button @click="settings.twoFactorAuth = !settings.twoFactorAuth" 
-                  :class="settings.twoFactorAuth ? 'bg-indigo-600' : 'bg-slate-300'"
+                  :class="settings.twoFactorAuth ? 'bg-orange-500' : 'bg-slate-300'"
                   class="w-12 h-6 rounded-full relative transition-all duration-300 shadow-inner">
                   <div :class="settings.twoFactorAuth ? 'translate-x-6' : 'translate-x-1'" class="absolute top-1 w-4 h-4 bg-white rounded-full transition-transform shadow-md"></div>
                 </button>
               </div>
 
-              <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-transparent hover:border-indigo-100 transition-all group">
+              <div class="flex items-center justify-between p-5 bg-slate-50 rounded-xl border border-transparent hover:border-orange-100 transition-all group">
                 <div class="flex-1">
                   <p class="text-xs font-black text-slate-900 uppercase tracking-tighter mb-1">Rate Limiting</p>
                   <p class="text-[10px] font-bold text-slate-400 leading-none">Prevent credential stuffing attacks</p>
                 </div>
                 <button @click="settings.rateLimiting = !settings.rateLimiting" 
-                  :class="settings.rateLimiting ? 'bg-indigo-600' : 'bg-slate-300'"
+                  :class="settings.rateLimiting ? 'bg-orange-500' : 'bg-slate-300'"
                   class="w-12 h-6 rounded-full relative transition-all duration-300 shadow-inner">
                   <div :class="settings.rateLimiting ? 'translate-x-6' : 'translate-x-1'" class="absolute top-1 w-4 h-4 bg-white rounded-full transition-transform shadow-md"></div>
                 </button>
               </div>
 
-              <div class="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-transparent hover:border-indigo-100 transition-all group">
+              <div class="flex items-center justify-between p-5 bg-slate-50 rounded-xl border border-transparent hover:border-orange-100 transition-all group">
                 <div class="flex-1">
                   <p class="text-xs font-black text-slate-900 uppercase tracking-tighter mb-1">Maintenance Mode</p>
                   <p class="text-[10px] font-bold text-red-400 leading-none uppercase">LOCK ALL PLATFORM API TRAFFIC</p>
@@ -153,27 +153,27 @@
           </div>
 
           <!-- SECTION 3: SYSTEM SECRETS (Senior Feature) -->
-          <div class="bg-slate-950 p-10 rounded-[4rem] text-white space-y-10 relative overflow-hidden group">
+          <div class="bg-slate-950 p-10 rounded-xl text-white space-y-10 relative overflow-hidden group">
             <div class="relative z-10">
-              <h3 class="text-xs font-black uppercase tracking-[0.4em] opacity-40 mb-10 text-indigo-400">Master Integration Keys</h3>
+              <h3 class="text-xs font-black uppercase tracking-[0.4em] opacity-40 mb-10 text-orange-400">Master Integration Keys</h3>
               
               <div class="space-y-6">
                  <div class="space-y-2">
                     <p class="text-[9px] font-black uppercase tracking-widest opacity-60">Global Secret Key (HS256)</p>
-                    <div class="flex items-center space-x-3 bg-white/5 p-4 rounded-2xl border border-white/5 font-mono text-[10px] text-indigo-300 overflow-hidden">
+                    <div class="flex items-center space-x-3 bg-white/5 p-4 rounded-xl border border-white/5 font-mono text-[10px] text-orange-300 overflow-hidden">
                        <LockIcon class="w-3 h-3 shrink-0" />
                        <span class="truncate">****************************************</span>
-                       <button class="text-xs font-black text-white uppercase ml-auto hover:text-indigo-400 transition-colors">Reveal</button>
+                       <button class="text-xs font-black text-white uppercase ml-auto hover:text-orange-400 transition-colors">Reveal</button>
                     </div>
                  </div>
 
-                 <div class="p-6 bg-indigo-600/10 rounded-3xl border border-indigo-500/20">
-                    <div class="flex items-center space-x-3 mb-3 text-indigo-400">
+                 <div class="p-6 bg-orange-500/10 rounded-xl border border-orange-500/20">
+                    <div class="flex items-center space-x-3 mb-3 text-orange-400">
                        <DatabaseIcon class="w-5 h-5" />
                        <span class="text-xs font-black uppercase tracking-widest">Database Backup</span>
                     </div>
                     <p class="text-[10px] opacity-60 leading-relaxed font-medium">Automatic hourly snapshots are being archived to the secondary cloud vault.</p>
-                    <button class="mt-4 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg hover:shadow-indigo-500/40 transition-all active:scale-95">Trigger Manual Backup</button>
+                    <button class="mt-4 px-6 py-2.5 bg-orange-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg hover:shadow-orange-500/40 transition-all active:scale-95">Trigger Manual Backup</button>
                  </div>
               </div>
             </div>
@@ -181,14 +181,14 @@
           </div>
 
           <!-- SECTION 4: COMPLIANCE & LEGAL NODES -->
-          <div class="bg-white p-10 rounded-[4rem] border border-slate-100 shadow-sm space-y-8 flex flex-col justify-between">
+          <div class="bg-white p-10 rounded-xl border border-slate-100 shadow-sm space-y-8 flex flex-col justify-between">
             <div>
               <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-10 flex items-center italic">
                 <FileTextIcon class="w-5 h-5 mr-2 text-slate-400" /> Regulatory & Privacy
               </h3>
               <div class="space-y-4">
                  <div v-for="legal in ['Terms of Protocol', 'Privacy Governance', 'SLA Agreement', 'Cookie Matrix']" :key="legal"
-                   class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer group">
+                   class="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer group">
                     <span class="text-xs font-bold text-slate-600 uppercase group-hover:text-slate-900">{{ legal }}</span>
                     <ExternalLinkIcon class="w-3.5 h-3.5 text-slate-300" />
                  </div>
@@ -196,7 +196,7 @@
             </div>
             <div class="pt-10 border-t border-slate-50 text-center">
                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">System Revision 1.0.4-Stable</p>
-               <p class="text-[8px] font-black text-indigo-500 mt-1 uppercase tracking-[0.5em]">TrackTimi Systems Liberia</p>
+               <p class="text-[8px] font-black text-orange-500 mt-1 uppercase tracking-[0.5em]">TrackTimi Systems Liberia</p>
             </div>
           </div>
 
@@ -207,7 +207,7 @@
 
     <!-- Success Message Portal -->
     <Transition name="slide-up">
-      <div v-if="saveMessage" class="fixed bottom-10 right-10 z-[100] bg-green-500 text-white p-6 rounded-3xl shadow-3xl flex items-center space-x-4 animate-in slide-in-from-right duration-500">
+      <div v-if="saveMessage" class="fixed bottom-10 right-10 z-[100] bg-green-500 text-white p-6 rounded-xl shadow-3xl flex items-center space-x-4 animate-in slide-in-from-right duration-500">
          <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
             <CheckIcon class="w-6 h-6" />
          </div>

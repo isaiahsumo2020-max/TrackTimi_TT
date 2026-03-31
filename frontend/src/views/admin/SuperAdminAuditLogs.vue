@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-orange-100 selection:text-orange-600">
     
     <!-- 1. PREMIUM SIDEBAR NAVIGATION -->
     <aside 
@@ -7,12 +7,12 @@
     >
       <div class="p-6 border-b border-slate-800 flex items-center justify-between h-24">
         <div v-if="sidebarOpen" class="flex items-center space-x-3 animate-in fade-in slide-in-from-left-4">
-          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
             <ZapIcon class="w-6 h-6 text-white fill-white" />
           </div>
           <div class="flex flex-col">
             <span class="text-xl font-black tracking-tighter uppercase leading-none italic">TrackTimi</span>
-            <span class="text-[8px] font-black text-indigo-400 uppercase tracking-[0.4em] mt-1">Audit Node</span>
+            <span class="text-[8px] font-black text-orange-400 uppercase tracking-[0.4em] mt-1">Audit Node</span>
           </div>
         </div>
         <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all">
@@ -25,8 +25,8 @@
         <p v-if="sidebarOpen" class="text-[10px] font-black text-slate-500 uppercase px-4 mb-4 tracking-[0.2em]">Platform Control</p>
         
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
-          :class="[$route.path === item.path ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all group relative"
+          :class="[$route.path === item.path ? 'bg-orange-500 text-white shadow-xl shadow-orange-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -34,7 +34,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-2xl border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
+        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-xl border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
           <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-red-500">
             <LogOutIcon class="w-5 h-5" />
           </div>
@@ -54,17 +54,17 @@
         <div class="flex flex-col">
           <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center italic">
             Network Audit Ledger
-            <span class="ml-3 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100">Live Stream</span>
+            <span class="ml-3 px-3 py-1 bg-orange-50 text-orange-500 rounded-lg text-[10px] font-black uppercase tracking-widest border border-orange-100">Live Stream</span>
           </h1>
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Immutable record of all platform-wide operational pulses</p>
         </div>
 
         <div class="flex items-center space-x-4">
-          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-             <button @click="loadAuditLogs" :disabled="loading" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-indigo-600 active:scale-90">
+          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
+             <button @click="loadAuditLogs" :disabled="loading" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-orange-500 active:scale-90">
                <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
              </button>
-             <button @click="exportToCSV" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-indigo-600 active:scale-90">
+             <button @click="exportToCSV" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-orange-500 active:scale-90">
                <FileDownIcon class="w-4 h-4" />
              </button>
           </div>
@@ -77,7 +77,7 @@
         <!-- ROW 1: AUDIT SUMMARY KPIS -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div v-for="stat in auditStats" :key="stat.label" 
-            class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500">
+            class="bg-white p-8 rounded-xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500">
             <div class="flex justify-between items-start mb-4">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{{ stat.label }}</p>
               <div :class="stat.color" class="p-2 rounded-lg bg-opacity-10">
@@ -90,21 +90,21 @@
         </div>
 
         <!-- ROW 2: ADVANCED FILTERING -->
-        <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-wrap items-center gap-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex flex-wrap items-center gap-6">
           <div class="flex-1 min-w-[300px] relative group">
-            <SearchIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+            <SearchIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-orange-500 transition-colors" />
             <input 
               v-model="searchQuery"
               type="text" 
               placeholder="Search by User, Organization, Action or IP Address..." 
-              class="w-full pl-12 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-indigo-50 outline-none transition-all"
+              class="w-full pl-12 pr-6 py-4 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-4 focus:ring-orange-50 outline-none transition-all"
             />
           </div>
 
           <div class="flex items-center space-x-3">
              <div class="space-y-1">
                 <p class="text-[9px] font-black text-slate-400 uppercase ml-2">Action Type</p>
-                <select v-model="filterAction" class="bg-slate-50 border-none rounded-xl px-6 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-indigo-500">
+                <select v-model="filterAction" class="bg-slate-50 border-none rounded-xl px-6 py-3 text-[11px] font-bold uppercase tracking-widest text-slate-600 focus:ring-2 focus:ring-orange-500">
                   <option value="all">All Actions</option>
                   <option value="LOGIN">Security: Login</option>
                   <option value="CHECK_IN">Operational: Check-in</option>
@@ -114,13 +114,13 @@
              </div>
              <div class="space-y-1">
                 <p class="text-[9px] font-black text-slate-400 uppercase ml-2">Date Frame</p>
-                <input type="date" v-model="filterDate" class="bg-slate-50 border-none rounded-xl px-6 py-3 text-[11px] font-bold text-slate-600 focus:ring-2 focus:ring-indigo-500" />
+                <input type="date" v-model="filterDate" class="bg-slate-50 border-none rounded-xl px-6 py-3 text-[11px] font-bold text-slate-600 focus:ring-2 focus:ring-orange-500" />
              </div>
           </div>
         </div>
 
         <!-- ROW 3: THE MASTER LEDGER TABLE -->
-        <div class="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+        <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
           <div class="overflow-x-auto">
             <table class="w-full text-left">
               <thead>
@@ -133,7 +133,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-50">
-                <tr v-for="log in filteredLogs" :key="log.Log_ID" class="group hover:bg-indigo-50/30 transition-all duration-300">
+                <tr v-for="log in filteredLogs" :key="log.Log_ID" class="group hover:bg-orange-50/30 transition-all duration-300">
                   <td class="px-10 py-7">
                     <div class="flex items-center space-x-3">
                        <ClockIcon class="w-3.5 h-3.5 text-slate-300" />
@@ -158,12 +158,12 @@
                   </td>
                   <td class="px-10 py-7">
                     <div class="flex items-center space-x-2">
-                       <BuildingIcon class="w-3.5 h-3.5 text-indigo-400" />
+                       <BuildingIcon class="w-3.5 h-3.5 text-orange-400" />
                        <span class="text-[11px] font-black text-slate-900">{{ log.Org_Name || 'System Master' }}</span>
                     </div>
                   </td>
                   <td class="px-10 py-7 text-right">
-                    <button @click="inspectLog(log)" class="p-2 bg-slate-50 rounded-xl text-slate-400 hover:bg-indigo-600 hover:text-white transition-all group-hover:shadow-lg">
+                    <button @click="inspectLog(log)" class="p-2 bg-slate-50 rounded-xl text-slate-400 hover:bg-orange-500 hover:text-white transition-all group-hover:shadow-lg">
                        <EyeIcon class="w-4 h-4" />
                     </button>
                   </td>
@@ -177,7 +177,7 @@
              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Showing {{ filteredLogs.length }} Pulses across network</p>
              <div class="flex space-x-2">
                 <button class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all">Prev</button>
-                <button class="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-100">Next</button>
+                <button class="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-500 transition-all shadow-lg shadow-orange-100">Next</button>
              </div>
           </div>
         </div>
@@ -188,7 +188,7 @@
       <Transition name="modal">
         <div v-if="activeInspector" class="fixed inset-0 z-[60] flex items-center justify-center p-6">
           <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-md" @click="activeInspector = null"></div>
-          <div class="bg-white rounded-[3.5rem] w-full max-w-2xl overflow-hidden shadow-3xl relative z-10 animate-in zoom-in duration-300">
+          <div class="bg-white rounded-xl w-full max-w-2xl overflow-hidden shadow-3xl relative z-10 animate-in zoom-in duration-300">
              <div class="h-24 bg-slate-900 p-8 flex items-center justify-between">
                 <h2 class="text-xl font-black text-white tracking-tight uppercase">Payload Inspection</h2>
                 <button @click="activeInspector = null" class="text-slate-400 hover:text-white"><XIcon class="w-6 h-6" /></button>
@@ -201,19 +201,19 @@
                    </div>
                    <div class="space-y-1">
                       <p class="text-[10px] font-black text-slate-400 uppercase">Operation</p>
-                      <p class="text-sm font-black text-indigo-600">{{ activeInspector.Action }}</p>
+                      <p class="text-sm font-black text-orange-500">{{ activeInspector.Action }}</p>
                    </div>
                 </div>
 
                 <div class="space-y-2">
                    <p class="text-[10px] font-black text-slate-400 uppercase">JSON Payload Body</p>
-                   <div class="bg-slate-950 p-6 rounded-3xl font-mono text-[11px] text-green-400 overflow-x-auto leading-relaxed border border-white/5">
+                   <div class="bg-slate-950 p-6 rounded-xl font-mono text-[11px] text-green-400 overflow-x-auto leading-relaxed border border-white/5">
                       <pre>{{ formatJSON(activeInspector.New_Data) }}</pre>
                    </div>
                 </div>
 
                 <div class="pt-6 flex justify-end">
-                   <button @click="activeInspector = null" class="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">Close Inspector</button>
+                   <button @click="activeInspector = null" class="px-8 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest">Close Inspector</button>
                 </div>
              </div>
           </div>
@@ -224,8 +224,8 @@
 
     <!-- Global Loading State -->
     <div v-if="loading" class="fixed inset-0 z-[100] bg-white/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-       <div class="bg-slate-950 p-6 rounded-3xl shadow-3xl flex items-center space-x-4 text-white">
-          <RefreshCwIcon class="w-5 h-5 animate-spin text-indigo-400" />
+       <div class="bg-slate-950 p-6 rounded-xl shadow-3xl flex items-center space-x-4 text-white">
+          <RefreshCwIcon class="w-5 h-5 animate-spin text-orange-400" />
           <span class="text-[10px] font-black uppercase tracking-[0.4em]">Querying Master Log</span>
        </div>
     </div>
@@ -266,10 +266,10 @@ const navItems = [
 
 const auditStats = computed(() => {
   return [
-    { label: 'Total Pulses', value: logs.value.length, icon: ActivityIcon, color: 'text-indigo-600' },
+    { label: 'Total Pulses', value: logs.value.length, icon: ActivityIcon, color: 'text-orange-500' },
     { label: 'Provision Events', value: logs.value.filter(l => l.Action === 'CREATE_USER').length, icon: UserPlusIcon, color: 'text-green-600' },
     { label: 'Security Locks', value: logs.value.filter(l => l.Action.includes('SUSPEND')).length, icon: LockIcon, color: 'text-red-600' },
-    { label: 'Auth Success', value: logs.value.filter(l => l.Action === 'LOGIN').length, icon: ShieldCheckIcon, color: 'text-blue-600' },
+    { label: 'Auth Success', value: logs.value.filter(l => l.Action === 'LOGIN').length, icon: ShieldCheckIcon, color: 'text-orange-500' },
   ]
 })
 
@@ -315,7 +315,7 @@ const loadAuditLogs = async () => {
 }
 
 const getActionStyle = (action) => {
-  if (action === 'LOGIN') return 'bg-indigo-50 text-indigo-600 border-indigo-100'
+  if (action === 'LOGIN') return 'bg-orange-50 text-orange-500 border-orange-100'
   if (action.includes('CREATE')) return 'bg-green-50 text-green-600 border-green-100'
   if (action.includes('DELETE') || action.includes('SUSPEND')) return 'bg-red-50 text-red-600 border-red-100'
   return 'bg-slate-50 text-slate-500 border-slate-100'

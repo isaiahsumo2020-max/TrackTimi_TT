@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-xl mx-auto py-12 px-6 space-y-8">
     <div class="text-center space-y-4">
-      <div class="w-20 h-20 mx-auto bg-indigo-600 rounded-3xl flex items-center justify-center shadow-xl">
+      <div class="w-20 h-20 mx-auto bg-orange-500 rounded-xl flex items-center justify-center shadow-xl">
         <MapPinIcon class="w-10 h-10 text-white" />
       </div>
       <h1 class="text-4xl font-black text-slate-900 tracking-tight">
@@ -11,20 +11,20 @@
     </div>
 
     <!-- Accuracy Box -->
-    <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm space-y-6">
+    <div class="bg-white p-8 rounded-xl border border-slate-100 shadow-sm space-y-6">
       <div class="grid grid-cols-2 gap-4">
-        <div :class="location ? 'bg-green-50 border-green-100' : 'bg-slate-50 border-slate-100'" class="p-5 rounded-2xl border-2 text-center transition-all">
+        <div :class="location ? 'bg-green-50 border-green-100' : 'bg-slate-50 border-slate-100'" class="p-5 rounded-xl border-2 text-center transition-all">
           <p class="text-[9px] font-black text-slate-400 uppercase mb-1">GPS Signal</p>
           <p class="text-xs font-bold" :class="location ? 'text-green-600' : 'text-slate-400'">{{ location ? 'LOCKED' : 'SEARCHING' }}</p>
         </div>
-        <div :class="inRange ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'" class="p-5 rounded-2xl border-2 text-center transition-all">
+        <div :class="inRange ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'" class="p-5 rounded-xl border-2 text-center transition-all">
           <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Work Zone</p>
           <p class="text-xs font-bold" :class="inRange ? 'text-green-600' : 'text-red-600'">{{ inRange ? 'IN RANGE' : 'OUTSIDE' }}</p>
         </div>
       </div>
 
       <!-- Distance Readout -->
-      <div v-if="location" class="text-center py-6 bg-slate-50 rounded-[2rem]">
+      <div v-if="location" class="text-center py-6 bg-slate-50 rounded-lg">
         <div class="text-4xl font-black text-slate-900">{{ distance }}m</div>
         <p class="text-[9px] font-bold text-slate-400 uppercase">Distance to target office</p>
       </div>
@@ -34,8 +34,8 @@
     <button 
       @click="handleSubmit" 
       :disabled="!inRange || loading"
-      class="w-full py-8 rounded-[2.5rem] font-black text-2xl shadow-2xl transition-all active:scale-95"
-      :class="inRange ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-slate-200 text-slate-400 cursor-not-allowed'"
+      class="w-full py-8 rounded-xl font-black text-2xl shadow-2xl transition-all active:scale-95"
+      :class="inRange ? 'bg-orange-500 text-white shadow-orange-200' : 'bg-slate-200 text-slate-400 cursor-not-allowed'"
     >
       <span v-if="loading">PROCESSING...</span>
       <span v-else-if="isCheckedIn">END WORK SHIFT</span>

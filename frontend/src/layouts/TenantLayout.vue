@@ -27,7 +27,7 @@
         <div class="flex items-center space-x-4">
           <router-link
             :to="`/${orgSlug}/checkin`"
-            class="hidden md:flex items-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm shadow-sm transition-all duration-200 active:scale-95"
+            class="hidden md:flex items-center space-x-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg text-sm shadow-sm transition-all duration-200 active:scale-95"
           >
             <MapPinIcon class="w-4 h-4" />
             <span>Check In</span>
@@ -69,12 +69,12 @@
           <!-- Brand Header -->
           <div class="p-6 border-b border-slate-800">
             <div class="flex items-center space-x-3 mb-6">
-              <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+              <div class="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
                 <span class="font-bold text-lg leading-none">{{ orgInitial }}</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-xs font-bold text-indigo-400 uppercase tracking-tighter">Enterprise</span>
-                <span class="text-xl font-black text-white tracking-tight">Track<span class="text-indigo-500">Timi</span></span>
+                <span class="text-xs font-bold text-orange-400 uppercase tracking-tighter">Enterprise</span>
+                <span class="text-xl font-black text-white tracking-tight">Track<span class="text-orange-500">Timi</span></span>
               </div>
             </div>
 
@@ -101,7 +101,7 @@
                   :to="item.path"
                   class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative"
                   :class="route.path.includes(item.name) 
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' 
+                    ? 'bg-orange-500 text-white shadow-md shadow-orange-600/20' 
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'"
                   @click="sidebarOpen = false"
                 >
@@ -115,11 +115,11 @@
 
           <!-- System Status -->
           <div class="p-6 mt-auto">
-            <div class="bg-indigo-950/30 rounded-xl p-4 border border-indigo-500/20">
-               <div class="flex items-center space-x-2 text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+            <div class="bg-orange-950/30 rounded-xl p-4 border border-orange-500/20">
+               <div class="flex items-center space-x-2 text-[10px] font-bold text-orange-400 uppercase tracking-widest">
                  <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
                  </span>
                  <span>System Active</span>
                </div>

@@ -4,20 +4,20 @@
     <!-- 1. Premium Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-1">Personnel Portal</p>
+        <p class="text-[10px] font-black text-orange-500 uppercase tracking-[0.3em] mb-1">Personnel Portal</p>
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">
           Hello, {{ user?.firstName }} <span class="font-light text-slate-400">👋</span>
         </h1>
       </div>
       
       <div class="flex items-center space-x-4">
-        <div class="bg-white px-6 py-3 rounded-2xl border border-slate-100 shadow-sm text-center">
+        <div class="bg-white px-6 py-3 rounded-xl border border-slate-100 shadow-sm text-center">
           <p class="text-[9px] font-black text-slate-400 uppercase">Work Hours (MTD)</p>
           <p class="text-sm font-black text-slate-900">{{ totalMonthlyHours }}h</p>
         </div>
         <!-- Quick Action Button -->
         <router-link :to="`/${orgSlug}/checkin`" 
-          class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+          class="px-6 py-3 bg-orange-500 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-orange-100 hover:bg-orange-600 transition-all active:scale-95">
           Clock Center 📍
         </router-link>
       </div>
@@ -27,10 +27,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       <!-- Current Status Card -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+      <div class="bg-white p-8 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between relative overflow-hidden group">
         <div class="relative z-10">
           <div class="flex justify-between items-start mb-6">
-            <div :class="statusColor" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:rotate-12">
+            <div :class="statusColor" class="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:rotate-12">
               <ClockIcon class="w-6 h-6" />
             </div>
             <span :class="statusBadge" class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
@@ -46,16 +46,16 @@
       </div>
 
       <!-- Upcoming Shift -->
-      <div class="lg:col-span-2 bg-slate-900 p-8 rounded-[3rem] shadow-2xl text-white relative overflow-hidden">
+      <div class="lg:col-span-2 bg-slate-900 p-8 rounded-xl shadow-2xl text-white relative overflow-hidden">
         <div class="relative z-10 flex flex-col h-full">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xs font-black uppercase tracking-[0.2em] opacity-50 text-indigo-400">Next Scheduled Shift</h3>
+            <h3 class="text-xs font-black uppercase tracking-[0.2em] opacity-50 text-orange-400">Next Scheduled Shift</h3>
             <CalendarIcon class="w-4 h-4 opacity-50" />
           </div>
           
           <div v-if="nextShift" class="flex-1 flex flex-col justify-center">
             <div class="flex items-center space-x-4 mb-4">
-              <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg text-[10px] font-black uppercase border border-indigo-500/30">
+              <span class="px-3 py-1 bg-orange-500/20 text-orange-300 rounded-lg text-[10px] font-black uppercase border border-orange-500/30">
                 {{ nextShift.Depart_Name || 'General' }}
               </span>
               <span class="text-xs font-bold opacity-60">{{ formatDate(nextShift.Shift_Date) }}</span>
@@ -68,7 +68,7 @@
             <p class="text-xs font-black uppercase opacity-30 tracking-[0.3em]">No Upcoming Shifts Found</p>
           </div>
         </div>
-        <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full"></div>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full"></div>
       </div>
     </div>
 
@@ -76,19 +76,19 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       <!-- Recent Check-ins List -->
-      <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+      <div class="lg:col-span-2 bg-white p-8 rounded-xl border border-slate-100 shadow-sm">
         <div class="flex justify-between items-center mb-8">
           <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center">
-            <HistoryIcon class="w-4 h-4 mr-2 text-indigo-500" /> Recent Pulse History
+            <HistoryIcon class="w-4 h-4 mr-2 text-orange-500" /> Recent Pulse History
           </h3>
-          <router-link :to="`/${orgSlug}/history`" class="text-[9px] font-black text-indigo-600 uppercase border-b-2 border-indigo-50">View All Logs</router-link>
+          <router-link :to="`/${orgSlug}/history`" class="text-[9px] font-black text-orange-500 uppercase border-b-2 border-orange-50">View All Logs</router-link>
         </div>
 
         <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
           <div v-for="checkin in checkins" :key="checkin.Attend_ID" 
-            class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-white border border-transparent hover:border-slate-100 transition-all group">
+            class="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-white border border-transparent hover:border-slate-100 transition-all group">
             <div class="flex items-center space-x-4">
-              <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm font-black text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+              <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm font-black text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-colors">
                 {{ checkin.Check_Type === 'IN' ? '↓' : '↑' }}
               </div>
               <div>
@@ -108,7 +108,7 @@
       </div>
 
       <!-- Weekly Progress (Cool Feature) -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm text-center space-y-6">
+      <div class="bg-white p-8 rounded-xl border border-slate-100 shadow-sm text-center space-y-6">
         <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Weekly Commitment</h3>
         
         <div class="relative w-40 h-40 mx-auto flex items-center justify-center">
@@ -116,7 +116,7 @@
           <svg class="w-full h-full transform -rotate-90">
             <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" class="text-slate-50" />
             <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" 
-              class="text-indigo-600 transition-all duration-1000"
+              class="text-orange-500 transition-all duration-1000"
               :stroke-dasharray="440"
               :stroke-dashoffset="440 - (440 * weeklyProgress / 100)"
               stroke-linecap="round" />
@@ -128,7 +128,7 @@
         </div>
         
         <div class="pt-4 space-y-2">
-          <p class="text-xs font-bold text-slate-600">You've completed <span class="text-indigo-600">{{ currentWeeklyHours }}h</span> this week.</p>
+          <p class="text-xs font-bold text-slate-600">You've completed <span class="text-orange-500">{{ currentWeeklyHours }}h</span> this week.</p>
           <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Keep it up! 🚀</p>
         </div>
       </div>

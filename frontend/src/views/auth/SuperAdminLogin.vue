@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-gray-100 via-gray-100 to-gray-100 flex items-center justify-center p-6">
-    <div class="bg-white backdrop-blur-2xl rounded-3xl shadow-2xl border border-white max-w-md w-full p-10">
+    <div class="bg-white backdrop-blur-2xl rounded-xl shadow-2xl border border-white max-w-md w-full p-10">
       <div class="text-center mb-12">
-        <div class="w-24 h-24 bg-gradient-to-r from-orange-500 to-orange-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl border-4 border-white/20">
+        <div class="w-24 h-24 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mx-auto mb-8 shadow-2xl border-4 border-white/20">
           <svg class="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-14V7a4 4 0 10-8 0v2h8z" />
           </svg>
@@ -25,7 +25,7 @@
               type="email"
               required
               placeholder="superadmin@tracktimi.com"
-              class="w-full pl-12 pr-4 py-4 bg-white border border-gray-300 rounded-2xl text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+              class="w-full pl-12 pr-4 py-4 bg-white border border-gray-300 rounded-xl text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
             />
           </div>
         </div>
@@ -43,7 +43,7 @@
               :type="showPassword ? 'text' : 'password'"
               required
               placeholder="Enter password"
-              class="w-full pl-12 pr-14 py-4 bg-white border border-gray-300 rounded-2xl text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+              class="w-full pl-12 pr-14 py-4 bg-white border border-gray-300 rounded-xl text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
             />
             <button
               type="button"
@@ -68,14 +68,14 @@
         <button
           type="submit"
           :disabled="loading"
-          class="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg shadow-md hover:shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+          class="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg shadow-md hover:shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
         >
           <span v-if="loading">Signing in...</span>
           <span v-else>Login as Super Admin</span>
         </button>
       </form>
 
-      <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
+      <div class="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg text-xs text-orange-600">
         <p class="font-semibold mb-2">Demo Credentials:</p>
         <p class="font-mono">Email: superadmin@tracktimi.com</p>
         <p class="font-mono">Password: superpass123</p>

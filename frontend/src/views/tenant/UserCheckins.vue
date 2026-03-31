@@ -8,7 +8,7 @@
       <button @click="loadLogs" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl text-xs uppercase transition-all">🔄 Refresh</button>
     </div>
 
-    <div class="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm">
+    <div class="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
       <table class="w-full text-left">
         <thead class="bg-slate-50/50 border-b border-slate-100">
           <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest">

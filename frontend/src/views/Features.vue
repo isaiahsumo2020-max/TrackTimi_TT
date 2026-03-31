@@ -11,7 +11,7 @@
         <p>Organize teams and track attendance by department.</p>
       </div>
     </div>
-    <router-link to="/" class="mt-20 inline-block bg-orange-500 text-white px-8 py-4 rounded-2xl font-bold">
+    <router-link to="/" class="mt-20 inline-block bg-orange-500 text-white px-8 py-4 rounded-xl font-bold">
       ← Back to Home
     </router-link>
     <Footer />
