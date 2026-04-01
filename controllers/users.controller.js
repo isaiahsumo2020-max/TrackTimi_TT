@@ -1,0 +1,217 @@
+const db = require('../config/db');
+const bcrypt = require('bcryptjs');
+
+// 1. CREATE USER (Provisioning)
+exports.createUser = async (req, res) => {
+  try {
+    const { firstName, surName, email, password, jobTitle, depId, userTypeId } = req.body;
+    const adminOrgId = req.user.orgId;
+
+    if (!firstName || !surName || !email || !password) {
+      return res.status(400).json({ error: 'Name, Email, and Password are required' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const sql = `
+      INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Job_Title, Dep_ID, Is_Active)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+    `;
+
+    db.run(sql, [firstName, surName, email.toLowerCase(), hashedPassword, adminOrgId, userTypeId || 3, jobTitle, depId || null], function(err) {
+      if (err) {
+        if (err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Email already exists' });
+        return res.status(500).json({ error: 'Database error: ' + err.message });
+      }
+      res.status(201).json({ message: 'User provisioned successfully' });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 2. GET ALL USERS (The one causing the crash on line 7)
+exports.getUsers = (req, res) => {
+  const orgId = req.user.orgId;
+  const sql = `
+    SELECT 
+      User_ID, 
+      First_Name AS firstName, 
+      SurName AS surName, 
+      Email AS email, 
+      Job_Title AS jobTitle,
+      Employee_ID AS employeeId,
+      Avatar_Data AS avatar,
+      Avatar_MIME_Type AS avatarMimeType
+    FROM User 
+    WHERE Org_ID = ? AND Is_Active = 1
+  `;
+  
+  db.all(sql, [orgId], (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Fetch failed' });
+    res.json(rows);
+  });
+};
+
+// 3. GET SINGLE USER
+exports.getUserById = (req, res) => {
+  const { id } = req.params;
+  const orgId = req.user.orgId;
+  db.get('SELECT * FROM User WHERE User_ID = ? AND Org_ID = ?', [id, orgId], (err, row) => {
+    if (err || !row) return res.status(404).json({ error: 'User not found' });
+    res.json(row);
+  });
+};
+
+// 4. UPDATE USER (Admin profile editing)
+exports.updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { firstName, surName, email, jobTitle, depId } = req.body;
+    const orgId = req.user.orgId;
+
+    // Verify user belongs to org
+    db.get('SELECT * FROM User WHERE User_ID = ? AND Org_ID = ?', [id, orgId], async (err, user) => {
+      if (err || !user) return res.status(404).json({ error: 'User not found' });
+
+      // Check if email is being changed and if it already exists
+      if (email && email.toLowerCase() !== user.Email) {
+        db.get('SELECT User_ID FROM User WHERE Email = ? AND User_ID != ?', [email.toLowerCase(), id], (err, existing) => {
+          if (existing) return res.status(400).json({ error: 'Email already exists' });
+        });
+      }
+
+      const sql = `
+        UPDATE User 
+        SET 
+          First_Name = ?, 
+          SurName = ?, 
+          Email = ?, 
+          Job_Title = ?, 
+          Dep_ID = ?
+        WHERE User_ID = ? AND Org_ID = ?
+      `;
+
+      db.run(
+        sql,
+        [firstName || user.First_Name, surName || user.SurName, email?.toLowerCase() || user.Email, jobTitle || user.Job_Title, depId || user.Dep_ID, id, orgId],
+        (err) => {
+          if (err) return res.status(500).json({ error: 'Update failed: ' + err.message });
+          res.json({ message: 'User updated successfully' });
+        }
+      );
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 7. UPLOAD USER AVATAR
+exports.uploadAvatar = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const orgId = req.user.orgId;
+    const { avatarData, avatarMimeType } = req.body;
+
+    console.log(`[AVATAR] Uploading avatar for user ${id} in org ${orgId}`);
+    console.log(`[AVATAR] Avatar data length: ${avatarData?.length || 0} chars`);
+
+    if (!avatarData) {
+      return res.status(400).json({ error: 'Avatar data is required' });
+    }
+
+    if (avatarData.length > 5000000) {
+      return res.status(400).json({ error: 'Avatar data too large' });
+    }
+
+    // Verify user belongs to org
+    db.get('SELECT * FROM User WHERE User_ID = ? AND Org_ID = ?', [id, orgId], (err, user) => {
+      if (err) {
+        console.error(`[AVATAR] DB error fetching user: ${err.message}`);
+        return res.status(500).json({ error: 'Database error: ' + err.message });
+      }
+      if (!user) {
+        console.error(`[AVATAR] User not found: ${id}`);
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const sql = `
+        UPDATE User 
+        SET 
+          Avatar_Data = ?,
+          Avatar_MIME_Type = ?
+        WHERE User_ID = ? AND Org_ID = ?
+      `;
+
+      console.log(`[AVATAR] Executing update for user ${id}`);
+      db.run(
+        sql,
+        [avatarData, avatarMimeType || 'image/png', id, orgId],
+        function(err) {
+          if (err) {
+            console.error(`[AVATAR] Update error: ${err.message}`);
+            return res.status(500).json({ error: 'Avatar upload failed: ' + err.message });
+          }
+          console.log(`[AVATAR] Successfully updated user ${id}, changes: ${this.changes}`);
+          res.json({ 
+            message: 'Avatar uploaded successfully',
+            userId: id,
+            changes: this.changes
+          });
+        }
+      );
+    });
+  } catch (error) {
+    console.error(`[AVATAR] Exception: ${error.message}`);
+    res.status(500).json({ error: 'Server error: ' + error.message });
+  }
+};
+
+// 5. CHANGE USER PASSWORD (Admin resetting user password)
+exports.changeUserPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+    const orgId = req.user.orgId;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Verify user belongs to org
+    db.get('SELECT * FROM User WHERE User_ID = ? AND Org_ID = ?', [id, orgId], async (err, user) => {
+      if (err || !user) return res.status(404).json({ error: 'User not found' });
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const sql = 'UPDATE User SET Password = ? WHERE User_ID = ? AND Org_ID = ?';
+      db.run(sql, [hashedPassword, id, orgId], (err) => {
+        if (err) return res.status(500).json({ error: 'Password update failed' });
+        res.json({ message: 'Password changed successfully' });
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 6. DELETE USER (Admin deleting a user)
+exports.deleteUser = (req, res) => {
+  try {
+    const { id } = req.params;
+    const orgId = req.user.orgId;
+
+    // Verify user belongs to org
+    db.get('SELECT * FROM User WHERE User_ID = ? AND Org_ID = ?', [id, orgId], (err, user) => {
+      if (err || !user) return res.status(404).json({ error: 'User not found' });
+
+      const sql = 'DELETE FROM User WHERE User_ID = ? AND Org_ID = ?';
+      db.run(sql, [id, orgId], (err) => {
+        if (err) return res.status(500).json({ error: 'Delete failed: ' + err.message });
+        res.json({ message: 'User deleted successfully' });
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
