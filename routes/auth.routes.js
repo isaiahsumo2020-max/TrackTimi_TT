@@ -8,8 +8,10 @@ const { authLimiter } = require('../middleware/rateLimiter');
 router.post('/register-org', authLimiter, authController.registerOrg);
 router.post('/login', authLimiter, authController.login);
 router.post('/refresh-token', authController.refreshToken);
+router.post('/activate-invitation', authLimiter, authController.activateInvitation);
 
 // 2. PROTECTED ROUTES
 router.get('/profile', authenticateToken, authController.getProfile);
+router.post('/invite', authenticateToken, authController.inviteEmployee);
 
 module.exports = router;

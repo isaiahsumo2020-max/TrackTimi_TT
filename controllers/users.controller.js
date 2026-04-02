@@ -1,6 +1,38 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 
+// 0. GET ALL ADMINS (with organization info)
+exports.getAdmins = (req, res) => {
+  const sql = `
+    SELECT 
+      u.User_ID,
+      u.First_Name,
+      u.SurName,
+      u.Email,
+      u.Employee_ID,
+      u.User_Type_ID,
+      u.Job_Title,
+      u.Phone_Num,
+      u.Is_Active,
+      u.Created_at,
+      o.Org_ID,
+      o.Org_Name,
+      o.Org_Domain
+    FROM User u
+    LEFT JOIN Organization o ON u.Org_ID = o.Org_ID
+    WHERE u.User_Type_ID = 1
+    ORDER BY o.Org_Name ASC, u.First_Name ASC
+  `;
+  
+  db.all(sql, (err, rows) => {
+    if (err) {
+      console.error('Database error fetching admins:', err);
+      return res.status(500).json({ error: 'Failed to fetch organization admins' });
+    }
+    res.json(rows || []);
+  });
+};
+
 // 1. CREATE USER (Provisioning)
 exports.createUser = async (req, res) => {
   try {

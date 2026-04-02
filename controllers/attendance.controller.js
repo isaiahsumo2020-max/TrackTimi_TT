@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const geo = require('../utils/geo');
+const socketHelper = require('../utils/socket');
 
 // =============================================================
 // 1. STATUS CHECK
@@ -75,7 +76,24 @@ exports.checkIn = async (req, res) => {
 
     db.run(sql, [userId, orgId, latitude, longitude], function(err) {
       if (err) return res.status(500).json({ error: 'DB Error: ' + err.message });
-      res.status(201).json({ success: true, message: 'Clock-in successful' });
+      
+      // Emit realtime event
+      try {
+        const io = socketHelper.getIo();
+        io.to(`org:${orgId}`).emit('attendance:created', {
+          attendId: this.lastID,
+          userId: userId,
+          orgId: orgId,
+          latitude: latitude,
+          longitude: longitude,
+          timestamp: new Date().toISOString(),
+          withinGeofence: true
+        });
+      } catch (socketErr) {
+        console.error('Failed to emit attendance:created event:', socketErr.message);
+      }
+      
+      res.status(201).json({ success: true, message: 'Clock-in successful', attendId: this.lastID });
     });
 
   } catch (error) {
@@ -125,6 +143,26 @@ exports.checkOut = async (req, res) => {
     db.run(sql, [userId, orgId], function(err) {
       if (err) return res.status(500).json({ error: 'Check-out failed' });
       if (this.changes === 0) return res.status(400).json({ error: 'No active session found.' });
+      
+      // Get the attendance record to emit with socket
+      db.get('SELECT * FROM Attendance WHERE User_ID = ? AND Org_ID = ? AND Check_out_time IS NOT NULL ORDER BY Attend_ID DESC LIMIT 1', [userId, orgId], (err, attend) => {
+        // Emit realtime event
+        try {
+          const io = socketHelper.getIo();
+          io.to(`org:${orgId}`).emit('attendance:updated', {
+            attendId: attend?.Attend_ID,
+            userId: userId,
+            orgId: orgId,
+            latitude: latitude,
+            longitude: longitude,
+            timestamp: new Date().toISOString(),
+            checkOutTime: attend?.Check_out_time
+          });
+        } catch (socketErr) {
+          console.error('Failed to emit attendance:updated event:', socketErr.message);
+        }
+      });
+      
       res.json({ success: true, message: 'Clock-out successful.' });
     });
   } catch (error) {

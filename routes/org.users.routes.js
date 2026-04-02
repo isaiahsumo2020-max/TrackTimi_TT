@@ -5,6 +5,9 @@ const { requireAdmin, authenticateToken } = require('../middleware/role.middlewa
 // PROTECT ALL ROUTES BELOW
 router.use(authenticateToken);
 
+// POST /api/org/users - Create user directly (admin only)
+router.post('/users', requireAdmin, usersController.createUser);
+
 // GET /api/org/users/:id - Single User
 router.get('/users/:id', usersController.getUserById);
 

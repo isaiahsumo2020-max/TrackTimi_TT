@@ -5,6 +5,9 @@ const { authenticateToken, requireAdmin } = require('../middleware/role.middlewa
 // Protect all user routes — only authenticated org users
 router.use(authenticateToken);
 
+// GET /api/users/admins/list - Get all organization admins
+router.get('/admins/list', usersController.getAdmins);
+
 // POST /api/users (admin only)
 router.post('/', requireAdmin, usersController.createUser);
 

@@ -140,3 +140,210 @@ exports.refreshToken = (req, res) => {
     res.json({ token: newToken });
   });
 };
+
+// 5. INVITE EMPLOYEE (OrgAdmin only)
+exports.inviteEmployee = async (req, res) => {
+  try {
+    const { email, firstName, surName, departId, roleId } = req.body;
+    const { orgId, userId } = req.user;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Check if user already exists
+    const existingUser = await new Promise((resolve) => {
+      db.get('SELECT User_ID FROM User WHERE Email = ? AND Org_ID = ?', [email.toLowerCase(), orgId], (err, row) => resolve(row));
+    });
+
+    if (existingUser) {
+      return res.status(409).json({ error: 'Employee already exists in your organization' });
+    }
+
+    // Check if invitation already pending
+    const existingInvitation = await new Promise((resolve) => {
+      db.get('SELECT Invitation_ID FROM Invitation WHERE Email = ? AND Org_ID = ? AND Is_Used = 0 AND Expires_At > datetime("now")', [email.toLowerCase(), orgId], (err, row) => resolve(row));
+    });
+
+    if (existingInvitation) {
+      return res.status(400).json({ error: 'An invitation is already pending for this email' });
+    }
+
+    // Create invitation record
+    const Invitation = require('../models/Invitation');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    Invitation.create({
+      email: email.toLowerCase(),
+      orgId: orgId,
+      userTypeId: roleId || 3,
+      expiresAt: expiresAt,
+      createdBy: userId
+    }, (err, invitation) => {
+      if (err) {
+        console.error('Invitation creation error:', err);
+        return res.status(500).json({ error: 'Failed to create invitation' });
+      }
+
+      // TODO: Send email with invitation token
+      // For now, return token in response (dev mode)
+      res.status(201).json({
+        success: true,
+        message: 'Invitation sent successfully',
+        invitationToken: invitation.Token,
+        inviteExpiresAt: invitation.Expires_At,
+        email: invitation.Email
+      });
+    });
+
+  } catch (error) {
+    console.error('Invite employee error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 6. ACTIVATE INVITATION (Employee sets password)
+exports.activateInvitation = async (req, res) => {
+  try {
+    const { token, password, firstName, surName } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and password are required' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    // Find valid invitation
+    const Invitation = require('../models/Invitation');
+    Invitation.findByToken(token, async (err, invitation) => {
+      if (err || !invitation) {
+        return res.status(400).json({ error: 'Invalid or expired invitation token' });
+      }
+
+      try {
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Check if user already exists
+        const existingUser = await new Promise((resolve) => {
+          db.get('SELECT * FROM User WHERE Email = ?', [invitation.Email.toLowerCase()], (err, row) => resolve(row));
+        });
+
+        let userId;
+
+        if (existingUser) {
+          // Update existing user with password
+          await new Promise((resolve, reject) => {
+            db.run(
+              'UPDATE User SET Password = ? WHERE User_ID = ?',
+              [hashedPassword, existingUser.User_ID],
+              (err) => {
+                if (err) reject(err);
+                else {
+                  userId = existingUser.User_ID;
+                  resolve();
+                }
+              }
+            );
+          });
+        } else {
+          // Create new user
+          generateUniqueEmployeeId(async (err, employeeId) => {
+            if (err) {
+              return res.status(500).json({ error: 'Failed to generate employee ID' });
+            }
+
+            const names = (firstName || surName || 'Employee').split(' ');
+            const sql = `
+              INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Employee_ID, Is_Active)
+              VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+            `;
+
+            db.run(
+              sql,
+              [
+                firstName || names[0],
+                surName || names.slice(1).join(' '),
+                invitation.Email.toLowerCase(),
+                hashedPassword,
+                invitation.Org_ID,
+                invitation.User_Type_ID || 3,
+                employeeId
+              ],
+              function(err) {
+                if (err) {
+                  console.error('User creation error:', err);
+                  return res.status(500).json({ error: 'Failed to create user account' });
+                }
+                userId = this.lastID;
+                completeActivation(userId, invitation);
+              }
+            );
+          });
+          return;
+        }
+
+        completeActivation(userId, invitation);
+
+        function completeActivation(userId, invitation) {
+          // Mark invitation as used
+          Invitation.markUsed(token, (err) => {
+            if (err) console.error('Failed to mark invitation as used:', err);
+          });
+
+          // Get updated user with org info
+          const sql = `
+            SELECT u.*, o.Org_Name, o.Org_Domain, o.Logo_Path, o.Theme_Color
+            FROM User u 
+            LEFT JOIN Organization o ON u.Org_ID = o.Org_ID 
+            WHERE u.User_ID = ?
+          `;
+
+          db.get(sql, [userId], (err, user) => {
+            if (err) {
+              return res.status(500).json({ error: 'Failed to retrieve user' });
+            }
+
+            // Generate JWT
+            const jwtToken = jwt.sign(
+              {
+                userId: user.User_ID,
+                orgId: user.Org_ID,
+                orgSlug: user.Org_Domain,
+                userTypeId: user.User_Type_ID,
+                role: user.User_Type_ID === 1 ? 'Admin' : 'Staff'
+              },
+              JWT_SECRET,
+              { expiresIn: '24h' }
+            );
+
+            res.json({
+              success: true,
+              token: jwtToken,
+              user: {
+                userId: user.User_ID,
+                firstName: user.First_Name,
+                surName: user.SurName,
+                email: user.Email,
+                orgId: user.Org_ID,
+                orgName: user.Org_Name,
+                orgSlug: user.Org_Domain,
+                role: user.User_Type_ID === 1 ? 'Admin' : 'Staff'
+              }
+            });
+          });
+        }
+
+      } catch (error) {
+        console.error('Activation error:', error);
+        res.status(500).json({ error: 'Failed to activate invitation' });
+      }
+    });
+
+  } catch (error) {
+    console.error('Activate invitation error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
