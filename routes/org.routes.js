@@ -763,10 +763,11 @@ router.get('/my-schedule', (req, res) => {
     FROM Schedule s
     INNER JOIN ScheduleEmployee se ON s.Schedule_ID = se.Schedule_ID
     INNER JOIN ShiftType st ON s.ShiftType_ID = st.ShiftType_ID
-    LEFT JOIN Department d ON se.Dep_ID = d.Dep_ID
+    INNER JOIN User u ON se.User_ID = u.User_ID
+    LEFT JOIN Department d ON u.Dep_ID = d.Dep_ID
     WHERE se.User_ID = ? 
       AND s.Org_ID = ? 
-      AND s.Start_Date >= ? 
+      AND date(s.End_Date) >= date(?)
       AND s.Is_Active = 1
     ORDER BY s.Start_Date ASC
     LIMIT 10`;
@@ -799,20 +800,112 @@ router.get('/my-current-shift', (req, res) => {
     FROM Schedule s
     INNER JOIN ScheduleEmployee se ON s.Schedule_ID = se.Schedule_ID
     INNER JOIN ShiftType st ON s.ShiftType_ID = st.ShiftType_ID
-    LEFT JOIN Department d ON se.Dep_ID = d.Dep_ID
+    INNER JOIN User u ON se.User_ID = u.User_ID
+    LEFT JOIN Department d ON u.Dep_ID = d.Dep_ID
     WHERE se.User_ID = ? 
       AND s.Org_ID = ? 
-      AND s.Start_Date >= ? 
+      AND date(?) >= date(s.Start_Date)
+      AND date(?) <= date(s.End_Date)
       AND s.Is_Active = 1
     ORDER BY s.Start_Date ASC
     LIMIT 1`;
 
-  db.get(sql, [userId, orgId, today], (err, row) => {
+  db.get(sql, [userId, orgId, today, today], (err, row) => {
     if (err) {
       console.error('❌ Current Shift Fetch Error:', err.message);
       return res.status(500).json({ error: 'Failed to fetch current shift: ' + err.message });
     }
     res.json(row || null);
+  });
+});
+
+// =============================================================
+// ORGANIZATION SETTINGS
+// =============================================================
+
+// GET: Fetch organization settings (attendance policies, etc.)
+router.get('/settings', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+
+  const sql = `
+    SELECT 
+      Org_ID,
+      Clock_In_Window_Minutes,
+      Clock_Out_Alert_Minutes
+    FROM Organization 
+    WHERE Org_ID = ?`;
+
+  db.get(sql, [orgId], (err, row) => {
+    if (err) {
+      console.error('❌ Settings Fetch Error:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch settings' });
+    }
+    res.json(row || { 
+      Clock_In_Window_Minutes: 30, 
+      Clock_Out_Alert_Minutes: 15 
+    });
+  });
+});
+
+// PUT: Update organization settings (admin only)
+router.put('/settings', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+  const { Clock_In_Window_Minutes, Clock_Out_Alert_Minutes } = req.body;
+
+  // Validate inputs
+  if (Clock_In_Window_Minutes !== undefined && (Clock_In_Window_Minutes < 0 || Clock_In_Window_Minutes > 120)) {
+    return res.status(400).json({ error: 'Clock-in window must be between 0 and 120 minutes' });
+  }
+  
+  if (Clock_Out_Alert_Minutes !== undefined && (Clock_Out_Alert_Minutes < 5 || Clock_Out_Alert_Minutes > 60)) {
+    return res.status(400).json({ error: 'Clock-out alert must be between 5 and 60 minutes' });
+  }
+
+  const updates = [];
+  const values = [];
+
+  if (Clock_In_Window_Minutes !== undefined) {
+    updates.push('Clock_In_Window_Minutes = ?');
+    values.push(Clock_In_Window_Minutes);
+  }
+
+  if (Clock_Out_Alert_Minutes !== undefined) {
+    updates.push('Clock_Out_Alert_Minutes = ?');
+    values.push(Clock_Out_Alert_Minutes);
+  }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'No settings to update' });
+  }
+
+  values.push(orgId);
+
+  const sql = `UPDATE Organization SET ${updates.join(', ')} WHERE Org_ID = ?`;
+
+  db.run(sql, values, function(err) {
+    if (err) {
+      console.error('❌ Settings Update Error:', err.message);
+      return res.status(500).json({ error: 'Failed to update settings' });
+    }
+    res.json({ success: true, message: 'Settings updated successfully' });
+  });
+});
+
+// GET: Fetch geofences for the organization
+router.get('/geofences', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+
+  const sql = `
+    SELECT * FROM Geofence 
+    WHERE Org_ID = ? 
+    ORDER BY Created_at DESC`;
+
+  db.all(sql, [orgId], (err, rows) => {
+    if (err) {
+      console.error('❌ Geofences Fetch Error:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch geofences' });
+    }
+    res.json(rows || []);
   });
 });
 
