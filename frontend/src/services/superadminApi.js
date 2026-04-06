@@ -97,4 +97,30 @@ export const markNotificationAsRead = (notifyId) => superadminApi.put(`/notifica
 export const markAllNotificationsAsRead = () => superadminApi.put('/notifications/mark-all-read')
 export const deleteNotification = (notifyId) => superadminApi.delete(`/notifications/${notifyId}`)
 
+// Feedback Management
+export const getFeedback = (options = {}) => {
+  const params = new URLSearchParams()
+  if (options.orgId) params.append('orgId', options.orgId)
+  if (options.status) params.append('status', options.status)
+  if (options.category) params.append('category', options.category)
+  if (options.limit) params.append('limit', options.limit)
+  if (options.offset) params.append('offset', options.offset)
+  return superadminApi.get(`/feedback${params.toString() ? '?' + params.toString() : ''}`)
+}
+
+export const getFeedbackDetail = (feedbackId) => superadminApi.get(`/feedback/${feedbackId}`)
+
+export const respondToFeedback = (feedbackId, response) => 
+  superadminApi.post(`/feedback/${feedbackId}/respond`, { response })
+
+export const updateFeedbackStatus = (feedbackId, status) => 
+  superadminApi.put(`/feedback/${feedbackId}/status`, { status })
+
+export const deleteFeedback = (feedbackId) => superadminApi.delete(`/feedback/${feedbackId}`)
+
+export const getFeedbackStats = (orgId = null) => {
+  const params = orgId ? `?orgId=${orgId}` : ''
+  return superadminApi.get(`/feedback/stats/summary${params}`)
+}
+
 export default superadminApi

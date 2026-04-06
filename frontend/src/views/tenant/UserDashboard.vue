@@ -335,6 +335,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/utils/api'
 import { MapPinIcon } from 'lucide-vue-next'
 import { useRealtimeUpdates } from '@/composables/useRealtimeUpdates'
+import { useDashboardMetrics } from '@/composables/useDashboardMetrics'
 import RealtimeNotifications from '@/components/dashboard/RealtimeNotifications.vue'
 
 // GPS and Location
@@ -372,8 +373,31 @@ const targetMonthHours = ref(160)
 const onTimeRate = ref(98)
 const weeklyActivity = ref([])
 
-// Real-time Updates
+// Real-time Updates (legacy - will be enhanced)
 const { isConnected, statusUpdate, scheduleUpdate, analyticsUpdate, notificationQueue, dismissNotification } = useRealtimeUpdates()
+
+// Enhanced real-time metrics from new composable
+const { 
+  employeeMetrics, 
+  isConnected: metricsConnected,
+  requestEmployeeMetrics,
+  alerts: realtimeAlerts
+} = useDashboardMetrics({ dashboardType: 'employee' })
+
+// Sync employee metrics to local state
+const syncEmployeeMetrics = () => {
+  if (employeeMetrics.value) {
+    checkInRate.value = employeeMetrics.value.attendanceRate || checkInRate.value
+    onTimeRate.value = employeeMetrics.value.onTimeRate || onTimeRate.value
+    totalMonthHours.value = employeeMetrics.value.monthlyHours || totalMonthHours.value
+    avgHoursPerDay.value = employeeMetrics.value.hoursWorkedToday || avgHoursPerDay.value
+    isCheckedIn.value = employeeMetrics.value.checkedIn || isCheckedIn.value
+    if (employeeMetrics.value.upcomingShift) {
+      currentShift.value = employeeMetrics.value.upcomingShift
+    }
+  }
+}
+
 const displayNotifications = computed(() => {
   return notificationQueue.value.map(notif => ({
     ...notif,
@@ -641,8 +665,18 @@ onMounted(async () => {
   await fetchBreaks()
   await fetchAnalytics()
 
+  // Request real-time metrics (will update via WebSocket)
+  if (metricsConnected.value) {
+    requestEmployeeMetrics()
+  }
+
   const res = await api.get('/org/geofences')
   geofences.value = res.data
+
+  // Watch for employee metrics changes and sync
+  const metricsWatcher = setInterval(() => {
+    syncEmployeeMetrics()
+  }, 1000)
 
   // Real-time updates listener
   const statusUpdateWatcher = setInterval(() => {
@@ -684,6 +718,9 @@ onMounted(async () => {
   const refreshInterval = setInterval(() => {
     fetchStatus()
     fetchAnalytics()
+    if (metricsConnected.value) {
+      requestEmployeeMetrics()
+    }
   }, 5 * 60 * 1000)
 
   onBeforeUnmount(() => {

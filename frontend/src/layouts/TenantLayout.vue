@@ -33,7 +33,91 @@
             <span>Check In</span>
           </router-link>
           
+          <!-- Notification Bell Icon -->
+          <div class="relative">
+            <button
+              @click="showNotifications = !showNotifications"
+              class="relative p-2.5 text-slate-600 hover:text-primary-600 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <BellIcon class="w-5 h-5" />
+              <!-- Unread Badge -->
+              <span v-if="unreadCount > 0" class="absolute top-1 right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                {{ unreadCount > 9 ? '9+' : unreadCount }}
+              </span>
+            </button>
+            
+            <!-- Notifications Dropdown Preview -->
+            <transition name="fade">
+              <div v-if="showNotifications" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-slate-200 z-50 max-h-96 overflow-y-auto">
+                <div class="p-4 border-b border-slate-200">
+                  <h3 class="font-bold text-slate-900">Notifications</h3>
+                  <p class="text-xs text-slate-500">{{ unreadCount }} unread</p>
+                </div>
+                
+                <div v-if="recentNotifications.length === 0" class="p-6 text-center text-slate-500 text-sm">
+                  No notifications
+                </div>
+                
+                <div v-else class="divide-y divide-slate-100">
+                  <div v-for="notif in recentNotifications.slice(0, 5)" :key="notif.Notify_ID" class="p-3 hover:bg-slate-50 cursor-pointer transition-colors">
+                    <p class="font-semibold text-sm text-slate-900">{{ notif.Title }}</p>
+                    <p class="text-xs text-slate-600 mt-1 line-clamp-2">{{ notif.Message }}</p>
+                    <p class="text-[10px] text-slate-400 mt-2">{{ formatTime(notif.Created_at) }}</p>
+                  </div>
+                </div>
+                
+                <div v-if="unreadCount > 0" class="p-3 border-t border-slate-200 text-center">
+                  <router-link
+                    :to="`/${orgSlug}/notifications`"
+                    class="text-sm text-primary-600 hover:text-primary-700 font-semibold"
+                  >
+                    View All Notifications
+                  </router-link>
+                </div>
+              </div>
+            </transition>
+          </div>
+          
           <div class="h-8 w-[1px] bg-slate-200 mx-2 hidden md:block"></div>
+
+          <!-- Refresh Button -->
+          <button
+            @click="refreshPage"
+            :disabled="isRefreshing"
+            class="p-2.5 text-slate-600 hover:text-primary-600 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50"
+            :title="isRefreshing ? 'Refreshing...' : 'Refresh (Ctrl+R)'"
+          >
+            <svg
+              class="w-5 h-5"
+              :class="{ 'animate-spin': isRefreshing }"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              ></path>
+            </svg>
+          </button>
+
+          <!-- Admin Profile (Name + Role) -->
+          <div class="hidden sm:flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+            <div class="text-right">
+              <p class="text-sm font-bold text-slate-900">{{ userShortName }}</p>
+              <p class="text-xs text-slate-500 uppercase">{{ userRole }}</p>
+            </div>
+            <div v-if="userAvatar" class="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
+              <img :src="`data:${userAvatarMimeType};base64,${userAvatar}`" :alt="userShortName" class="w-full h-full object-cover" />
+            </div>
+            <div v-else class="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-md">
+              {{ userInitials }}
+            </div>
+          </div>
+
+          <div class="h-8 w-[1px] bg-slate-200 hidden md:block"></div>
 
           <button
             @click="logout"
@@ -82,8 +166,8 @@
               </div>
             </div>
 
-            <!-- User Profile Quick View -->
-            <div class="flex items-center space-x-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:border-primary-600/50 transition-colors">
+            <!-- User Profile Quick View (Hidden on Mobile/Tablet - shown in header instead) -->
+            <div class="hidden lg:flex items-center space-x-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:border-primary-600/50 transition-colors">
               <div v-if="userAvatar" class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
                 <img :src="`data:${userAvatarMimeType};base64,${userAvatar}`" :alt="userShortName" class="w-full h-full object-cover" />
               </div>
@@ -150,9 +234,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import api from '@/utils/api'
 import { 
   LayoutDashboardIcon, 
   UsersIcon, 
@@ -163,7 +248,9 @@ import {
   MenuIcon, 
   XIcon,
   CalendarIcon,
-  ClipboardListIcon
+  ClipboardListIcon,
+  BellIcon,
+  MessageSquareIcon
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -172,6 +259,66 @@ const authStore = useAuthStore()
 
 const sidebarOpen = ref(false)
 const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
+
+// Notifications
+const showNotifications = ref(false)
+const recentNotifications = ref([])
+const unreadCount = ref(0)
+let notificationInterval = null
+
+const fetchNotifications = async () => {
+  try {
+    const res = await api.get('/notifications?limit=10')
+    recentNotifications.value = res.data.notifications || []
+    unreadCount.value = res.data.unreadCount || 0
+  } catch (err) {
+    console.error('Failed to fetch notifications:', err)
+  }
+}
+
+const formatTime = (timestamp) => {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffInMinutes = Math.floor((now - date) / 60000)
+  
+  if (diffInMinutes < 1) return 'Just now'
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+  if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
+  return date.toLocaleDateString()
+}
+
+// Refresh functionality
+const isRefreshing = ref(false)
+let handleKeyPress = null  // Store ref for cleanup
+
+const refreshPage = async () => {
+  isRefreshing.value = true
+  try {
+    // Refresh notifications
+    await fetchNotifications()
+    
+    // Refresh current route component
+    if (route.name === 'OrgDashboard') {
+      // Emit custom event for dashboard component to refresh
+      window.dispatchEvent(new Event('page:refresh'))
+    } else if (route.name === 'OrgUsers' || route.name === 'EmployeeManagement') {
+      window.dispatchEvent(new Event('page:refresh'))
+    } else if (route.name === 'OrgDepartments') {
+      window.dispatchEvent(new Event('page:refresh'))
+    } else if (route.name === 'AdminSchedule') {
+      window.dispatchEvent(new Event('page:refresh'))
+    }
+    
+    // Complete refresh animation
+    setTimeout(() => {
+      isRefreshing.value = false
+    }, 600)
+  } catch (err) {
+    console.error('Refresh error:', err)
+    isRefreshing.value = false
+  }
+}
 
 // Dynamic Branding Logic
 const orgSlug = computed(() => route.params.orgSlug || authStore.user?.orgSlug || 'firm')
@@ -225,6 +372,7 @@ const groupedMenu = computed(() => {
       {
         title: 'System',
         items: [
+          { name: 'feedback', label: 'Feedback', path: `${basePath}/feedback`, icon: MessageSquareIcon },
           { name: 'settings', label: 'Settings', path: `${basePath}/settings`, icon: SettingsIcon },
         ]
       }
@@ -238,6 +386,7 @@ const groupedMenu = computed(() => {
         { name: 'user-dashboard', label: 'My Stats', path: `${basePath}/user-dashboard`, icon: LayoutDashboardIcon },
         { name: 'schedule', label: 'My Schedule', path: `${basePath}/schedule`, icon: CalendarIcon },
         { name: 'checkins', label: 'My History', path: `${basePath}/checkins`, icon: ClipboardListIcon },
+        { name: 'feedback', label: 'Send Feedback', path: `${basePath}/feedback`, icon: MessageSquareIcon },
       ]
     }
   ]
@@ -247,6 +396,31 @@ const logout = () => {
   authStore.logout()
   router.push('/login')
 }
+
+// Fetch notifications on mount and set up polling
+onMounted(() => {
+  fetchNotifications()
+  notificationInterval = setInterval(fetchNotifications, 15000) // Poll every 15 seconds
+  
+  // Add keyboard shortcut for refresh (Ctrl+R or Cmd+R)
+  handleKeyPress = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+      e.preventDefault()
+      refreshPage()
+    }
+  }
+  window.addEventListener('keydown', handleKeyPress)
+})
+
+onUnmounted(() => {
+  if (notificationInterval) {
+    clearInterval(notificationInterval)
+  }
+  // Remove keyboard shortcut listener
+  if (handleKeyPress) {
+    window.removeEventListener('keydown', handleKeyPress)
+  }
+})
 
 watch(() => route.path, () => { sidebarOpen.value = false })
 </script>

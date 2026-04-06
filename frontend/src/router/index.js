@@ -20,6 +20,7 @@ const routes = [
   { path: '/superadmin/monitoring', name: 'SuperAdminMonitoring', component: () => import('@/views/admin/SuperAdminMonitoring.vue') },
   { path: '/superadmin/audit-logs', name: 'SuperAdminAuditLogs', component: () => import('@/views/admin/SuperAdminAuditLogs.vue') },
   { path: '/superadmin/settings', name: 'SuperAdminSettings', component: () => import('@/views/admin/SuperAdminSettings.vue') },
+  { path: '/superadmin/feedback', name: 'SuperAdminFeedback', component: () => import('@/views/superadmin/FeedbackManagement.vue') },
 
   // ORGANIZATION 
   { path: '/:orgSlug', redirect: '/:orgSlug/dashboard' },
@@ -36,7 +37,8 @@ const routes = [
       { path: 'schedule', name: 'UserSchedule', component: () => import('@/views/tenant/UserSchedule.vue') },
       { path: 'admin-schedule', name: 'AdminSchedule', component: () => import('@/views/admin/AdminSchedule.vue') },
       { path: 'settings', name: 'OrgSettings', component: () => import('@/views/tenant/Settings.vue') },
-      { path: 'checkins', name: 'UserCheckins', component: () => import('@/views/tenant/UserCheckins.vue') }
+      { path: 'checkins', name: 'UserCheckins', component: () => import('@/views/tenant/UserCheckins.vue') },
+      { path: 'feedback', name: 'OrgFeedback', component: () => import('@/views/tenant/Feedback.vue') }
     ]
   },
 

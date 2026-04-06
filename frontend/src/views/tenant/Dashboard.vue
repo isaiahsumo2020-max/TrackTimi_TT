@@ -1,6 +1,25 @@
 <template>
   <div class="p-6 lg:p-10 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
     
+    <!-- Live Feedback Toast Notifications -->
+    <div v-if="liveNotifications.length > 0" class="fixed bottom-6 right-6 space-y-3 z-50">
+      <div v-for="(notif, idx) in liveNotifications" :key="idx" 
+           :class="{
+             'bg-green-500': notif.type === 'success',
+             'bg-red-500': notif.type === 'error',
+             'bg-blue-500': notif.type === 'info',
+             'bg-yellow-500': notif.type === 'warning'
+           }"
+           class="text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 animate-slideIn min-w-80">
+        <span v-if="notif.type === 'success'">✅</span>
+        <span v-else-if="notif.type === 'error'">❌</span>
+        <span v-else-if="notif.type === 'warning'">⚠️</span>
+        <span v-else>ℹ️</span>
+        <span class="flex-1">{{ notif.message }}</span>
+        <button @click="removeLiveNotification(idx)" class="text-white opacity-70 hover:opacity-100">✕</button>
+      </div>
+    </div>
+
     <!-- 1. Header: Dynamic Org Name & Health Score -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
@@ -38,6 +57,34 @@
         <div class="flex items-baseline space-x-2 mt-1">
           <h3 class="text-4xl font-black text-slate-900 tracking-tighter">{{ stat.value }}</h3>
           <span class="text-xs font-bold text-slate-300">/ {{ metrics.total }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Activity Feed Panel -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="flex h-3 w-3 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+          </span>
+          <h3 class="text-sm font-semibold text-gray-900">🔴 Live Activity Feed</h3>
+        </div>
+        <button @click="showActivityPanel = !showActivityPanel" class="text-xs bg-white px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">
+          {{ showActivityPanel ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+      
+      <div v-if="showActivityPanel" class="space-y-2 max-h-48 overflow-y-auto">
+        <div v-if="activityLog.length === 0" class="text-xs text-gray-500 italic">No recent activity yet...</div>
+        <div v-for="(log, index) in activityLog" :key="index" class="text-xs bg-white bg-opacity-60 px-3 py-2 rounded border border-blue-100 flex items-start gap-2">
+          <span class="mt-0.5 text-lg">{{ log.icon }}</span>
+          <div class="flex-1">
+            <p class="text-gray-900 font-medium">{{ log.action }}</p>
+            <p class="text-gray-600 text-xs mt-0.5">{{ log.details }}</p>
+            <p class="text-gray-400 text-xs mt-1">{{ log.timestamp }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -296,6 +343,12 @@ const currentTime = ref(new Date().toLocaleTimeString())
 const ledgerSearch = ref('')
 const ledgerDate = ref('')
 
+// Live Notification & Activity Feed State
+const liveNotifications = ref([])
+const activityLog = ref([])
+const showActivityPanel = ref(true)
+const liveNotifTimeout = ref(null)
+
 // Branding helper: Pull Org Name from localStorage
 const orgDisplayName = computed(() => {
   const user = JSON.parse(localStorage.getItem('user'))
@@ -446,8 +499,18 @@ const refreshData = async () => {
     activityLogs.value = data.activityLogs || []
     trendData.value = processTrend(data.trend || [])
     
+    // Show notification on data update
+    const presentCount = liveMetrics.present
+    const absentCount = liveMetrics.absent
+    const onSiteCount = liveMetrics.onSite
+    
+    showLiveNotification(`📊 Dashboard updated: ${presentCount} present, ${absentCount} absent, ${onSiteCount} on-site`, 'info')
+    addActivityLog(`Data Refreshed`, `Updated dashboard metrics - ${presentCount} present`, '🔄')
+    
   } catch (err) {
     console.error("Dashboard Refresh Interrupted:", err)
+    showLiveNotification(`❌ Failed to update dashboard: ${err.message}`, 'error')
+    addActivityLog(`Refresh Failed`, err.message, '⚠️')
   }
 }
 
@@ -467,7 +530,41 @@ const formatLogTime = (ts) => {
 let dataTimer;
 let clockTimer;
 
+// Live Notification Methods
+const showLiveNotification = (message, type = 'info') => {
+  const notification = { message, type, id: Date.now() }
+  
+  liveNotifications.value.push(notification)
+  
+  // Auto-dismiss after 4 seconds
+  if (liveNotifTimeout.value) clearTimeout(liveNotifTimeout.value)
+  liveNotifTimeout.value = setTimeout(() => {
+    removeLiveNotification(liveNotifications.value.length - 1)
+  }, 4000)
+}
+
+const removeLiveNotification = (index) => {
+  liveNotifications.value.splice(index, 1)
+}
+
+const addActivityLog = (action, details, icon = '📝') => {
+  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  
+  activityLog.value.unshift({
+    action,
+    details,
+    icon,
+    timestamp
+  })
+  
+  // Keep only last 20 entries
+  if (activityLog.value.length > 20) {
+    activityLog.value.pop()
+  }
+}
+
 onMounted(() => {
+  addActivityLog(`Dashboard Opened`, `Organization admin dashboard loaded`, '🚀')
   refreshData()
   dataTimer = setInterval(refreshData, 20000) 
   clockTimer = setInterval(() => { currentTime.value = new Date().toLocaleTimeString() }, 1000)
@@ -476,6 +573,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearInterval(dataTimer)
   clearInterval(clockTimer)
+  if (liveNotifTimeout.value) clearTimeout(liveNotifTimeout.value)
 })
 </script>
 

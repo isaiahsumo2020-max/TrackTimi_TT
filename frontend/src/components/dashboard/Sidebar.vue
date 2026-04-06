@@ -87,7 +87,7 @@ import {
   UsersIcon, ClockIcon, BarChart3Icon, ShieldAlertIcon,
   LayoutDashboardIcon, ActivityIcon, SettingsIcon,
   AlertCircleIcon, MapPinIcon, FileTextIcon, BriefcaseIcon,
-  TrendingUpIcon, ChevronDownIcon
+  TrendingUpIcon, ChevronDownIcon, MessageCircleIcon
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -136,7 +136,8 @@ const categories = [
     items: [
       { id: 'attendance', name: 'Attendance', icon: ClockIcon },
       { id: 'geofences', name: 'Geofences', icon: MapPinIcon },
-      { id: 'alerts', name: 'Alerts', icon: AlertCircleIcon }
+      { id: 'alerts', name: 'Alerts', icon: AlertCircleIcon },
+      { id: 'feedback', name: 'Feedback', icon: MessageCircleIcon }
     ]
   },
   {

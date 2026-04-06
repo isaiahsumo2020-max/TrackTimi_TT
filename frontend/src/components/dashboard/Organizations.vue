@@ -568,6 +568,7 @@ table {
 import { ref, onMounted, computed } from 'vue'
 import { EyeIcon, KeyIcon, BuildingIcon, XIcon } from 'lucide-vue-next'
 import { superadminApi, uploadOrgLogo, deleteOrgLogo } from '@/services/superadminApi'
+import { showDeleteConfirm, showSuccess, showError } from '@/utils/dialog'
 
 // State
 const loading = ref(true)
@@ -768,25 +769,24 @@ const triggerDeleteAction = () => {
 
 // Execute delete action
 const executeDeleteAction = async () => {
-  if (!confirm('Are you absolutely certain you want to permanently delete this organization? This cannot be undone.')) {
-    return
-  }
-
-  try {
-    detailsActionLoading.value = true
-    detailsErrorMessage.value = ''
-    await superadminApi.delete(`/organizations/${selectedOrg.value.Org_ID}`)
-    detailsSuccessMessage.value = 'Organization deleted successfully'
-    setTimeout(() => {
-      showDetailsModal.value = false
-      fetchOrganizations()
-    }, 1500)
-  } catch (error) {
-    console.error('Failed to delete organization:', error)
-    detailsErrorMessage.value = 'Could not delete organization. Please try again.'
-  } finally {
-    detailsActionLoading.value = false
-  }
+  const confirmed = await showDeleteConfirm(`${selectedOrg.value.Org_Name} Organization`, async () => {
+    try {
+      detailsActionLoading.value = true
+      detailsErrorMessage.value = ''
+      await superadminApi.delete(`/organizations/${selectedOrg.value.Org_ID}`)
+      detailsSuccessMessage.value = 'Organization deleted successfully'
+      setTimeout(() => {
+        showDetailsModal.value = false
+        fetchOrganizations()
+      }, 1500)
+    } catch (error) {
+      console.error('Failed to delete organization:', error)
+      detailsErrorMessage.value = 'Could not delete organization. Please try again.'
+      throw error
+    } finally {
+      detailsActionLoading.value = false
+    }
+  })
 }
 
 // Format date

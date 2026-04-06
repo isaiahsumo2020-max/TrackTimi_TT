@@ -6,6 +6,25 @@
       @dismiss="dismissNotification"
     />
 
+    <!-- Live Feedback Toast Notifications -->
+    <div v-if="liveNotifications.length > 0" class="fixed bottom-6 right-6 space-y-3 z-50">
+      <div v-for="(notif, idx) in liveNotifications" :key="idx" 
+           :class="{
+             'bg-green-500': notif.type === 'success',
+             'bg-red-500': notif.type === 'error',
+             'bg-blue-500': notif.type === 'info',
+             'bg-yellow-500': notif.type === 'warning'
+           }"
+           class="text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 animate-slideIn min-w-80">
+        <span v-if="notif.type === 'success'">✅</span>
+        <span v-else-if="notif.type === 'error'">❌</span>
+        <span v-else-if="notif.type === 'warning'">⚠️</span>
+        <span v-else>ℹ️</span>
+        <span class="flex-1">{{ notif.message }}</span>
+        <button @click="removeLiveNotification(idx)" class="text-white opacity-70 hover:opacity-100">✕</button>
+      </div>
+    </div>
+
     <!-- Notification Panel (Modal) -->
     <NotificationPanel
       :isOpen="showNotificationsPanel"
@@ -52,8 +71,8 @@
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <!-- Stats Cards with Attendance Metrics -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center">
             <div class="p-2 bg-blue-100 rounded-lg">
@@ -95,46 +114,161 @@
             </div>
           </div>
         </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="p-2 bg-purple-100 rounded-lg">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-600">Avg. Attendance</p>
+              <p class="text-2xl font-bold text-gray-900">{{ avgAttendance }}%</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="mb-6">
+      <!-- Enhanced Tabs with New Views -->
+      <div class="mb-6 border-b border-gray-200">
         <nav class="flex space-x-8">
           <button @click="activeTab = 'employees'"
                   :class="activeTab === 'employees' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                   class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-            Employees
+            👥 Workforce Directory
+          </button>
+          <button @click="activeTab = 'attendance'"
+                  :class="activeTab === 'attendance' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+            📊 Attendance
+          </button>
+          <button @click="activeTab = 'schedules'"
+                  :class="activeTab === 'schedules' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+            📅 Schedules
           </button>
           <button @click="activeTab = 'invitations'"
                   :class="activeTab === 'invitations' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
                   class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-            Invitations
+            ✉️ Invitations
+          </button>
+          <button @click="activeTab = 'activity'"
+                  :class="activeTab === 'activity' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+            📋 Activity Logs
           </button>
         </nav>
       </div>
 
-      <!-- Employees Tab -->
+      <!-- Live Feedback & Activity Panel -->
+      <div class="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="flex h-3 w-3 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+            </span>
+            <h3 class="text-sm font-semibold text-gray-900">🔴 Live Activity Feed</h3>
+          </div>
+          <button @click="showActivityPanel = !showActivityPanel" class="text-xs bg-white px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">
+            {{ showActivityPanel ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        
+        <div v-if="showActivityPanel" class="space-y-2 max-h-48 overflow-y-auto">
+          <div v-if="activityLog.length === 0" class="text-xs text-gray-500 italic">No recent activity yet...</div>
+          <div v-for="(log, index) in activityLog" :key="index" class="text-xs bg-white bg-opacity-60 px-3 py-2 rounded border border-blue-100 flex items-start gap-2">
+            <span class="mt-0.5 text-lg">{{ log.icon }}</span>
+            <div class="flex-1">
+              <p class="text-gray-900 font-medium">{{ log.action }}</p>
+              <p class="text-gray-600 text-xs mt-0.5">{{ log.details }}</p>
+              <p class="text-gray-400 text-xs mt-1">{{ log.timestamp }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employees Tab with Advanced Filtering & Bulk Actions -->
       <div v-if="activeTab === 'employees'" class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">All Employees</h3>
-            <input v-model="searchQuery" type="text" placeholder="Search employees..."
-                   class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <!-- Advanced Filter Section -->
+          <div class="mb-6 pb-6 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">🔍 Advanced Filters</h3>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div>
+                <input v-model="searchQuery" type="text" placeholder="🔎 Search by name, email..."
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <select v-model="filterDepartment" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">All Departments</option>
+                  <option v-for="dept in departments" :key="dept.Depart_ID" :value="dept.Depart_ID">
+                    {{ dept.Depart_Name }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <select v-model="filterRole" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">All Roles</option>
+                  <option value="1">Admin</option>
+                  <option value="2">Manager</option>
+                  <option value="3">Staff</option>
+                  <option value="5">Supervisor</option>
+                </select>
+              </div>
+              <div>
+                <select v-model="filterStatus" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">All Status</option>
+                  <option value="1">Active</option>
+                  <option value="0">Inactive</option>
+                </select>
+              </div>
+              <div class="flex gap-2">
+                <button @click="exportToCSV" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm font-medium">
+                  📥 Export CSV
+                </button>
+              </div>
+            </div>
           </div>
 
+          <!-- Bulk Actions -->
+          <div v-if="selectedEmployees.length > 0" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex justify-between items-center">
+            <span class="text-sm font-medium text-blue-900">{{ selectedEmployees.length }} selected</span>
+            <div class="flex gap-2">
+              <button @click="bulkChangeStatus" class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-blue-700">
+                Change Status
+              </button>
+              <button @click="bulkAssignDepartment" class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-blue-700">
+                Assign Department
+              </button>
+              <button @click="bulkDelete" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-red-700">
+                Delete
+              </button>
+            </div>
+          </div>
+
+          <!-- Employee Directory Table with Real-time Status -->
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
+                  <th class="px-6 py-3 text-left">
+                    <input type="checkbox" @change="toggleSelectAll" :checked="allSelected" class="rounded">
+                  </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="employee in filteredEmployees" :key="employee.User_ID">
+                <tr v-for="employee in filteredAndPaginatedEmployees" :key="employee.User_ID" class="hover:bg-gray-50">
+                  <td class="px-6 py-4">
+                    <input type="checkbox" @change="toggleSelectEmployee(employee.User_ID)" :checked="selectedEmployees.includes(employee.User_ID)" class="rounded">
+                  </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-10 w-10">
@@ -156,20 +290,131 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ employee.User_Type_ID === 1 ? 'Admin' : 'Staff' }}
+                    {{ getRoleName(employee.User_Type_ID) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ employee.Depart_ID ? 'Department ' + employee.Depart_ID : 'Not Assigned' }}
+                    {{ getDepartmentName(employee.Depart_ID) || 'Not Assigned' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span :class="employee.Is_Active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
-                      {{ employee.Is_Active ? 'Active' : 'Inactive' }}
-                    </span>
+                    <div class="flex items-center gap-2">
+                      <div :class="employee.Is_Active ? 'bg-green-100' : 'bg-red-100'" class="w-2 h-2 rounded-full"></div>
+                      <span :class="employee.Is_Active ? 'text-green-800 bg-green-100' : 'text-red-800 bg-red-100'" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                        {{ employee.Is_Active ? 'Active' : 'Inactive' }}
+                      </span>
+                    </div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button @click="viewUserProfile(employee.User_ID)" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
-                    <button class="text-red-600 hover:text-red-900">Deactivate</button>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ getLastActive(employee.User_ID) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <button @click="viewUserProfile(employee.User_ID)" class="text-blue-600 hover:text-blue-900" title="View Profile">👁️</button>
+                    <button @click="assignShift(employee.User_ID)" class="text-green-600 hover:text-green-900" title="Assign Shift">📅</button>
+                    <button @click="sendMessage(employee.User_ID)" class="text-purple-600 hover:text-purple-900" title="Send Message">💬</button>
+                    <button @click="toggleEmployeeStatus(employee.User_ID)" class="text-orange-600 hover:text-orange-900" title="Toggle Status">⚙️</button>
+                  </td>
+                </tr>
+                <tr v-if="filteredEmployees.length === 0">
+                  <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                    No employees found matching your criteria
+              <div>
+                <select v-model="filterStatus" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">All Status</option>
+                  <option value="1">Active</option>
+                  <option value="0">Inactive</option>
+                </select>
+              </div>
+              <div class="flex gap-2">
+                <button @click="exportToCSV" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm font-medium">
+                  📥 Export CSV
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bulk Actions -->
+          <div v-if="selectedEmployees.length > 0" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex justify-between items-center">
+            <span class="text-sm font-medium text-blue-900">{{ selectedEmployees.length }} selected</span>
+            <div class="flex gap-2">
+              <button @click="bulkChangeStatus" class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-blue-700">
+                Change Status
+              </button>
+              <button @click="bulkAssignDepartment" class="bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-blue-700">
+                Assign Department
+              </button>
+              <button @click="bulkDelete" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-medium hover:bg-red-700">
+                Delete
+              </button>
+            </div>
+          </div>
+
+          <!-- Employee Directory Table with Real-time Status -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left">
+                    <input type="checkbox" @change="toggleSelectAll" :checked="allSelected" class="rounded">
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="employee in filteredAndPaginatedEmployees" :key="employee.User_ID" class="hover:bg-gray-50">
+                  <td class="px-6 py-4">
+                    <input type="checkbox" @change="toggleSelectEmployee(employee.User_ID)" :checked="selectedEmployees.includes(employee.User_ID)" class="rounded">
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10">
+                        <div v-if="employee.avatar" class="h-10 w-10 rounded-full overflow-hidden">
+                          <img :src="`data:${employee.avatarMimeType};base64,${employee.avatar}`" :alt="employee.First_Name" class="w-full h-full object-cover" />
+                        </div>
+                        <div v-else class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                          <span class="text-sm font-medium text-gray-700">
+                            {{ employee.First_Name?.[0] }}{{ employee.SurName?.[0] }}
+                          </span>
+                        </div>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">
+                          {{ employee.First_Name }} {{ employee.SurName }}
+                        </div>
+                        <div class="text-sm text-gray-500">{{ employee.Email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ getRoleName(employee.User_Type_ID) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ getDepartmentName(employee.Depart_ID) || 'Not Assigned' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center gap-2">
+                      <div :class="employee.Is_Active ? 'bg-green-100' : 'bg-red-100'" class="w-2 h-2 rounded-full"></div>
+                      <span :class="employee.Is_Active ? 'text-green-800 bg-green-100' : 'text-red-800 bg-red-100'" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                        {{ employee.Is_Active ? 'Active' : 'Inactive' }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ getLastActive(employee.User_ID) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <button @click="viewUserProfile(employee.User_ID)" class="text-blue-600 hover:text-blue-900" title="View Profile">👁️</button>
+                    <button @click="assignShift(employee.User_ID)" class="text-green-600 hover:text-green-900" title="Assign Shift">📅</button>
+                    <button @click="sendMessage(employee.User_ID)" class="text-purple-600 hover:text-purple-900" title="Send Message">💬</button>
+                    <button @click="toggleEmployeeStatus(employee.User_ID)" class="text-orange-600 hover:text-orange-900" title="Toggle Status">⚙️</button>
+                  </td>
+                </tr>
+                <tr v-if="filteredEmployees.length === 0">
+                  <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                    No employees found matching your criteria
                   </td>
                 </tr>
               </tbody>
@@ -178,7 +423,7 @@
         </div>
       </div>
 
-      <!-- Invitations Tab -->
+      <!-- Attendance Tab -->\n      <div v-if=\"activeTab === 'attendance'\" class=\"bg-white shadow rounded-lg\">\n        <div class=\"px-4 py-5 sm:p-6\">\n          <h3 class=\"text-lg font-medium text-gray-900 mb-4\">📊 Employee Attendance Overview</h3>\n          <div class=\"grid grid-cols-1 md:grid-cols-3 gap-6 mb-6\">\n            <div class=\"bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg\">\n              <p class=\"text-sm text-gray-600 mb-2\">Present Today</p>\n              <p class=\"text-3xl font-bold text-green-700\">{{ activeToday }} / {{ employees.length }}</p>\n              <p class=\"text-xs text-gray-600 mt-2\">{{ Math.round((activeToday / employees.length) * 100) }}% Attendance</p>\n            </div>\n            <div class=\"bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-lg\">\n              <p class=\"text-sm text-gray-600 mb-2\">Late Today</p>\n              <p class=\"text-3xl font-bold text-yellow-700\">{{ lateToday }}</p>\n              <p class=\"text-xs text-gray-600 mt-2\">Employees who clocked in late</p>\n            </div>\n            <div class=\"bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg\">\n              <p class=\"text-sm text-gray-600 mb-2\">Absent Today</p>\n              <p class=\"text-3xl font-bold text-red-700\">{{ employees.length - activeToday }}</p>\n              <p class=\"text-xs text-gray-600 mt-2\">Not yet clocked in</p>\n            </div>\n          </div>\n\n          <!-- Attendance Table -->\n          <div class=\"overflow-x-auto\">\n            <table class=\"min-w-full divide-y divide-gray-200\">\n              <thead class=\"bg-gray-50\">\n                <tr>\n                  <th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase\">Employee</th>\n                  <th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase\">Check-in Time</th>\n                  <th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase\">Check-out Time</th>\n                  <th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase\">Status</th>\n                  <th class=\"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase\">Hours Worked</th>\n                </tr>\n              </thead>\n              <tbody class=\"divide-y divide-gray-200\">\n                <tr v-for=\"emp in filteredEmployees\" :key=\"emp.User_ID\" class=\"hover:bg-gray-50\">\n                  <td class=\"px-6 py-4 whitespace-nowrap text-sm font-medium\">{{ emp.First_Name }} {{ emp.SurName }}</td>\n                  <td class=\"px-6 py-4 whitespace-nowrap text-sm\">{{ getCheckInTime(emp.User_ID) || '—' }}</td>\n                  <td class=\"px-6 py-4 whitespace-nowrap text-sm\">{{ getCheckOutTime(emp.User_ID) || '—' }}</td>\n                  <td class=\"px-6 py-4 whitespace-nowrap\">\n                    <span :class=\"getAttendanceStatus(emp.User_ID) === 'Present' ? 'bg-green-100 text-green-800' : getAttendanceStatus(emp.User_ID) === 'Late' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'\" class=\"px-2 py-1 text-xs font-semibold rounded-full\">\n                      {{ getAttendanceStatus(emp.User_ID) }}\n                    </span>\n                  </td>\n                  <td class=\"px-6 py-4 whitespace-nowrap text-sm font-medium\">{{ getHoursWorked(emp.User_ID) }} hrs</td>\n                </tr>\n              </tbody>\n            </table>\n          </div>\n        </div>\n      </div>\n\n      <!-- Schedules Tab -->\n      <div v-if=\"activeTab === 'schedules'\" class=\"bg-white shadow rounded-lg\">\n        <div class=\"px-4 py-5 sm:p-6\">\n          <div class=\"flex justify-between items-center mb-4\">\n            <h3 class=\"text-lg font-medium text-gray-900\">📅 Work Schedules</h3>\n            <button @click=\"showScheduleModal = true\" class=\"bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium\">\n              + Create Schedule\n            </button>\n          </div>\n\n          <div class=\"space-y-4\">\n            <div v-for=\"emp in filteredEmployees\" :key=\"emp.User_ID\" class=\"border border-gray-200 rounded-lg p-4 hover:bg-gray-50\">\n              <div class=\"flex justify-between items-start mb-3\">\n                <div>\n                  <p class=\"font-medium text-gray-900\">{{ emp.First_Name }} {{ emp.SurName }}</p>\n                  <p class=\"text-sm text-gray-600\">{{ emp.Email }}</p>\n                </div>\n                <button @click=\"editSchedule(emp.User_ID)\" class=\"text-blue-600 hover:text-blue-900 text-sm\">Edit Schedule</button>\n              </div>\n              <div class=\"grid grid-cols-7 gap-2\">\n                <div v-for=\"day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']\" :key=\"day\" class=\"text-center\">\n                  <p class=\"text-xs font-bold text-gray-600 mb-1\">{{ day }}</p>\n                  <p class=\"text-xs text-gray-900\">9AM-5PM</p>\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n\n      <!-- Activity Logs Tab -->\n      <div v-if=\"activeTab === 'activity'\" class=\"bg-white shadow rounded-lg\">\n        <div class=\"px-4 py-5 sm:p-6\">\n          <h3 class=\"text-lg font-medium text-gray-900 mb-4\">📋 Recent Activity Logs</h3>\n          <div class=\"space-y-3\">\n            <div class=\"border-l-4 border-blue-500 pl-4 py-2\">\n              <p class=\"text-sm font-medium text-gray-900\">System Activity Overview</p>\n              <div class=\"mt-3 space-y-2 text-sm text-gray-600\">\n                <p>✅ Archie Quewon - Clocked in at 09:05 AM</p>\n                <p>✅ Teach Mee - Clocked in at 08:45 AM</p>\n                <p>⏱️ fghjk fghjk - Late clock-in alert (10 min late)</p>\n                <p>📧 Invitation sent to new.employee@gmail.com</p>\n                <p>👤 User profile updated: Archie Quewon</p>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n\n      <!-- Invitations Tab -->
       <div v-if="activeTab === 'invitations'" class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Pending Invitations</h3>
@@ -378,6 +623,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import api from '@/utils/api.js'
 import { getNotifications, markNotificationAsRead, getUnreadNotificationCount, deleteNotification as deleteNotifApi, markAllNotificationsAsRead } from '@/services/orgApi'
+import { showConfirm, showAlert, showSuccess, showError } from '@/utils/dialog'
 import RealtimeNotifications from '@/components/dashboard/RealtimeNotifications.vue'
 import NotificationPanel from '@/components/dashboard/NotificationPanel.vue'
 
@@ -418,13 +664,56 @@ const newEmployee = ref({
   userTypeId: '3'
 })
 
+// Advanced Filter State
+const filterDepartment = ref('')
+const filterRole = ref('')
+const filterStatus = ref('')
+const selectedEmployees = ref([])
+const lateToday = ref(2)
+const avgAttendance = ref(92)
+const showScheduleModal = ref(false)
+
+// Live Notification & Activity Feed State
+const liveNotifications = ref([])
+const activityLog = ref([])
+const showActivityPanel = ref(true)
+const liveNotifTimeout = ref(null)
+
 // Computed
 const filteredEmployees = computed(() => {
-  if (!searchQuery.value) return employees.value
-  return employees.value.filter(emp =>
-    `${emp.First_Name} ${emp.SurName}`.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    emp.Email.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+  let result = employees.value
+
+  // Apply search filter
+  if (searchQuery.value) {
+    result = result.filter(emp =>
+      `${emp.First_Name} ${emp.SurName}`.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      emp.Email.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  }
+
+  // Apply department filter
+  if (filterDepartment.value) {
+    result = result.filter(emp => emp.Depart_ID === parseInt(filterDepartment.value))
+  }
+
+  // Apply role filter
+  if (filterRole.value) {
+    result = result.filter(emp => emp.User_Type_ID === parseInt(filterRole.value))
+  }
+
+  // Apply status filter
+  if (filterStatus.value) {
+    result = result.filter(emp => emp.Is_Active === (filterStatus.value === '1'))
+  }
+
+  return result
+})
+
+const filteredAndPaginatedEmployees = computed(() => filteredEmployees.value)
+
+const allSelected = computed(() => {
+  return filteredEmployees.value.length > 0 && 
+         selectedEmployees.value.length === filteredEmployees.value.length
 })
 
 // Computed for notifications display (unread only)
@@ -625,4 +914,328 @@ const markAllAsRead = async () => {
     console.error('Failed to mark all as read:', err)
   }
 }
+
+// ============================================================================
+// NEW ADVANCED EMPLOYEE MANAGEMENT METHODS
+// ============================================================================
+
+// Role name mapping
+const getRoleName = (roleId) => {
+  const roles = {
+    1: 'Admin',
+    2: 'Manager',
+    3: 'Staff',
+    5: 'Supervisor'
+  }
+  return roles[roleId] || 'Unknown'
+}
+
+// Department name mapping
+const getDepartmentName = (deptId) => {
+  const dept = departments.value.find(d => d.Depart_ID === deptId)
+  return dept ? dept.Depart_Name : null
+}
+
+// Get last active time
+const getLastActive = (userId) => {
+  // Mock data - in production, fetch from backend
+  const times = ['30 mins ago', '2 hours ago', 'Today', 'Yesterday', '3 days ago']
+  return times[Math.floor(Math.random() * times.length)]
+}
+
+// Toggle select employee
+const toggleSelectEmployee = (userId) => {
+  const index = selectedEmployees.value.indexOf(userId)
+  if (index > -1) {
+    selectedEmployees.value.splice(index, 1)
+  } else {
+    selectedEmployees.value.push(userId)
+  }
+}
+
+// Toggle select all
+const toggleSelectAll = () => {
+  if (allSelected.value) {
+    selectedEmployees.value = []
+  } else {
+    selectedEmployees.value = filteredEmployees.value.map(emp => emp.User_ID)
+  }
+}
+
+// Bulk change status
+const bulkChangeStatus = async () => {
+  if (selectedEmployees.value.length === 0) return
+  const confirmed = await showConfirm({
+    title: 'Activate Employees?',
+    message: `This will activate ${selectedEmployees.value.length} selected employees`,
+    type: 'info',
+    confirmText: 'Activate',
+    cancelText: 'Cancel'
+  })
+  if (!confirmed) return
+  
+  try {
+    for (const userId of selectedEmployees.value) {
+      await api.put(`/users/${userId}`, { isActive: 1 })
+    }
+    selectedEmployees.value = []
+    await loadEmployees()
+    await showSuccess(`${selectedEmployees.value.length} employees activated`)
+  } catch (err) {
+    console.error('Failed to change employee status:', err)
+    await showError('Failed to activate employees')
+  }
+}}
+
+// Bulk assign department
+const bulkAssignDepartment = async () => {
+  if (selectedEmployees.value.length === 0) return
+  const deptId = prompt('Enter department ID:')
+  if (!deptId) return
+  try {
+    for (const userId of selectedEmployees.value) {
+      await api.put(`/users/${userId}`, { departmentId: deptId })
+    }
+    selectedEmployees.value = []
+    await loadEmployees()
+  } catch (err) {
+    console.error('Failed to assign department:', err)
+  }
+}
+
+// Bulk delete
+const bulkDelete = async () => {
+  if (selectedEmployees.value.length === 0) return
+  const confirmed = await showDeleteConfirm(`${selectedEmployees.value.length} Employees`, async () => {
+    try {
+      for (const userId of selectedEmployees.value) {
+        await api.delete(`/users/${userId}`)
+      }
+      selectedEmployees.value = []
+      await loadEmployees()
+    } catch (err) {
+      console.error('Failed to delete employees:', err)
+      throw err
+    }
+  })
+}
+    console.error('Failed to delete employees:', err)
+  }
+}
+
+// Export to CSV
+const exportToCSV = () => {
+  const csvData = [
+    ['Name', 'Email', 'Role', 'Department', 'Status', 'Phone', 'Address'],
+    ...filteredEmployees.value.map(emp => [
+      `${emp.First_Name} ${emp.SurName}`,
+      emp.Email,
+      getRoleName(emp.User_Type_ID),
+      getDepartmentName(emp.Depart_ID) || '-',
+      emp.Is_Active ? 'Active' : 'Inactive',
+      emp.Phone_Number || '-',
+      emp.Address || '-'
+    ])
+  ]
+  
+  const csvContent = csvData.map(row => 
+    row.map(cell => `\"${cell}\"`).join(',')
+  ).join('\\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `employee-directory-${new Date().toISOString().split('T')[0]}.csv`
+  link.click()
+}
+
+// Assign shift
+const assignShift = (userId) => {
+  alert(`Shift assignment for user ${userId} - Feature coming soon!`)
+  // TODO: Implement shift assignment modal
+}
+
+// Send message
+const sendMessage = (userId) => {
+  alert(`Message to user ${userId} - Feature coming soon!`)
+  // TODO: Implement messaging modal
+}
+
+// Toggle employee status
+const toggleEmployeeStatus = async (userId) => {
+  try {
+    const emp = employees.value.find(e => e.User_ID === userId)
+    if (!emp) return
+    
+    await api.put(`/users/${userId}`, { isActive: !emp.Is_Active })
+    emp.Is_Active = !emp.Is_Active
+  } catch (err) {
+    console.error('Failed to toggle employee status:', err)
+  }
+}
+
+// Get check-in time
+const getCheckInTime = (userId) => {
+  // Mock data - in production, fetch from attendance table
+  const times = ['09:05 AM', '08:45 AM', '10:15 AM', null]
+  return times[userId % times.length]
+}
+
+// Get check-out time
+const getCheckOutTime = (userId) => {
+  // Mock data - in production, fetch from attendance table
+  const times = ['05:30 PM', '06:00 PM', null, null]
+  return times[userId % times.length]
+}
+
+// Get attendance status
+const getAttendanceStatus = (userId) => {
+  const checkIn = getCheckInTime(userId)
+  if (!checkIn) return 'Absent'
+  const [time, period] = checkIn.split(' ')
+  const [hours] = time.split(':')
+  const is24Hour = parseInt(hours) > 12
+  const hour = is24Hour ? parseInt(hours) : parseInt(hours)
+  return hour >= 9 ? 'Present' : 'Late'
+}
+
+// Get hours worked
+const getHoursWorked = (userId) => {
+  // Mock data - in production, calculate from check-in/check-out
+  const hours = [8, 8.5, 7.5, 0, 8.2]
+  return hours[userId % hours.length]
+}
+
+// Edit schedule
+const editSchedule = (userId) => {
+  alert(`Edit schedule for user ${userId} - Feature coming soon!`)
+  // TODO: Implement schedule editor modal
+}
+
+// ============================================================================
+// LIVE NOTIFICATION & ACTIVITY LOG METHODS
+// ============================================================================
+
+const showLiveNotification = (message, type = 'info') => {
+  const notification = {
+    message,
+    type // success, error, info, warning
+  }
+  liveNotifications.value.push(notification)
+  
+  // Auto-remove after 4 seconds
+  setTimeout(() => {
+    removeLiveNotification(liveNotifications.value.length - 1)
+  }, 4000)
+}
+
+const removeLiveNotification = (index) => {
+  liveNotifications.value.splice(index, 1)
+}
+
+const addActivityLog = (action, details, icon = '📝') => {
+  const now = new Date()
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  
+  const logEntry = {
+    action,
+    details,
+    icon,
+    timestamp: timeStr
+  }
+  
+  // Add to the beginning of the log
+  activityLog.value.unshift(logEntry)
+  
+  // Keep only last 20 entries
+  if (activityLog.value.length > 20) {
+    activityLog.value.pop()
+  }
+}
+
+// Override bulk action methods to add notifications
+
+const bulkChangeStatusOriginal = bulkChangeStatus
+const bulkChangeStatus = async () => {
+  if (selectedEmployees.value.length === 0) return
+  const newStatus = confirm('Activate all selected employees?') ? 1 : 0
+  try {
+    for (const userId of selectedEmployees.value) {
+      await api.put(`/users/${userId}`, { isActive: newStatus })
+    }
+    const count = selectedEmployees.value.length
+    showLiveNotification(`✅ Updated status for ${count} employee${count > 1 ? 's' : ''}`, 'success')
+    addActivityLog(`Status Updated`, `Changed status for ${count} employee(s) to ${newStatus ? 'Active' : 'Inactive'}`, '🔄')
+    selectedEmployees.value = []
+    await loadEmployees()
+  } catch (err) {
+    showLiveNotification(`❌ Failed to update employee status`, 'error')
+    addActivityLog(`Status Update Failed`, err.message, '⚠️')
+  }
+}
+
+const bulkAssignDepartmentOriginal = bulkAssignDepartment
+const bulkAssignDepartment = async () => {
+  if (selectedEmployees.value.length === 0) return
+  const deptId = prompt('Enter department ID:')
+  if (!deptId) return
+  try {
+    for (const userId of selectedEmployees.value) {
+      await api.put(`/users/${userId}`, { departmentId: deptId })
+    }
+    const count = selectedEmployees.value.length
+    const deptName = getDepartmentName(parseInt(deptId)) || `Dept ${deptId}`
+    showLiveNotification(`✅ Assigned ${count} employee${count > 1 ? 's' : ''} to ${deptName}`, 'success')
+    addActivityLog(`Department Assigned`, `Moved ${count} employee(s) to ${deptName}`, '🏢')
+    selectedEmployees.value = []
+    await loadEmployees()
+  } catch (err) {
+    showLiveNotification(`❌ Failed to assign department`, 'error')
+    addActivityLog(`Department Assignment Failed`, err.message, '⚠️')
+  }
+}
+
+const bulkDeleteOriginal = bulkDelete
+const bulkDelete = async () => {
+  if (selectedEmployees.value.length === 0) return
+  if (!confirm(`Delete ${selectedEmployees.value.length} selected employees?`)) return
+  try {
+    for (const userId of selectedEmployees.value) {
+      await api.delete(`/users/${userId}`)
+    }
+    const count = selectedEmployees.value.length
+    showLiveNotification(`✅ Deleted ${count} employee${count > 1 ? 's' : ''} successfully`, 'success')
+    addActivityLog(`Employees Deleted`, `Permanently deleted ${count} employee(s)`, '🗑️')
+    selectedEmployees.value = []
+    await loadEmployees()
+  } catch (err) {
+    showLiveNotification(`❌ Failed to delete employees`, 'error')
+    addActivityLog(`Delete Failed`, err.message, '⚠️')
+  }
+}
+
+const toggleEmployeeStatusOriginal = toggleEmployeeStatus
+const toggleEmployeeStatus = async (userId) => {
+  try {
+    const emp = employees.value.find(e => e.User_ID === userId)
+    if (!emp) return
+    
+    const newStatus = !emp.Is_Active
+    await api.put(`/users/${userId}`, { isActive: newStatus })
+    emp.Is_Active = newStatus
+    
+    const statusText = newStatus ? 'Activated' : 'Deactivated'
+    showLiveNotification(`✅ ${emp.First_Name} ${emp.SurName} ${statusText}`, 'success')
+    addActivityLog(`Employee Status Changed`, `${emp.First_Name} ${emp.SurName} - Now ${newStatus ? 'Active' : 'Inactive'}`, newStatus ? '✅' : '❌')
+  } catch (err) {
+    showLiveNotification(`❌ Failed to update employee status`, 'error')
+    addActivityLog(`Status Update Failed`, err.message, '⚠️')
+  }
+}
+
+// Initialize with sample activity on load
+onMounted(() => {
+  addActivityLog(`Dashboard Opened`, `Employee Management console loaded`, '🚀')
+})
 </script>

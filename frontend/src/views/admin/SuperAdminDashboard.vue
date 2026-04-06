@@ -171,6 +171,11 @@
             <AuditLogs />
           </div>
 
+          <!-- FEEDBACK SECTION -->
+          <div v-show="activeSection === 'feedback'" class="animate-in">
+            <FeedbackManagement />
+          </div>
+
           <!-- SYSTEM CONFIG SECTION -->
           <div v-show="activeSection === 'system-config'" class="animate-in">
             <SystemConfiguration />
@@ -186,6 +191,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { getDashboard, getOrganizations, getNotifications, markNotificationAsRead, getUnreadNotificationCount, deleteNotification as deleteNotifApi, markAllNotificationsAsRead } from '@/services/superadminApi'
+import { useDashboardMetrics } from '@/composables/useDashboardMetrics'
 import Sidebar from '@/components/dashboard/Sidebar.vue'
 import HeaderBar from '@/components/dashboard/HeaderBar.vue'
 import StatCard from '@/components/dashboard/StatCard.vue'
@@ -201,6 +207,7 @@ import UsersManagement from '@/components/dashboard/UsersManagement.vue'
 import RealtimeNotifications from '@/components/dashboard/RealtimeNotifications.vue'
 import NotificationPanel from '@/components/dashboard/NotificationPanel.vue'
 import SettingsModal from '@/components/dashboard/SettingsModal.vue'
+import FeedbackManagement from '@/components/dashboard/FeedbackManagement.vue'
 import {
   BuildingIcon, UsersIcon, ClockIcon, BarChart3Icon,
   TrendingUpIcon, CheckCircleIcon, ActivityIcon
@@ -218,38 +225,50 @@ const notifRefreshInterval = ref(null)
 const isRefreshingNotifications = ref(false)
 const lastNotifCheck = ref(0)
 
+// Real-time metrics composable (SuperAdmin/System-wide)
+const { 
+  superadminMetrics, 
+  isConnected: metricsConnected,
+  requestSystemMetrics,
+  alerts: realtimeAlerts,
+  clearAlerts: clearRealtimeAlerts
+} = useDashboardMetrics({ dashboardType: 'superadmin' })
+
 // Data State
 const metrics = ref({ totalOrgs: 0, totalUsers: 0, todayCheckins: 0, totalDepts: 0 })
 const organizationsList = ref([])
 
 // Computed Properties
 const densityScore = computed(() => {
-  if (metrics.value.totalUsers === 0) return 0
-  return Math.round((metrics.value.todayCheckins / metrics.value.totalUsers) * 100)
+  // Use real-time metrics when available
+  const totalUsers = superadminMetrics.value.totalUsers || metrics.value.totalUsers || 0
+  const checkins = superadminMetrics.value.todayCheckins || metrics.value.todayCheckins || 0
+  if (totalUsers === 0) return 0
+  return Math.round((checkins / totalUsers) * 100)
 })
 
 const dbLoad = computed(() => {
-  return Math.random() * 60 + 20 // Simulated DB load between 20-80%
+  return superadminMetrics.value.dbLoad || (Math.random() * 60 + 20)
 })
 
 const stats = computed(() => [
   {
     label: 'Organizations',
-    value: metrics.value.totalOrgs,
+    value: superadminMetrics.value.totalOrganizations || metrics.value.totalOrgs,
     icon: BuildingIcon,
     color: '#0284c7', // primary-600
     trend: 8
   },
   {
     label: 'Total Users',
-    value: metrics.value.totalUsers,
+    value: superadminMetrics.value.totalUsers || metrics.value.totalUsers,
     icon: UsersIcon,
     color: '#ea580c', // accent-600
     trend: 12
   },
   {
     label: 'Check-ins Today',
-    value: metrics.value.todayCheckins,
+    value: superadminMetrics.value.todayCheckins || metrics.value.todayCheckins,
     icon: ClockIcon,
     color: '#f97316', // accent-500
     trend: -3
@@ -274,9 +293,14 @@ const displayNotifications = computed(() => {
 const refreshData = async () => {
   loading.value = true
   try {
-    // Fetch Live Dashboard Stats
+    // Request real-time metrics update
+    requestSystemMetrics()
+
+    // Fetch Live Dashboard Stats from API (for initial load)
     const statsRes = await getDashboard()
-    metrics.value = statsRes.data?.stats || metrics.value
+    if (statsRes.data?.stats) {
+      metrics.value = statsRes.data.stats
+    }
 
     // Fetch Recent Organizations
     const orgsRes = await getOrganizations()
@@ -379,6 +403,19 @@ onMounted(() => {
   notifRefreshInterval.value = setInterval(() => {
     loadNotifications()
   }, 2000)
+
+  // Request system metrics refresh every 30 seconds if real-time is connected
+  const metricsRefreshInterval = setInterval(() => {
+    if (metricsConnected.value) {
+      requestSystemMetrics()
+    }
+  }, 30000)
+
+  // Store interval for cleanup
+  const intervals = [notifRefreshInterval.value, metricsRefreshInterval]
+  onBeforeUnmount(() => {
+    intervals.forEach(interval => clearInterval(interval))
+  })
 })
 
 onBeforeUnmount(() => {
