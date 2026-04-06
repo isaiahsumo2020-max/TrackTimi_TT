@@ -2129,6 +2129,78 @@ router.get('/feedback', (req, res) => {
   });
 });
 
+// GET: Feedback statistics/summary (MUST come before /:feedbackId route)
+router.get('/feedback/stats/summary', (req, res) => {
+  const { orgId } = req.query;
+
+  let sql = `
+    SELECT 
+      COUNT(*) as total_feedback,
+      SUM(CASE WHEN Status = 'open' THEN 1 ELSE 0 END) as open_count,
+      SUM(CASE WHEN Status = 'responded' THEN 1 ELSE 0 END) as responded_count,
+      SUM(CASE WHEN Status = 'closed' THEN 1 ELSE 0 END) as closed_count,
+      AVG(CAST(Rating as FLOAT)) as avg_rating,
+      SUM(CASE WHEN Rating = 5 THEN 1 ELSE 0 END) as five_star_count,
+      SUM(CASE WHEN Rating = 4 THEN 1 ELSE 0 END) as four_star_count,
+      SUM(CASE WHEN Rating = 3 THEN 1 ELSE 0 END) as three_star_count,
+      SUM(CASE WHEN Rating = 2 THEN 1 ELSE 0 END) as two_star_count,
+      SUM(CASE WHEN Rating = 1 THEN 1 ELSE 0 END) as one_star_count
+    FROM Feedback
+    WHERE 1=1
+  `;
+
+  const params = [];
+
+  if (orgId) {
+    sql += ` AND Org_ID = ?`;
+    params.push(orgId);
+  }
+
+  db.get(sql, params, (err, stats) => {
+    if (err) {
+      console.error('❌ Error fetching feedback stats:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch statistics' });
+    }
+
+    const summary = stats || {
+      total_feedback: 0,
+      open_count: 0,
+      responded_count: 0,
+      closed_count: 0,
+      avg_rating: 0,
+      five_star_count: 0,
+      four_star_count: 0,
+      three_star_count: 0,
+      two_star_count: 0,
+      one_star_count: 0
+    };
+
+    console.log(`✅ Fetched feedback stats: ${summary.total_feedback} total`);
+
+    res.json({
+      success: true,
+      stats: {
+        totalFeedback: summary.total_feedback || 0,
+        status: {
+          open: summary.open_count || 0,
+          responded: summary.responded_count || 0,
+          closed: summary.closed_count || 0
+        },
+        rating: {
+          average: parseFloat(summary.avg_rating || 0).toFixed(1),
+          distribution: {
+            five: summary.five_star_count || 0,
+            four: summary.four_star_count || 0,
+            three: summary.three_star_count || 0,
+            two: summary.two_star_count || 0,
+            one: summary.one_star_count || 0
+          }
+        }
+      }
+    });
+  });
+});
+
 // GET: Get feedback by ID (single feedback detail)
 router.get('/feedback/:feedbackId', (req, res) => {
   const { feedbackId } = req.params;
@@ -2241,8 +2313,7 @@ router.put('/feedback/:feedbackId/status', (req, res) => {
 
   const sql = `
     UPDATE Feedback
-    SET Status = ?,
-        Updated_at = datetime('now', 'localtime')
+    SET Status = ?
     WHERE Feedback_ID = ?
   `;
 
@@ -2324,78 +2395,6 @@ router.delete('/feedback/:feedbackId', (req, res) => {
       );
     }
   );
-});
-
-// GET: Feedback statistics/summary
-router.get('/feedback/stats/summary', (req, res) => {
-  const { orgId } = req.query;
-
-  let sql = `
-    SELECT 
-      COUNT(*) as total_feedback,
-      SUM(CASE WHEN Status = 'open' THEN 1 ELSE 0 END) as open_count,
-      SUM(CASE WHEN Status = 'responded' THEN 1 ELSE 0 END) as responded_count,
-      SUM(CASE WHEN Status = 'closed' THEN 1 ELSE 0 END) as closed_count,
-      AVG(CAST(Rating as FLOAT)) as avg_rating,
-      SUM(CASE WHEN Rating = 5 THEN 1 ELSE 0 END) as five_star_count,
-      SUM(CASE WHEN Rating = 4 THEN 1 ELSE 0 END) as four_star_count,
-      SUM(CASE WHEN Rating = 3 THEN 1 ELSE 0 END) as three_star_count,
-      SUM(CASE WHEN Rating = 2 THEN 1 ELSE 0 END) as two_star_count,
-      SUM(CASE WHEN Rating = 1 THEN 1 ELSE 0 END) as one_star_count
-    FROM Feedback
-    WHERE 1=1
-  `;
-
-  const params = [];
-
-  if (orgId) {
-    sql += ` AND Org_ID = ?`;
-    params.push(orgId);
-  }
-
-  db.get(sql, params, (err, stats) => {
-    if (err) {
-      console.error('❌ Error fetching feedback stats:', err.message);
-      return res.status(500).json({ error: 'Failed to fetch statistics' });
-    }
-
-    const summary = stats || {
-      total_feedback: 0,
-      open_count: 0,
-      responded_count: 0,
-      closed_count: 0,
-      avg_rating: 0,
-      five_star_count: 0,
-      four_star_count: 0,
-      three_star_count: 0,
-      two_star_count: 0,
-      one_star_count: 0
-    };
-
-    console.log(`✅ Fetched feedback stats: ${summary.total_feedback} total`);
-
-    res.json({
-      success: true,
-      stats: {
-        totalFeedback: summary.total_feedback || 0,
-        status: {
-          open: summary.open_count || 0,
-          responded: summary.responded_count || 0,
-          closed: summary.closed_count || 0
-        },
-        rating: {
-          average: parseFloat(summary.avg_rating || 0).toFixed(1),
-          distribution: {
-            five: summary.five_star_count || 0,
-            four: summary.four_star_count || 0,
-            three: summary.three_star_count || 0,
-            two: summary.two_star_count || 0,
-            one: summary.one_star_count || 0
-          }
-        }
-      }
-    });
-  });
 });
 
 module.exports = router;
