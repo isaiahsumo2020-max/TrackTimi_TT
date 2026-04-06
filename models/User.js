@@ -74,6 +74,99 @@ const User = {
   // DELETE user
   delete: (id, callback) => {
     db.run('DELETE FROM User WHERE User_ID = ?', [id], callback);
+  },
+
+  // SET VERIFICATION CODE AND TOKEN (for email verification)
+  setVerificationCode: (email, code, token, callback) => {
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes
+    const sql = `
+      UPDATE User SET 
+        Verification_Code = ?, 
+        Verification_Token = ?, 
+        Verification_Expires = ?
+      WHERE Email = ?
+    `;
+    db.run(sql, [code, token, expiresAt, email], callback);
+  },
+
+  // VERIFY EMAIL BY CODE
+  verifyByCode: (email, code, callback) => {
+    const sql = `
+      SELECT * FROM User 
+      WHERE Email = ? AND Verification_Code = ? AND Verification_Expires > datetime('now')
+    `;
+    db.get(sql, [email, code], (err, user) => {
+      if (err) return callback(err);
+      if (!user) return callback(null, null);
+
+      // Mark email as verified and clear verification data
+      const updateSql = `
+        UPDATE User SET 
+          Email_Verified = 1, 
+          Verification_Code = NULL, 
+          Verification_Token = NULL, 
+          Verification_Expires = NULL
+        WHERE User_ID = ?
+      `;
+      db.run(updateSql, [user.User_ID], (err) => {
+        if (err) return callback(err);
+        callback(null, user);
+      });
+    });
+  },
+
+  // VERIFY EMAIL BY TOKEN
+  verifyByToken: (token, callback) => {
+    const sql = `
+      SELECT * FROM User 
+      WHERE Verification_Token = ? AND Verification_Expires > datetime('now')
+    `;
+    db.get(sql, [token], (err, user) => {
+      if (err) return callback(err);
+      if (!user) return callback(null, null);
+
+      // Mark email as verified and clear verification data
+      const updateSql = `
+        UPDATE User SET 
+          Email_Verified = 1, 
+          Verification_Code = NULL, 
+          Verification_Token = NULL, 
+          Verification_Expires = NULL
+        WHERE User_ID = ?
+      `;
+      db.run(updateSql, [user.User_ID], (err) => {
+        if (err) return callback(err);
+        callback(null, user);
+      });
+    });
+  },
+
+  // CHECK IF EMAIL IS VERIFIED
+  isEmailVerified: (email, callback) => {
+    db.get('SELECT Email_Verified FROM User WHERE Email = ?', [email], (err, row) => {
+      if (err) return callback(err);
+      callback(null, row ? row.Email_Verified === 1 : false);
+    });
+  },
+
+  // SET EMAIL VERIFIED (for development mode auto-verification)
+  setEmailVerified: (email, callback) => {
+    const sql = `
+      UPDATE User SET 
+        Email_Verified = 1, 
+        Verification_Code = NULL, 
+        Verification_Token = NULL, 
+        Verification_Expires = NULL
+      WHERE Email = ?
+    `;
+    db.run(sql, [email], callback);
+  },
+
+  // GET RESEND ATTEMPT COUNT (for rate limiting)
+  getResendAttempts: (email, callback) => {
+    // For simple implementation, we'll track this in memory or session
+    // This could be enhanced with a separate table for resend attempts
+    callback(null, 0);
   }
 };
 

@@ -1,18 +1,28 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const db = require('../config/db');
 const { generateUniqueEmployeeId } = require('../utils/employeeId');
+const { sendVerificationEmail, sendResendVerificationEmail, sendInvitationEmail } = require('../utils/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tracktimi_secret_2026';
 
 // 1. REGISTER ORGANIZATION & ADMIN (Onboarding)
 exports.registerOrg = async (req, res) => {
   try {
-    const { orgName, orgSlug, adminName, adminEmail, adminPassword } = req.body;
+    const { orgName, orgDomain, orgSlug, adminName, adminEmail, adminPassword } = req.body;
 
-    if (!orgName || !orgSlug || !adminEmail || !adminPassword) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    console.log('📝 Full Registration request body:', JSON.stringify(req.body, null, 2));
+    console.log('📝 Destructured values:', { orgName, orgDomain, orgSlug, adminName, adminEmail, adminPassword });
+
+    // Validate required fields
+    if (!orgName || !adminEmail || !adminPassword || !adminName) {
+      console.error('❌ Validation failed. Missing fields:', { orgName: !!orgName, adminEmail: !!adminEmail, adminPassword: !!adminPassword, adminName: !!adminName });
+      return res.status(400).json({ error: 'Missing required fields: orgName, adminName, adminEmail, adminPassword' });
     }
+
+    // Generate orgSlug from orgDomain if not provided
+    const slug = orgSlug || (orgDomain ? orgDomain.split('.')[0].toLowerCase() : null) || orgName.toLowerCase().replace(/\s+/g, '-');
 
     const existing = await new Promise((resolve) => {
       db.get('SELECT Email FROM User WHERE Email = ?', [adminEmail.toLowerCase()], (err, row) => resolve(row));
@@ -20,49 +30,91 @@ exports.registerOrg = async (req, res) => {
     if (existing) return res.status(400).json({ error: 'Email already registered' });
 
     // Create Organization
+    console.log('⚙️  Creating organization:', orgName);
     const orgId = await new Promise((resolve, reject) => {
       db.run(`INSERT INTO Organization (Org_Name, Org_Domain, Org_Type_ID, Region_ID, Email) VALUES (?, ?, 1, 1, ?)`,
-        [orgName, orgSlug.toLowerCase(), adminEmail.toLowerCase()], function(err) { 
-          if (err) reject(err); else resolve(this.lastID); 
+        [orgName, orgDomain || slug, adminEmail.toLowerCase()], function(err) { 
+          if (err) {
+            console.error('❌ Organization creation error:', err);
+            reject(err);
+          } else {
+            console.log('✅ Organization created with ID:', this.lastID);
+            resolve(this.lastID);
+          }
         });
     });
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
     const names = adminName.split(' ');
-    
-    generateUniqueEmployeeId(async (err, employeeId) => {
-      const sql = `INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Job_Title, Employee_ID, Is_Active) 
-                   VALUES (?, ?, ?, ?, ?, 1, 'System Admin', ?, 1)`;
 
-      db.run(sql, [names[0], names.slice(1).join(' ') || 'Admin', adminEmail.toLowerCase(), hashedPassword, orgId, employeeId], function(err) {
-        if (err) return res.status(500).json({ error: 'Admin creation failed' });
-
-        const token = jwt.sign(
-          { 
-            userId: this.lastID, 
-            orgId: orgId, 
-            userTypeId: 1, 
-            role: 'Admin', 
-            orgSlug: orgSlug.toLowerCase() 
-          },
-          JWT_SECRET, { expiresIn: '12h' }
-        );
-
-        res.status(201).json({ 
-          token, 
-          user: { 
-            userId: this.lastID, 
-            orgId: orgId, 
-            orgName: orgName, // Return name for sidebar
-            orgSlug: orgSlug.toLowerCase(), 
-            role: 'Admin',
-            firstName: names[0]
-          } 
-        });
+    // Generate employee ID
+    const employeeId = await new Promise((resolve, reject) => {
+      generateUniqueEmployeeId((err, id) => {
+        if (err) reject(err);
+        else resolve(id);
       });
     });
+
+    // Create User
+    console.log('⚙️  Creating admin user:', adminEmail);
+    await new Promise((resolve, reject) => {
+      const sql = `INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Job_Title, Employee_ID, Is_Active, Email_Verified) 
+                   VALUES (?, ?, ?, ?, ?, 1, 'System Admin', ?, 1, 0)`;
+
+      db.run(sql, [names[0], names.slice(1).join(' ') || 'Admin', adminEmail.toLowerCase(), hashedPassword, orgId, employeeId], function(err) {
+        if (err) {
+          console.error('❌ User creation error:', err);
+          reject(err);
+        } else {
+          console.log('✅ Admin user created with ID:', this.lastID);
+          resolve(this.lastID);
+        }
+      });
+    });
+
+    // Generate verification code and token
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    console.log('🔐 Verification code:', verificationCode);
+
+    // Save verification code and token
+    const User = require('../models/User');
+    await new Promise((resolve, reject) => {
+      User.setVerificationCode(adminEmail.toLowerCase(), verificationCode, verificationToken, (err) => {
+        if (err) {
+          console.error('❌ Failed to set verification code:', err);
+          reject(err);
+        } else {
+          console.log('✅ Verification code saved');
+          resolve();
+        }
+      });
+    });
+
+    // Send verification email (non-blocking)
+    sendVerificationEmail(adminEmail.toLowerCase(), verificationCode, verificationToken)
+      .then(() => console.log('✅ Verification email sent to:', adminEmail))
+      .catch((err) => console.error('⚠️  Failed to send verification email:', err.message));
+
+    // Return success response
+    return res.status(201).json({ 
+      success: true,
+      message: 'Organization registered successfully. Please check your email to verify your account.',
+      email: adminEmail.toLowerCase(),
+      user: { 
+        orgId: orgId, 
+        orgName: orgName,
+        orgSlug: slug, 
+        adminName: names[0],
+        adminEmail: adminEmail.toLowerCase()
+      } 
+    });
+
   } catch (error) {
-    res.status(500).json({ error: 'Onboarding failed' });
+    console.error('❌ Registration error:', error.message);
+    return res.status(500).json({ error: error.message || 'Registration failed' });
   }
 };
 
@@ -88,6 +140,24 @@ exports.login = (req, res) => {
 
     const match = await bcrypt.compare(password, user.Password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+
+    // Check if email is verified (for OrgAdmin and regular users, not superadmin)
+    // In development mode, allow bypass for testing
+    if (user.Org_ID && !user.Email_Verified && process.env.NODE_ENV !== 'development') {
+      return res.status(403).json({ 
+        error: 'Please verify your email before accessing your dashboard.',
+        requiresVerification: true,
+        email: user.Email
+      });
+    }
+
+    // In development mode, auto-verify email on first login if not already verified
+    if (user.Org_ID && !user.Email_Verified && process.env.NODE_ENV === 'development') {
+      const User = require('../models/User');
+      User.setEmailVerified(user.Email, (err) => {
+        if (err) console.error('Failed to auto-verify email in dev mode:', err);
+      });
+    }
 
     // Standardized JWT Payload
     const token = jwt.sign(
@@ -169,6 +239,9 @@ exports.inviteEmployee = async (req, res) => {
       return res.status(400).json({ error: 'An invitation is already pending for this email' });
     }
 
+    // Generate temporary password (8 characters: mix of letters, numbers, special chars)
+    const tempPassword = Math.random().toString(36).slice(2, 10) + '!@';
+
     // Create invitation record
     const Invitation = require('../models/Invitation');
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -179,20 +252,34 @@ exports.inviteEmployee = async (req, res) => {
       userTypeId: roleId || 3,
       expiresAt: expiresAt,
       createdBy: userId
-    }, (err, invitation) => {
+    }, async (err, invitation) => {
       if (err) {
         console.error('Invitation creation error:', err);
         return res.status(500).json({ error: 'Failed to create invitation' });
       }
 
-      // TODO: Send email with invitation token
-      // For now, return token in response (dev mode)
-      res.status(201).json({
-        success: true,
-        message: 'Invitation sent successfully',
-        invitationToken: invitation.Token,
-        inviteExpiresAt: invitation.Expires_At,
-        email: invitation.Email
+      // Fetch organization name and inviter details for email
+      db.get('SELECT Org_Name FROM Organization WHERE Org_ID = ?', [orgId], async (errOrg, org) => {
+        if (errOrg) console.error('Org fetch error:', errOrg);
+        
+        db.get('SELECT First_Name, SurName FROM User WHERE User_ID = ?', [userId], async (errInviter, inviter) => {
+          if (errInviter) console.error('Inviter fetch error:', errInviter);
+
+          const orgName = org?.Org_Name || 'TrackTimi';
+          const inviterName = inviter ? `${inviter.First_Name} ${inviter.SurName}` : 'Admin';
+
+          // Send invitation email with temporary password
+          await sendInvitationEmail(email.toLowerCase(), invitation.Token, orgName, inviterName, tempPassword);
+
+          res.status(201).json({
+            success: true,
+            message: 'Invitation sent successfully',
+            invitationToken: invitation.Token,
+            inviteExpiresAt: invitation.Expires_At,
+            email: invitation.Email,
+            tempPassword: tempPassword // Include in response for display to admin if needed
+          });
+        });
       });
     });
 
@@ -345,5 +432,134 @@ exports.activateInvitation = async (req, res) => {
   } catch (error) {
     console.error('Activate invitation error:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 7. VERIFY EMAIL BY LINK (GET /api/auth/verify-email?token=TOKEN)
+exports.verifyEmailByLink = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Verification token is required' });
+    }
+
+    const User = require('../models/User');
+    User.verifyByToken(token, (err, user) => {
+      if (err) {
+        console.error('❌ Email verification error:', err);
+        return res.status(500).json({ error: 'Verification process failed' });
+      }
+
+      if (!user) {
+        return res.status(400).json({ 
+          error: 'Invalid or expired verification token',
+          tokenExpired: true
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Email verified successfully! You can now login to your dashboard.',
+        email: user.Email
+      });
+    });
+  } catch (error) {
+    console.error('❌ Verify email link error:', error);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+};
+
+// 8. VERIFY EMAIL BY CODE (POST /api/auth/verify-code)
+exports.verifyEmailByCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ error: 'Email and verification code are required' });
+    }
+
+    // Validate code format (6 digits)
+    if (!/^\d{6}$/.test(code)) {
+      return res.status(400).json({ error: 'Verification code must be 6 digits' });
+    }
+
+    const User = require('../models/User');
+    User.verifyByCode(email.toLowerCase(), code, (err, user) => {
+      if (err) {
+        console.error('❌ Code verification error:', err);
+        return res.status(500).json({ error: 'Verification process failed' });
+      }
+
+      if (!user) {
+        return res.status(400).json({ 
+          error: 'Invalid verification code or it has expired',
+          codeExpired: true
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Email verified successfully! You can now login to your dashboard.',
+        email: user.Email
+      });
+    });
+  } catch (error) {
+    console.error('❌ Verify code error:', error);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+};
+
+// 9. RESEND VERIFICATION EMAIL (POST /api/auth/resend-verification)
+exports.resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Find user
+    const user = await new Promise((resolve) => {
+      db.get('SELECT * FROM User WHERE Email = ?', [email.toLowerCase()], (err, row) => resolve(row));
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if already verified
+    if (user.Email_Verified) {
+      return res.status(400).json({ error: 'This email is already verified' });
+    }
+
+    // Generate new code and token
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    const User = require('../models/User');
+    User.setVerificationCode(email.toLowerCase(), verificationCode, verificationToken, async (err) => {
+      if (err) {
+        console.error('❌ Failed to generate new code:', err);
+        return res.status(500).json({ error: 'Failed to generate verification code' });
+      }
+
+      // Send verification email
+      try {
+        await sendResendVerificationEmail(email.toLowerCase(), verificationCode, verificationToken);
+
+        res.json({
+          success: true,
+          message: 'A new verification code has been sent to your email',
+          email: email.toLowerCase()
+        });
+      } catch (emailError) {
+        console.error('❌ Failed to send resend verification email:', emailError);
+        res.status(500).json({ error: 'Failed to send verification email. Please try again later.' });
+      }
+    });
+  } catch (error) {
+    console.error('❌ Resend verification error:', error);
+    res.status(500).json({ error: 'Failed to resend verification' });
   }
 };

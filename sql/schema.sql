@@ -196,12 +196,32 @@ CREATE TABLE IF NOT EXISTS Audit_Log (
     FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID)
 );
 
--- 14. Indexes for Performance
+-- 14. Notifications (Real-time dashboard notifications)
+CREATE TABLE IF NOT EXISTS Notification (
+    Notify_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    User_ID INTEGER NOT NULL,
+    Org_ID INTEGER,
+    Title TEXT NOT NULL,
+    Message TEXT NOT NULL,
+    Type TEXT, -- 'organization', 'user', 'department', 'location', 'system', 'pending'
+    Category TEXT DEFAULT 'system',
+    Is_Read BOOLEAN DEFAULT 0,
+    Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Read_at DATETIME,
+    Action_URL TEXT,
+    FOREIGN KEY (User_ID) REFERENCES User(User_ID),
+    FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID)
+);
+
+-- 15. Indexes for Performance
 CREATE INDEX IF NOT EXISTS idx_user_org ON User(Org_ID);
 CREATE INDEX IF NOT EXISTS idx_user_email ON User(Email);
 CREATE INDEX IF NOT EXISTS idx_attendance_user ON Attendance(User_ID);
 CREATE INDEX IF NOT EXISTS idx_attendance_date ON Attendance(Check_in_time);
 CREATE INDEX IF NOT EXISTS idx_geofence_org ON Geofence(Org_ID);
+CREATE INDEX IF NOT EXISTS idx_notification_user ON Notification(User_ID);
+CREATE INDEX IF NOT EXISTS idx_notification_org ON Notification(Org_ID);
+CREATE INDEX IF NOT EXISTS idx_notification_read ON Notification(Is_Read);
 
 -- =====================================================
 -- SAMPLE DATA FOR TESTING

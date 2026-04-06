@@ -1,20 +1,8 @@
 const Joi = require('joi');
 const Invitation = require('../models/Invitation');
 const db = require('../config/db');
-const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
-
-function getTransporter() {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER) {
-    return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    });
-  }
-  return { sendMail: (opts) => { console.log('Email stub send:', opts); return Promise.resolve(); } };
-}
+const { sendInvitationEmail } = require('../utils/emailService');
 
 exports.inviteEmployee = async (req, res) => {
   try {
@@ -38,19 +26,61 @@ exports.inviteEmployee = async (req, res) => {
         Invitation.create({ email: value.email, orgId: orgId, userTypeId: 3, createdBy: invitedBy }, async (errCreate, inv) => {
           if (errCreate) return res.status(500).json({ error: 'Failed to create invitation' });
 
-          // store pending employee
-          const sql = `INSERT INTO Pending_Employee (Email, First_Name, SurName, Job_Title, Depart_ID, Org_ID, Invitation_ID, User_Type_ID, Created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`;
-          db.run(sql, [value.email.toLowerCase(), value.firstName, value.surName, null, null, orgId, inv.Invitation_ID, 3], (errPending) => {
+          console.log('✅ Invitation created for:', value.email);
+
+          // Generate temporary password
+          const tempPassword = Math.random().toString(36).slice(2, 10) + '!@';
+          console.log('🔐 Generated temp password for:', value.email);
+
+          // Store invitation details temporarily (not creating user yet)
+          // Store in a map or cache with the token as key
+          const invitationDetails = {
+            email: value.email.toLowerCase(),
+            firstName: value.firstName,
+            surName: value.surName,
+            jobTitle: null,
+            departId: null,
+            orgId: orgId,
+            userTypeId: 3,
+            tempPassword: tempPassword
+          };
+          
+          // We'll store this in the Pending_Employee table for reference, but user won't be created yet
+          const pendingSql = `INSERT INTO Pending_Employee (Email, First_Name, SurName, Job_Title, Depart_ID, Org_ID, Invitation_ID, User_Type_ID, Created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`;
+          db.run(pendingSql, [value.email.toLowerCase(), value.firstName, value.surName, null, null, orgId, inv.Invitation_ID, 3], (errPending) => {
             if (errPending) console.error('Pending insert error:', errPending);
+            else console.log('✅ Pending employee record created');
           });
 
-          const token = inv.Token;
-          const activationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5175'}/activate/${token}`;
-          const transporter = getTransporter();
-          const mailOptions = { from: process.env.SMTP_FROM || 'no-reply@tracktimi.local', to: value.email, subject: 'You are invited to TrackTimi', text: `Activate: ${activationUrl}`, html: `<p>Activate: <a href="${activationUrl}">link</a></p>` };
-          try { await transporter.sendMail(mailOptions); } catch (e) { console.warn('Email send failed:', e.message); }
+          // Fetch organization name and inviter details
+          db.get('SELECT Org_Name FROM Organization WHERE Org_ID = ?', [orgId], async (errOrg, org) => {
+            if (errOrg) console.error('Org fetch error:', errOrg);
+            
+            db.get('SELECT First_Name, SurName FROM User WHERE User_ID = ?', [invitedBy], async (errInviter, inviter) => {
+              if (errInviter) console.error('Inviter fetch error:', errInviter);
 
-          res.status(201).json({ invited: true, token });
+              const orgName = org?.Org_Name || 'TrackTimi';
+              const inviterName = inviter ? `${inviter.First_Name} ${inviter.SurName}` : 'Admin';
+
+              console.log('📧 About to send invitation to:', value.email, 'from:', inviterName, 'org:', orgName);
+
+              // Send invitation email with temporary password
+              const emailResult = await sendInvitationEmail(value.email.toLowerCase(), inv.Token, orgName, inviterName, tempPassword);
+              
+              if (emailResult.success) {
+                console.log('✅ Invitation email sent successfully to:', value.email);
+              } else {
+                console.error('❌ Failed to send invitation email to:', value.email, 'Error:', emailResult.error);
+              }
+
+              res.status(201).json({ 
+                invited: true, 
+                token: inv.Token,
+                message: `Invitation sent to ${value.email}. Waiting for user to activate...`,
+                tempPassword: tempPassword
+              });
+            });
+          });
         });
       });
     });
@@ -83,25 +113,44 @@ exports.activateInvitation = async (req, res) => {
       if (err) return res.status(500).json({ error: 'Failed to verify invitation' });
       if (!invite) return res.status(404).json({ error: 'Invalid or used invitation token' });
 
+      console.log('🔗 Activation token found for:', invite.Email);
+
       db.get('SELECT * FROM Pending_Employee WHERE Invitation_ID = ?', [invite.Invitation_ID], async (err2, pending) => {
         if (err2) return res.status(500).json({ error: 'DB error' });
         if (!pending) return res.status(400).json({ error: 'Pending record not found' });
 
+        console.log('⏳ Pending employee found:', pending.Email);
+
         const hashed = await bcrypt.hash(value.password, 10);
-        const sql = `INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Job_Title, Depart_ID, Employee_ID, Is_Active, Created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))`;
+        const sql = `INSERT INTO User (First_Name, SurName, Email, Password, Org_ID, User_Type_ID, Job_Title, Depart_ID, Employee_ID, Is_Active, Email_Verified, Created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, datetime('now'))`;
 
         // simple employee id
         const empId = 'EMP' + Math.floor(Math.random() * 900000 + 100000);
 
         db.run(sql, [pending.First_Name, pending.SurName, pending.Email.toLowerCase(), hashed, pending.Org_ID, pending.User_Type_ID, pending.Job_Title, pending.Depart_ID, empId], function(errCreate) {
           if (errCreate) {
-            console.error('User create error:', errCreate);
+            console.error('❌ User create error:', errCreate);
             return res.status(500).json({ error: 'Failed to create user' });
           }
           const userId = this.lastID;
-          Invitation.markUsed(value.token, (errMark) => { if (errMark) console.error('Mark used error:', errMark); });
-          db.run('DELETE FROM Pending_Employee WHERE Invitation_ID = ?', [invite.Invitation_ID], (errDel) => { if (errDel) console.error('Pending delete error:', errDel); });
-          res.json({ created: true, userId, employeeId: empId });
+          console.log('✅ User created successfully:', pending.Email, 'with ID:', userId);
+
+          Invitation.markUsed(value.token, (errMark) => { 
+            if (errMark) console.error('Mark used error:', errMark);
+            else console.log('✅ Invitation marked as used');
+          });
+
+          db.run('DELETE FROM Pending_Employee WHERE Invitation_ID = ?', [invite.Invitation_ID], (errDel) => { 
+            if (errDel) console.error('Pending delete error:', errDel);
+            else console.log('✅ Pending employee record cleaned up');
+          });
+
+          res.json({ 
+            created: true, 
+            userId, 
+            employeeId: empId,
+            message: 'Account activated successfully! You can now log in.'
+          });
         });
       });
     });

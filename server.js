@@ -76,6 +76,10 @@ app.use('/api/attendance', authenticateToken);
 // server.js
 app.use('/api/attendance', require('./routes/attendance.routes'));
 
+// 4. Excuses/Leave Requests (require JWT)
+app.use('/api/excuses', authenticateToken);
+app.use('/api/excuses', require('./routes/excuse.routes'));
+
 // Other routes...
 // Keep legacy /api/users but prefer admin routes under /api/org/users
 app.use('/api/users', require('./routes/users.routes'));

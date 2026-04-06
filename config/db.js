@@ -70,11 +70,15 @@ function initializeTables() {
       Org_Domain TEXT UNIQUE,
       Theme_Color TEXT DEFAULT '#f2a409',
       Region_ID INTEGER,
+      Address TEXT,
       Num_of_Employee INTEGER DEFAULT 0,
       Phone_Num TEXT,
       Email TEXT,
+      Logo_Path TEXT,
+      Logo_MIME_Type TEXT DEFAULT 'image/png',
       Is_Active INTEGER DEFAULT 1,
       Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      Updated_at DATETIME,
       FOREIGN KEY (Org_Type_ID) REFERENCES Organization_Type(Org_Type_ID),
       FOREIGN KEY (Region_ID) REFERENCES Region(Region_ID),
       UNIQUE(Org_Slug)
@@ -119,14 +123,17 @@ function initializeTables() {
       User_Type_ID INTEGER,
       Phone_Num TEXT,
       Job_Title TEXT,
-      Device_ID INTEGER UNIQUE, 
-      Depart_ID INTEGER,
+      Device_ID INTEGER UNIQUE,
+      Dep_ID INTEGER,
+      Avatar_Data LONGTEXT,
+      Avatar_MIME_Type TEXT DEFAULT 'image/png',
       Is_Active BOOLEAN DEFAULT 1,
       Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      Updated_at DATETIME,
       FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID) ON DELETE CASCADE,
       FOREIGN KEY (Role_ID) REFERENCES Role(Role_ID),
       FOREIGN KEY (User_Type_ID) REFERENCES User_Type(User_Type_ID),
-      FOREIGN KEY (Depart_ID) REFERENCES Department(Dep_ID),
+      FOREIGN KEY (Dep_ID) REFERENCES Department(Dep_ID),
       FOREIGN KEY (Device_ID) REFERENCES Device(Device_ID)
     )`);
 
@@ -247,6 +254,101 @@ function initializeTables() {
       FROM Organization WHERE Org_ID NOT IN (
         SELECT Org_ID FROM OrganizationSubscription
       )`);
+
+    // ⭐ MIGRATION: Add missing columns to Organization table if they don't exist
+    db.all(`PRAGMA table_info(Organization)`, (err, columns) => {
+      if (err) {
+        console.error('❌ Migration check failed:', err.message);
+        return;
+      }
+
+      const hasLogoPath = columns.some(col => col.name === 'Logo_Path');
+      const hasLogoMimeType = columns.some(col => col.name === 'Logo_MIME_Type');
+      const hasAddress = columns.some(col => col.name === 'Address');
+      const hasUpdatedAt = columns.some(col => col.name === 'Updated_at');
+
+      if (!hasLogoPath) {
+        db.run(`ALTER TABLE Organization ADD COLUMN Logo_Path TEXT`, (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('❌ Failed to add Logo_Path:', err.message);
+          } else {
+            console.log('✅ Migration: Added Logo_Path column to Organization');
+          }
+        });
+      }
+
+      if (!hasLogoMimeType) {
+        db.run(`ALTER TABLE Organization ADD COLUMN Logo_MIME_Type TEXT DEFAULT 'image/png'`, (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('❌ Failed to add Logo_MIME_Type:', err.message);
+          } else {
+            console.log('✅ Migration: Added Logo_MIME_Type column to Organization');
+          }
+        });
+      }
+
+      if (!hasAddress) {
+        db.run(`ALTER TABLE Organization ADD COLUMN Address TEXT`, (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('❌ Failed to add Address:', err.message);
+          } else {
+            console.log('✅ Migration: Added Address column to Organization');
+          }
+        });
+      }
+
+      if (!hasUpdatedAt) {
+        db.run(`ALTER TABLE Organization ADD COLUMN Updated_at DATETIME`, (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('❌ Failed to add Updated_at:', err.message);
+          } else {
+            console.log('✅ Migration: Added Updated_at column to Organization');
+          }
+        });
+      }
+    });
+
+    // ⭐ MIGRATION: Add missing columns to User table if they don't exist
+    db.all(`PRAGMA table_info(User)`, (err, columns) => {
+      if (err) {
+        console.error('❌ User table migration check failed:', err.message);
+        return;
+      }
+
+      const hasAvatarData = columns.some(col => col.name === 'Avatar_Data');
+      const hasAvatarMimeType = columns.some(col => col.name === 'Avatar_MIME_Type');
+      const hasUpdatedAt = columns.some(col => col.name === 'Updated_at');
+
+      if (!hasAvatarData) {
+        db.run(`ALTER TABLE User ADD COLUMN Avatar_Data LONGTEXT`, (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('❌ Failed to add Avatar_Data:', err.message);
+          } else {
+            console.log('✅ Migration: Added Avatar_Data column to User');
+          }
+        });
+      }
+
+      if (!hasAvatarMimeType) {
+        db.run(`ALTER TABLE User ADD COLUMN Avatar_MIME_Type TEXT DEFAULT 'image/png'`, (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('❌ Failed to add Avatar_MIME_Type:', err.message);
+          } else {
+            console.log('✅ Migration: Added Avatar_MIME_Type column to User');
+          }
+        });
+      }
+
+      if (!hasUpdatedAt) {
+        db.run(`ALTER TABLE User ADD COLUMN Updated_at DATETIME`, (err) => {
+          if (err && !err.message.includes('duplicate column')) {
+            console.error('❌ Failed to add Updated_at:', err.message);
+          } else {
+            console.log('✅ Migration: Added Updated_at column to User');
+          }
+        });
+      }
+    });
 
     console.log('✅ TrackTimi DB: ALL 18 tables created + seeded');
     console.log('✅ Plans: Free(10), Starter(50), Pro(200), Enterprise(9999)');

@@ -247,3 +247,127 @@ exports.deleteUser = (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+// =============================================================
+// 7. GET OWN PROFILE (User viewing their profile)
+// =============================================================
+exports.getOwnProfile = (req, res) => {
+  try {
+    const { userId, orgId } = req.user;
+
+    const sql = `
+      SELECT 
+        u.User_ID,
+        u.First_Name,
+        u.SurName,
+        u.Email,
+        u.Phone_Num,
+        u.Job_Title,
+        u.Employee_ID,
+        u.Dep_ID,
+        d.Depart_Name,
+        u.Avatar_Data,
+        u.Avatar_MIME_Type,
+        u.Is_Active,
+        u.Created_at,
+        u.Updated_at,
+        ut.Type_Name as User_Type,
+        o.Org_Name
+      FROM User u
+      LEFT JOIN Department d ON u.Dep_ID = d.Dep_ID
+      LEFT JOIN User_Type ut ON u.User_Type_ID = ut.User_Type_ID
+      LEFT JOIN Organization o ON u.Org_ID = o.Org_ID
+      WHERE u.User_ID = ? AND u.Org_ID = ?
+    `;
+
+    db.get(sql, [userId, orgId], (err, user) => {
+      if (err || !user) {
+        return res.status(404).json({ error: 'Profile not found' });
+      }
+      res.json({
+        success: true,
+        profile: user
+      });
+    });
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+};
+
+// =============================================================
+// 8. GET ORG-ADMIN UPDATES & ITEMS NEEDING ATTENTION
+// =============================================================
+exports.getAttentionItems = (req, res) => {
+  try {
+    const { userId, orgId } = req.user;
+
+    // Get all org-admin updates and items needing attention
+    const sql = `
+      SELECT 
+        Notify_ID,
+        Title,
+        Message,
+        Type,
+        Category,
+        Is_Read,
+        Created_at,
+        Action_URL,
+        Related_Record_ID,
+        CASE 
+          WHEN Category = 'schedule' THEN 'Schedule Update'
+          WHEN Category = 'attendance' THEN 'Attendance Alert'
+          WHEN Category = 'clock_out' THEN 'Clock-Out Reminder'
+          WHEN Category = 'general' THEN 'General Update'
+          WHEN Category = 'policy' THEN 'Policy Update'
+          WHEN Category = 'urgent' THEN 'Urgent Action Required'
+          ELSE 'System Notification'
+        END as Action_Type
+      FROM Notification
+      WHERE User_ID = ? 
+        AND Org_ID = ?
+        AND (Category IN ('schedule', 'policy', 'urgent') OR Is_Read = 0)
+      ORDER BY 
+        CASE 
+          WHEN Type = 'urgent' THEN 1
+          WHEN Is_Read = 0 THEN 2
+          ELSE 3
+        END ASC,
+        Created_at DESC
+      LIMIT 50
+    `;
+
+    db.all(sql, [userId, orgId], (err, notifications) => {
+      if (err) {
+        console.error('Notification fetch error:', err);
+        return res.status(500).json({ error: 'Failed to fetch updates' });
+      }
+
+      // Count unread items needing attention
+      const sql2 = `
+        SELECT 
+          COUNT(*) as urgentCount
+        FROM Notification
+        WHERE User_ID = ? 
+          AND Org_ID = ?
+          AND (Type = 'urgent' OR (Is_Read = 0 AND Type = 'alert'))
+      `;
+
+      db.get(sql2, [userId, orgId], (err, counts) => {
+        res.json({
+          success: true,
+          attentionItems: notifications || [],
+          summary: {
+            totalNotifications: (notifications || []).length,
+            urgentCount: counts?.urgentCount || 0,
+            unreadCount: (notifications || []).filter(n => !n.Is_Read).length,
+            requiresAction: (notifications || []).length > 0
+          }
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Attention items error:', error);
+    res.status(500).json({ error: 'Failed to fetch items needing attention' });
+  }
+};

@@ -12,13 +12,22 @@ router.post('/login', async (req, res) => {
 
   // 1. Check for hardcoded SuperAdmin
   if (email === 'superadmin@tracktimi.com' && password === 'superpass123') {
+    // Find or use superadmin user from database
+    // For now, use a fixed superadmin ID (1) or from env
+    const superAdminUserId = process.env.SUPER_ADMIN_USER_ID || 1;
+    
     const token = jwt.sign(
-      { role: 'SuperAdmin', email: email, isSuperAdmin: true }, 
+      { 
+        userId: superAdminUserId,
+        role: 'SuperAdmin', 
+        email: email, 
+        isSuperAdmin: true 
+      }, 
       JWT_SECRET, 
       { expiresIn: '24h' }
     );
 
-    console.log("✅ SuperAdmin access granted to:", email);
+    console.log("✅ SuperAdmin access granted to:", email, "with userId:", superAdminUserId);
     
     return res.json({
       success: true,

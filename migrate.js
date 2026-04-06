@@ -136,13 +136,30 @@ db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='Organization
             console.log('Successfully added missing User columns.');
           }
 
-          // Close database
-          db.close((err) => {
+          // Run notification table migration
+          console.log('Creating Notification table...');
+          const notificationMigrationPath = path.join(__dirname, 'sql', 'migration_add_notifications.sql');
+          const notificationMigrationSQL = fs.readFileSync(notificationMigrationPath, 'utf8');
+
+          db.exec(notificationMigrationSQL, (err) => {
             if (err) {
-              console.error('Error closing database:', err.message);
+              if (err.message.includes('already exists')) {
+                console.log('Notification table already exists.');
+              } else {
+                console.error('Error creating Notification table:', err.message);
+              }
             } else {
-              console.log('Database connection closed.');
+              console.log('✅ Successfully created Notification table.');
             }
+
+            // Close database
+            db.close((err) => {
+              if (err) {
+                console.error('Error closing database:', err.message);
+              } else {
+                console.log('Database connection closed.');
+              }
+            });
           });
         });
       });

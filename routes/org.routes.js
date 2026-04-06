@@ -2,6 +2,7 @@ const router = require('express').Router();
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const { authenticateToken, requireAdmin } = require('../middleware/role.middleware');
+const { notifyNewUser, notifyNewDepartment, notifyNewGeofence } = require('../utils/notificationHelper');
 
 // Apply authentication to all organization-level routes
 router.use(authenticateToken);
@@ -41,48 +42,97 @@ router.get('/users', requireAdmin, (req, res) => {
   });
 });
 
-// POST: Provision new personnel (With Password Hashing)
+// POST: Provision new personnel (Send invitation email instead of direct creation)
 router.post('/users', requireAdmin, async (req, res) => {
   const { firstName, surName, email, password, depId, userTypeId, jobTitle } = req.body;
   const { generateUniqueEmployeeId } = require('../utils/employeeId');
-  const orgId = req.user.orgId; 
+  const { sendInvitationEmail } = require('../utils/emailService');
+  const Invitation = require('../models/Invitation');
+  const crypto = require('crypto');
+  
+  const orgId = req.user.orgId;
+  const userId = req.user.userId;
 
-  if (!firstName || !surName || !email || !password) {
-    return res.status(400).json({ error: 'Name, Email, and Password are required' });
+  if (!firstName || !surName || !email) {
+    return res.status(400).json({ error: 'Name and Email are required' });
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Check if user already exists
+    const existingUser = await new Promise((resolve) => {
+      db.get('SELECT User_ID FROM User WHERE Email = ? AND Org_ID = ?', [email.toLowerCase(), orgId], (err, row) => resolve(row));
+    });
 
-    generateUniqueEmployeeId((err, employeeId) => {
-      if (err) return res.status(500).json({ error: 'ID generation failed' });
+    if (existingUser) {
+      return res.status(409).json({ error: 'Email already registered in this organization' });
+    }
 
-      const sql = `
-        INSERT INTO User (
-          First_Name, SurName, Email, Password, Org_ID, 
-          User_Type_ID, Employee_ID, Job_Title, Dep_ID, Is_Active
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`;
+    // Check if invitation already pending
+    const existingInvitation = await new Promise((resolve) => {
+      db.get('SELECT Invitation_ID FROM Invitation WHERE Email = ? AND Org_ID = ? AND Is_Used = 0 AND Expires_At > datetime("now")', [email.toLowerCase(), orgId], (err, row) => resolve(row));
+    });
 
-      db.run(sql, [
-        firstName, 
-        surName, 
-        email.toLowerCase(), 
-        hashedPassword, 
-        orgId, 
-        userTypeId || 3, 
-        employeeId, 
-        jobTitle, 
-        depId || null
-      ], function(err) {
-        if (err) {
-          if (err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Email already registered' });
-          return res.status(500).json({ error: 'Database write failed: ' + err.message });
-        }
-        res.status(201).json({ success: true, userId: this.lastID, employeeId });
+    if (existingInvitation) {
+      return res.status(400).json({ error: 'An invitation is already pending for this email' });
+    }
+
+    // Generate invitation token and temporary password
+    const invitationToken = crypto.randomBytes(24).toString('hex');
+    const tempPassword = password || (Math.random().toString(36).slice(2, 10) + '!@');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Create Invitation record
+    const invitationSql = `INSERT INTO Invitation (Email, Org_ID, User_Type_ID, Token, Expires_At, Is_Used, Created_By, Created_at) VALUES (?, ?, ?, ?, ?, 0, ?, datetime('now'))`;
+    
+    db.run(invitationSql, [email.toLowerCase(), orgId, userTypeId || 3, invitationToken, expiresAt, userId], async function(err) {
+      if (err) {
+        console.error('❌ Invitation creation error:', err);
+        return res.status(500).json({ error: 'Failed to create invitation' });
+      }
+
+      const invitationId = this.lastID;
+      console.log('✅ Invitation created for:', email);
+
+      // Store pending employee details
+      const pendingSql = `INSERT INTO Pending_Employee (Email, First_Name, SurName, Job_Title, Depart_ID, Org_ID, Invitation_ID, User_Type_ID, Created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`;
+      db.run(pendingSql, [email.toLowerCase(), firstName, surName, jobTitle || null, depId || null, orgId, invitationId, userTypeId || 3], (errPending) => {
+        if (errPending) console.error('Pending insert error:', errPending);
+      });
+
+      // Fetch organization name and inviter details
+      db.get('SELECT Org_Name FROM Organization WHERE Org_ID = ?', [orgId], async (errOrg, org) => {
+        if (errOrg) console.error('Org fetch error:', errOrg);
+        
+        db.get('SELECT First_Name, SurName FROM User WHERE User_ID = ?', [userId], async (errInviter, inviter) => {
+          if (errInviter) console.error('Inviter fetch error:', errInviter);
+
+          const orgName = org?.Org_Name || 'TrackTimi';
+          const inviterName = inviter ? `${inviter.First_Name} ${inviter.SurName}` : 'Admin';
+
+          console.log('📧 Sending invitation to:', email, 'from:', inviterName);
+
+          // Send invitation email
+          const emailResult = await sendInvitationEmail(email.toLowerCase(), invitationToken, orgName, inviterName, tempPassword);
+
+          if (emailResult.success) {
+            console.log('✅ Invitation email sent to:', email);
+          } else {
+            console.error('❌ Failed to send invitation email:', emailResult.error);
+          }
+
+          res.status(201).json({ 
+            success: true, 
+            message: `Invitation sent to ${email}. User will be created after they activate their account.`,
+            email: email.toLowerCase(),
+            status: 'pending'
+          });
+        });
       });
     });
+
   } catch (error) {
-    res.status(500).json({ error: 'Encryption failed' });
+    console.error('❌ Provision error:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -159,7 +209,28 @@ router.post('/departments', requireAdmin, (req, res) => {
       // SEND THE REAL ERROR TO THE FRONTEND
       return res.status(500).json({ error: 'Database Error: ' + err.message });
     }
-    res.status(201).json({ success: true, id: this.lastID, name });
+
+    const newDeptId = this.lastID;
+    const deptData = { 
+      Dep_ID: newDeptId, 
+      Depart_Name: name, 
+      Org_ID: orgId 
+    };
+
+    console.log('\n📌 [DEPT CREATION] Starting notification trigger...');
+    console.log('📌 [DEPT CREATION] OrgId:', orgId);
+    console.log('📌 [DEPT CREATION] Dept Data:', deptData);
+
+    // Trigger notification to superadmins
+    notifyNewDepartment(deptData, { Org_ID: orgId }, (err) => {
+      if (err) {
+        console.error('❌ [DEPT CREATION] Failed to send department creation notification:', err);
+      } else {
+        console.log('✅ [DEPT CREATION] Notification trigger completed');
+      }
+    });
+
+    res.status(201).json({ success: true, id: newDeptId, name });
   });
 });
 
@@ -276,7 +347,31 @@ router.post('/geofences', requireAdmin, (req, res) => {
     }
     
     console.log("✅ Zone saved successfully with ID:", this.lastID);
-    res.status(201).json({ success: true, id: this.lastID });
+    
+    const newFenceId = this.lastID;
+    const geofenceData = {
+      Fence_ID: newFenceId,
+      Location_Name: locationName,
+      Latitude: latitude,
+      Longitude: longitude,
+      Radius: radius || 200,
+      Org_ID: orgId
+    };
+
+    console.log('\n📌 [GEOFENCE CREATION] Starting notification trigger...');
+    console.log('📌 [GEOFENCE CREATION] OrgId:', orgId);
+    console.log('📌 [GEOFENCE CREATION] Geofence Data:', geofenceData);
+
+    // Trigger notification to superadmins
+    notifyNewGeofence(geofenceData, { Org_ID: orgId }, (err) => {
+      if (err) {
+        console.error('❌ [GEOFENCE CREATION] Failed to send geofence creation notification:', err);
+      } else {
+        console.log('✅ [GEOFENCE CREATION] Notification trigger completed');
+      }
+    });
+
+    res.status(201).json({ success: true, id: newFenceId });
   });
 });
 
@@ -323,6 +418,87 @@ router.put('/settings', requireAdmin, (req, res) => {
            [req.user.userId, orgId]);
 
     res.json({ success: true, message: 'Settings updated' });
+  });
+});
+
+// PUT: Upload organization logo (accessible to organization admins)
+router.put('/logo', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+  const { logoData, mimeType } = req.body;
+
+  if (!logoData || !mimeType) {
+    return res.status(400).json({ error: 'Logo data and MIME type are required' });
+  }
+
+  // Validate MIME type
+  const validMimeTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+  if (!validMimeTypes.includes(mimeType.toLowerCase())) {
+    return res.status(400).json({ error: 'Invalid image MIME type. Allowed: PNG, JPEG, GIF, WebP' });
+  }
+
+  // Validate logo size (max 500KB for base64)
+  const logoSizeInBytes = Buffer.byteLength(logoData, 'utf8');
+  if (logoSizeInBytes > 500 * 1024) {
+    return res.status(400).json({ error: 'Logo size exceeds 500KB limit' });
+  }
+
+  const sql = `
+    UPDATE Organization 
+    SET Logo_Path = ?, Logo_MIME_Type = ?, Updated_at = DATETIME('now')
+    WHERE Org_ID = ?
+  `;
+
+  db.run(sql, [logoData, mimeType, orgId], function (err) {
+    if (err) {
+      console.error('❌ Failed to update organization logo:', err.message);
+      return res.status(500).json({ error: 'Failed to update logo: ' + err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+    
+    // Add to Audit Log
+    db.run(`INSERT INTO Audit_Log (User_ID, Org_ID, Action, Table_Name) VALUES (?, ?, 'UPLOAD_LOGO', 'Organization')`, 
+           [req.user.userId, orgId]);
+
+    console.log(`✅ Logo uploaded for organization ${orgId} by user ${req.user.userId}`);
+    res.json({ 
+      success: true, 
+      message: 'Organization logo uploaded successfully',
+      orgId,
+      logoUpdated: true
+    });
+  });
+});
+
+// DELETE: Remove organization logo (accessible to organization admins)
+router.delete('/logo', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+
+  const sql = `
+    UPDATE Organization 
+    SET Logo_Path = NULL, Logo_MIME_Type = NULL, Updated_at = DATETIME('now')
+    WHERE Org_ID = ?
+  `;
+
+  db.run(sql, [orgId], function (err) {
+    if (err) {
+      console.error('❌ Failed to delete organization logo:', err.message);
+      return res.status(500).json({ error: 'Failed to delete logo: ' + err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+    
+    // Add to Audit Log
+    db.run(`INSERT INTO Audit_Log (User_ID, Org_ID, Action, Table_Name) VALUES (?, ?, 'DELETE_LOGO', 'Organization')`, 
+           [req.user.userId, orgId]);
+
+    console.log(`✅ Logo deleted for organization ${orgId} by user ${req.user.userId}`);
+    res.json({ 
+      success: true, 
+      message: 'Organization logo deleted successfully'
+    });
   });
 });
 
@@ -617,7 +793,7 @@ router.post('/schedules', requireAdmin, (req, res) => {
   }
 
   // Verify ShiftType exists and belongs to org
-  const verifyShiftSql = `SELECT ShiftType_ID FROM ShiftType WHERE ShiftType_ID = ? AND Org_ID = ?`;
+  const verifyShiftSql = `SELECT ShiftType_ID, ShiftType_Name FROM ShiftType WHERE ShiftType_ID = ? AND Org_ID = ?`;
   
   db.get(verifyShiftSql, [shiftTypeId, orgId], (err, shiftType) => {
     if (err || !shiftType) {
@@ -639,7 +815,7 @@ router.post('/schedules', requireAdmin, (req, res) => {
 
       // Verify all employees belong to org
       const placeholders = employeeIds.map(() => '?').join(',');
-      const verifyEmpSql = `SELECT User_ID FROM User WHERE User_ID IN (${placeholders}) AND Org_ID = ? AND Is_Active = 1`;
+      const verifyEmpSql = `SELECT User_ID, First_Name, SurName FROM User WHERE User_ID IN (${placeholders}) AND Org_ID = ? AND Is_Active = 1`;
       const verifyParams = [...employeeIds, orgId];
 
       db.all(verifyEmpSql, verifyParams, (err, employees) => {
@@ -659,9 +835,41 @@ router.post('/schedules', requireAdmin, (req, res) => {
               console.error('❌ ScheduleEmployee Insert Error:', err.message);
               return res.status(500).json({ error: 'Failed to add employees to schedule: ' + err.message });
             }
+            
             completed++;
+            
+            // After all employees are added, create notifications
             if (completed === employeeIds.length && !hasError) {
-              res.status(201).json({ success: true, Schedule_ID: scheduleId });
+              // Create notifications for each employee
+              const notifSql = `
+                INSERT INTO Notification (User_ID, Org_ID, Title, Message, Type, Category, Created_at)
+                VALUES (?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))
+              `;
+
+              let notifCompleted = 0;
+              
+              employeeIds.forEach(empId => {
+                const empName = employees.find(e => e.User_ID === empId);
+                const title = `New Schedule Assigned: ${name}`;
+                const message = `You have been assigned to "${name}" schedule starting ${startDate} (${shiftType.ShiftType_Name}). Please review your schedule.`;
+                
+                db.run(notifSql, [empId, orgId, title, message, 'info', 'schedule'], (err) => {
+                  if (err) {
+                    console.error('❌ Notification creation error:', err.message);
+                  } else {
+                    console.log(`✅ Notification sent to user ${empId}`);
+                  }
+                  
+                  notifCompleted++;
+                  if (notifCompleted === employeeIds.length) {
+                    res.status(201).json({ 
+                      success: true, 
+                      Schedule_ID: scheduleId,
+                      message: `Schedule created and ${employeeIds.length} notifications sent`
+                    });
+                  }
+                });
+              });
             }
           });
         });
@@ -887,7 +1095,45 @@ router.put('/settings', requireAdmin, (req, res) => {
       console.error('❌ Settings Update Error:', err.message);
       return res.status(500).json({ error: 'Failed to update settings' });
     }
-    res.json({ success: true, message: 'Settings updated successfully' });
+
+    // Get all active users in the organization to notify
+    db.all(`SELECT User_ID FROM User WHERE Org_ID = ? AND Is_Active = 1`, [orgId], (err, users) => {
+      if (err || !users || users.length === 0) {
+        return res.json({ success: true, message: 'Settings updated successfully' });
+      }
+
+      // Create notifications for all users about the policy change
+      const notifSql = `
+        INSERT INTO Notification (User_ID, Org_ID, Title, Message, Type, Category, Created_at)
+        VALUES (?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))
+      `;
+
+      let changes = [];
+      if (Clock_In_Window_Minutes !== undefined) {
+        changes.push(`Clock-in window changed to ${Clock_In_Window_Minutes} minutes`);
+      }
+      if (Clock_Out_Alert_Minutes !== undefined) {
+        changes.push(`Clock-out alert changed to ${Clock_Out_Alert_Minutes} minutes`);
+      }
+
+      const message = `Attendance policy updated: ${changes.join(', ')}. Please review your dashboard for details.`;
+
+      let notifiedCount = 0;
+      users.forEach(user => {
+        db.run(
+          notifSql,
+          [user.User_ID, orgId, 'Attendance Policy Updated', message, 'info', 'policy'],
+          (err) => {
+            notifiedCount++;
+            if (notifiedCount === users.length) {
+              console.log(`✅ Policy change notified to ${notifiedCount} users`);
+            }
+          }
+        );
+      });
+
+      res.json({ success: true, message: `Settings updated successfully and ${users.length} notifications sent` });
+    });
   });
 });
 

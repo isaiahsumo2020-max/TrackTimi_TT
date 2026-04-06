@@ -10,7 +10,12 @@ router.post('/login', authLimiter, authController.login);
 router.post('/refresh-token', authController.refreshToken);
 router.post('/activate-invitation', authLimiter, authController.activateInvitation);
 
-// 2. PROTECTED ROUTES
+// 2. EMAIL VERIFICATION ROUTES (Public)
+router.get('/verify-email', authController.verifyEmailByLink);
+router.post('/verify-code', authLimiter, authController.verifyEmailByCode);
+router.post('/resend-verification', authLimiter, authController.resendVerification);
+
+// 3. PROTECTED ROUTES
 router.get('/profile', authenticateToken, authController.getProfile);
 router.post('/invite', authenticateToken, authController.inviteEmployee);
 
