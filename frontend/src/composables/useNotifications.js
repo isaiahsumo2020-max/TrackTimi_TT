@@ -84,7 +84,7 @@ export function useNotifications() {
       
       if (!user || !token) return
 
-      socket.value = io(process.env.VUE_APP_API_URL || 'http://localhost:3001', {
+      socket.value = io(process.env.VUE_APP_API_URL || 'http://localhost:4000', {
         auth: {
           token
         }

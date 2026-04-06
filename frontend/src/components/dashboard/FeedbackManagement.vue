@@ -159,7 +159,7 @@
 
           <select
             v-model="item.Status"
-            @change="updateFeedbackStatus(item.Feedback_ID, item.Status)"
+            @change="handleUpdateFeedbackStatus(item.Feedback_ID, item.Status)"
             class="px-3 py-1 text-sm border border-gray-300 rounded hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="open">Mark Open</option>
@@ -340,7 +340,7 @@ const submitResponse = async () => {
 }
 
 // Update feedback status
-const updateFeedbackStatus = async (feedbackId, status) => {
+const handleUpdateFeedbackStatus = async (feedbackId, status) => {
   try {
     await updateFeedbackStatus(feedbackId, status)
     showSuccess(`Feedback marked as ${status}`)

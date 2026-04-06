@@ -249,6 +249,12 @@
       </div>
     </div>
 
+    <!-- 4.5 FEEDBACK SUBMISSION PANEL -->
+    <FeedbackSubmissionPanel 
+      @feedback-sent="handleFeedbackSent"
+      @error="showLiveNotif($event, 'error')"
+    />
+
     <!-- 5. ULTIMATE ATTENDANCE LEDGER (Historical Tracking) -->
     <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-10">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -334,6 +340,7 @@ import {
   UsersIcon, CheckCircleIcon, ClockIcon, XCircleIcon, 
   ZapIcon, HistoryIcon, SearchIcon, FileDownIcon 
 } from 'lucide-vue-next'
+import FeedbackSubmissionPanel from '@/components/FeedbackSubmissionPanel.vue'
 
 const route = useRoute()
 const orgSlug = computed(() => route.params.orgSlug)
@@ -561,6 +568,15 @@ const addActivityLog = (action, details, icon = '📝') => {
   if (activityLog.value.length > 20) {
     activityLog.value.pop()
   }
+}
+
+const handleFeedbackSent = (feedbackData) => {
+  showLiveNotification(`📝 Feedback sent: "${feedbackData.title}"`, 'success')
+  addActivityLog(`Feedback Submitted`, `${feedbackData.category} feedback sent to development team`, '💬')
+}
+
+const showLiveNotif = (message, type = 'info') => {
+  showLiveNotification(message, type)
 }
 
 onMounted(() => {
