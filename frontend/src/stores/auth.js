@@ -36,17 +36,17 @@ export const useAuthStore = defineStore('auth', () => {
   const org_id = computed(() => user.value?.orgId || null)
 
   const api = axios.create({
-    baseURL: '/api',
+    baseURL: 'http://localhost:4000/api',
     headers: { 'Content-Type': 'application/json' }
   })
 
   const orgApi = axios.create({
-    baseURL: '/api',
+    baseURL: 'http://localhost:4000/api',
     headers: { 'Content-Type': 'application/json' }
   })
 
   const superAdminApi = axios.create({
-    baseURL: '/api/superadmin',
+    baseURL: 'http://localhost:4000/api/superadmin',
     headers: { 'Content-Type': 'application/json' }
   })
 
@@ -99,8 +99,11 @@ export const useAuthStore = defineStore('auth', () => {
   const registerOrg = async (payload) => {
     try {
       const response = await api.post('/auth/register-org', payload)
-      setOrgSession(response.data.token, response.data.user)
-      return { success: true }
+      // Do NOT set session yet - user needs to verify email first
+      if (response.data?.email) {
+        localStorage.setItem('pendingVerificationEmail', response.data.email)
+      }
+      return { success: true, data: response.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Organization creation failed' }
     }

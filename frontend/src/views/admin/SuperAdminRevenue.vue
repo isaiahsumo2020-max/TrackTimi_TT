@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-primary-100 selection:text-primary-700">
     
     <!-- 1. DYNAMIC NAVIGATION SIDEBAR (Master Consistency) -->
     <aside 
@@ -7,12 +7,12 @@
     >
       <div class="p-6 border-b border-slate-800 flex items-center justify-between h-24">
         <div v-if="sidebarOpen" class="flex items-center space-x-3 animate-in fade-in slide-in-from-left-4">
-          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
             <ZapIcon class="w-6 h-6 text-white fill-white" />
           </div>
           <div class="flex flex-col">
             <span class="text-xl font-black tracking-tighter uppercase leading-none italic">TrackTimi</span>
-            <span class="text-[8px] font-black text-indigo-400 uppercase tracking-[0.4em] mt-1">Financial Node</span>
+            <span class="text-[8px] font-black text-primary-400 uppercase tracking-[0.4em] mt-1">Financial Node</span>
           </div>
         </div>
         <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all active:scale-90">
@@ -26,7 +26,7 @@
         
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
           class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
-          :class="[$route.path === item.path ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
+          :class="[$route.path === item.path ? 'bg-primary-600 text-white shadow-xl shadow-primary-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']">
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -61,10 +61,10 @@
 
         <div class="flex items-center space-x-4">
           <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-             <button @click="loadRevenueData" :disabled="loading" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-indigo-600 active:scale-90">
+             <button @click="loadRevenueData" :disabled="loading" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-primary-600 active:scale-90">
                <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
              </button>
-             <button @click="exportGlobalLedger" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-indigo-600 active:scale-90">
+             <button @click="exportGlobalLedger" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-primary-600 active:scale-90">
                <FileDownIcon class="w-4 h-4" />
              </button>
           </div>
@@ -100,7 +100,7 @@
           <!-- Subscription Plan Distribution -->
           <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex flex-col">
             <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-10 flex items-center">
-              <CreditCardIcon class="w-5 h-5 mr-2 text-indigo-500" /> Plan Distribution
+              <CreditCardIcon class="w-5 h-5 mr-2 text-primary-500" /> Plan Distribution
             </h3>
             
             <div class="flex-1 space-y-8">
@@ -111,16 +111,16 @@
                   </div>
                   <div class="h-4 w-full bg-slate-50 rounded-xl overflow-hidden flex p-1 border border-slate-100">
                     <div 
-                      class="h-full rounded-lg bg-indigo-600 transition-all duration-1000 shadow-[0_0_15px_rgba(79,70,229,0.3)]" 
+                      class="h-full rounded-lg bg-primary-600 transition-all duration-1000 shadow-[0_0_15px_rgba(79,70,229,0.3)]" 
                       :style="{ width: (plan.count / metrics.organizations * 100) + '%' }"
                     ></div>
                   </div>
                </div>
             </div>
 
-            <div class="mt-12 p-6 bg-indigo-600 rounded-[2.5rem] text-white relative overflow-hidden group">
+            <div class="mt-12 p-6 bg-primary-600 rounded-[2.5rem] text-white relative overflow-hidden group">
                <div class="relative z-10">
-                 <p class="text-[9px] font-black text-indigo-200 uppercase tracking-widest mb-1">Portfolio Value</p>
+                 <p class="text-[9px] font-black text-primary-200 uppercase tracking-widest mb-1">Portfolio Value</p>
                  <p class="text-2xl font-black leading-tight">Projected Annual Yield: <br/> $149,760.00</p>
                </div>
                <TrendingUpIcon class="absolute -right-4 -bottom-4 w-24 h-24 text-white/10 rotate-12 group-hover:rotate-0 transition-transform duration-700" />
@@ -132,16 +132,16 @@
             <div class="relative z-10 flex flex-col h-full">
               <div class="flex justify-between items-center mb-12">
                 <div>
-                   <h3 class="text-sm font-black uppercase tracking-[0.2em] text-indigo-400">Monthly Yield Velocity</h3>
+                   <h3 class="text-sm font-black uppercase tracking-[0.2em] text-primary-400">Monthly Yield Velocity</h3>
                    <p class="text-[10px] font-bold opacity-40 mt-1 uppercase">Platform Gross Revenue (6 Month Window)</p>
                 </div>
-                <BarChart3Icon class="w-6 h-6 text-indigo-500 opacity-50" />
+                <BarChart3Icon class="w-6 h-6 text-primary-500 opacity-50" />
               </div>
 
               <!-- Live Bar Chart -->
               <div class="flex-1 flex items-end justify-between gap-6 pb-6 px-4">
                 <div v-for="(v, idx) in revenueTrend" :key="idx" class="flex-1 flex flex-col items-center group cursor-pointer">
-                  <div class="w-full bg-white/5 rounded-t-2xl relative group-hover:bg-indigo-500 transition-all duration-700 min-h-[10px]" 
+                  <div class="w-full bg-white/5 rounded-t-2xl relative group-hover:bg-primary-500 transition-all duration-700 min-h-[10px]" 
                     :style="{ height: v.height + '%' }">
                     <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-950 px-3 py-1.5 rounded-xl text-[10px] font-black opacity-0 group-hover:opacity-100 transition-all shadow-2xl scale-75 group-hover:scale-100">
                       ${{ v.value }}k
@@ -151,7 +151,7 @@
                 </div>
               </div>
             </div>
-            <div class="absolute top-0 right-0 w-80 h-80 bg-indigo-600/10 blur-[120px] rounded-full -mr-32 -mt-32"></div>
+            <div class="absolute top-0 right-0 w-80 h-80 bg-primary-600/10 blur-[120px] rounded-full -mr-32 -mt-32"></div>
           </div>
         </div>
 
@@ -163,9 +163,9 @@
                <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Cross-tenant billing status and plan allocation</p>
              </div>
              <div class="relative group">
-                <SearchIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+                <SearchIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-primary-500 transition-colors" />
                 <input v-model="orgSearch" placeholder="Search ledger by tenant name..." 
-                  class="pl-14 pr-6 py-4 bg-white border-none rounded-2xl text-[11px] font-bold shadow-sm w-80 focus:ring-4 focus:ring-indigo-50 transition-all outline-none" />
+                  class="pl-14 pr-6 py-4 bg-white border-none rounded-2xl text-[11px] font-bold shadow-sm w-80 focus:ring-4 focus:ring-primary-50 transition-all outline-none" />
              </div>
           </div>
           
@@ -184,7 +184,7 @@
                 <tr v-for="org in filteredOrgs" :key="org.Org_ID" class="group hover:bg-slate-50 transition-all duration-300">
                   <td class="px-10 py-8">
                     <div class="flex items-center space-x-4">
-                      <div class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-indigo-400 shadow-xl group-hover:rotate-6 transition-transform">
+                      <div class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-primary-400 shadow-xl group-hover:rotate-6 transition-transform">
                         {{ org.Org_Name[0] }}
                       </div>
                       <div>
@@ -204,7 +204,7 @@
                     <span class="text-[10px] font-bold text-slate-300 uppercase ml-1">Nodes</span>
                   </td>
                   <td class="px-10 py-8 text-center">
-                    <div class="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100">
+                    <div class="inline-flex items-center px-4 py-2 bg-primary-50 text-primary-600 rounded-full border border-primary-100">
                       <span class="text-[9px] font-black uppercase tracking-widest">In Good Standing</span>
                     </div>
                   </td>
@@ -231,7 +231,7 @@
     <!-- Global Loading Overlay -->
     <div v-if="loading" class="fixed inset-0 z-[100] bg-slate-900/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
        <div class="bg-slate-950 p-6 rounded-3xl shadow-3xl flex items-center space-x-4 text-white border border-white/10">
-          <RefreshCwIcon class="w-5 h-5 animate-spin text-indigo-400" />
+          <RefreshCwIcon class="w-5 h-5 animate-spin text-primary-400" />
           <span class="text-[10px] font-black uppercase tracking-[0.4em]">Node Syncing</span>
        </div>
     </div>
@@ -269,10 +269,10 @@ const navItems = [
 ]
 
 const revenueMetrics = computed(() => [
-  { label: 'Monthly Recurring', value: `$${(metrics.value.mrr || 0).toLocaleString()}`, trend: '↑ 14.2% vs last month', trendColor: 'text-green-500', icon: CreditCardIcon, bgColor: 'bg-indigo-600' },
+  { label: 'Monthly Recurring', value: `$${(metrics.value.mrr || 0).toLocaleString()}`, trend: '↑ 14.2% vs last month', trendColor: 'text-green-500', icon: CreditCardIcon, bgColor: 'bg-primary-600' },
   { label: 'Annual Run Rate', value: `$${(metrics.value.arr || 0).toLocaleString()}`, trend: '↑ 8.4% projected', trendColor: 'text-green-500', icon: TrendingUpIcon, bgColor: 'bg-slate-900' },
   { label: 'Average ARPU', value: `$${calculateARPU()}`, trend: 'Stable yield', trendColor: 'text-slate-400', icon: TargetIcon, bgColor: 'bg-amber-500' },
-  { label: 'Gross Net Profit', value: `$${(metrics.value.mrr * 0.92).toLocaleString()}`, trend: '92% Margin', trendColor: 'text-indigo-500', icon: PieChartIcon, bgColor: 'bg-green-600' },
+  { label: 'Gross Net Profit', value: `$${(metrics.value.mrr * 0.92).toLocaleString()}`, trend: '92% Margin', trendColor: 'text-primary-500', icon: PieChartIcon, bgColor: 'bg-green-600' },
 ])
 
 const revenueTrend = [
@@ -345,7 +345,7 @@ const calculateARPU = () => {
 
 const getPlanColor = (plan) => {
   if (plan === 'Enterprise') return 'bg-purple-500'
-  if (plan === 'Pro') return 'bg-indigo-500'
+  if (plan === 'Pro') return 'bg-primary-500'
   return 'bg-slate-300'
 }
 

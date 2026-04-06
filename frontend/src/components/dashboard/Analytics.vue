@@ -1,9 +1,9 @@
 <template>
   <div class="space-y-10">
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+    <div v-if="loading" class="bg-white rounded-lg border border-slate-200 shadow-sm p-8 text-center">
       <div class="flex items-center justify-center space-x-2">
-        <div class="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse"></div>
+        <div class="w-2 h-2 bg-accent-500 rounded-full animate-pulse"></div>
         <p class="text-sm font-bold text-slate-600">Loading analytics data...</p>
       </div>
     </div>
@@ -12,7 +12,7 @@
     <!-- Header with Filters -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
       <div>
-        <h3 class="text-2xl font-black text-[#1B8B3C] mb-2">Analytics & Reports</h3>
+        <h3 class="text-2xl font-black text-primary-600 mb-2">Analytics & Reports</h3>
         <p class="text-sm text-slate-500">Track attendance patterns, trends, and system performance</p>
       </div>
 
@@ -21,7 +21,7 @@
         <select 
           v-model="filters.dateRange"
           @change="onFilterChange"
-          class="px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+          class="px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-accent-500"
         >
           <option value="7days">Last 7 Days</option>
           <option value="30days">Last 30 Days</option>
@@ -31,7 +31,7 @@
 
         <button 
           @click="exportReport"
-          class="px-6 py-2 bg-[#1B8B3C] text-white rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-[#156B2E] transition-all disabled:opacity-50"
+          class="px-6 py-2 bg-primary-600 text-white rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-primary-700 transition-all disabled:opacity-50"
           :disabled="loading"
         >
           <DownloadIcon class="w-4 h-4 inline mr-2" />
@@ -42,12 +42,12 @@
 
     <!-- Key Metrics Row -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
           <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Avg Check-in Rate</h4>
-          <TrendingUpIcon class="w-5 h-5 text-[#4ADE80]" />
+          <TrendingUpIcon class="w-5 h-5 text-green-500" />
         </div>
-        <p class="text-3xl font-black text-[#1B8B3C]">{{ metrics.avgAttendanceRate }}%</p>
+        <p class="text-3xl font-black text-primary-600">{{ metrics.avgAttendanceRate }}%</p>
         <p class="text-xs text-slate-500 mt-2">{{ getDaysValue() }}-day average</p>
       </div>
 
@@ -83,7 +83,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Check-in Trend Chart -->
       <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-        <h3 class="text-lg font-black text-[#1B8B3C] mb-6">Check-in Trends (Last {{ getDaysValue() }} Days)</h3>
+        <h3 class="text-lg font-black text-primary-600 mb-6">Check-in Trends (Last {{ getDaysValue() }} Days)</h3>
         <div class="w-full h-64 flex items-end justify-between gap-2">
           <div v-for="(day, idx) in checkInTrends" :key="idx" class="flex-1 flex flex-col items-center" style="min-width: 0">
             <div class="w-full flex flex-col items-center justify-end" style="height: 200px">
@@ -101,7 +101,7 @@
 
       <!-- Department Distribution -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-        <h3 class="text-lg font-black text-[#1B8B3C] mb-6">By Department</h3>
+        <h3 class="text-lg font-black text-primary-600 mb-6">By Department</h3>
         <div class="space-y-4">
           <div v-for="dept in departmentDistribution" :key="dept.name" class="flex items-center gap-3">
             <div 
@@ -121,7 +121,7 @@
     <!-- Attendance Patterns Table -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="text-lg font-black text-[#1B8B3C]">Attendance Details</h3>
+        <h3 class="text-lg font-black text-primary-600">Attendance Details</h3>
         <div class="flex gap-2">
           <button 
             @click="sortBy = 'name'"
@@ -160,7 +160,7 @@
             <tr v-for="(emp, idx) in sortedAttendance.slice(0, 10)" :key="emp.id" class="hover:bg-slate-50 transition-colors">
               <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#1B8B3C] to-[#0F5124] flex items-center justify-center text-white font-black text-xs">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center text-white font-black text-xs">
                     {{ emp.initials }}
                   </div>
                   <div>
@@ -180,7 +180,7 @@
                   <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
                     <div 
                       class="h-full rounded-full transition-all"
-                      :class="emp.attendanceRate >= 85 ? 'bg-[#4ADE80]' : emp.attendanceRate >= 70 ? 'bg-[#FF6B35]' : 'bg-red-500'"
+                      :class="emp.attendanceRate >= 85 ? 'bg-green-500' : emp.attendanceRate >= 70 ? 'bg-accent-500' : 'bg-red-500'"
                       :style="{ width: emp.attendanceRate + '%' }"
                     ></div>
                   </div>
@@ -191,7 +191,7 @@
                 <span 
                   class="px-3 py-1 rounded-full text-xs font-black uppercase"
                   :class="emp.status === 'on-time' 
-                    ? 'bg-[#4ADE80]/20 text-[#1B8B3C]' 
+                    ? 'bg-primary-100/50 text-primary-600' 
                     : emp.status === 'late' 
                     ? 'bg-[#FF6B35]/20 text-[#FF6B35]'
                     : 'bg-red-100 text-red-700'"
@@ -219,7 +219,7 @@
 
     <!-- Summary Report -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div class="bg-gradient-to-br from-[#1B8B3C] to-[#0F5124] rounded-2xl border border-[#156B2E] shadow-lg p-8 text-white">
+      <div class="bg-gradient-to-br from-primary-600 to-primary-800 rounded-lg border border-primary-700 shadow-lg p-8 text-white">
         <h3 class="text-lg font-black mb-6 flex items-center">
           <BarChart3Icon class="w-5 h-5 mr-3" />
           Performance Summary
@@ -290,9 +290,9 @@ const checkInTrends = ref([
 ])
 
 const departmentDistribution = ref([
-  { name: 'Engineering', count: 45, percentage: 29, color: '#1B8B3C' },
+  { name: 'Engineering', count: 45, percentage: 29, color: '#0ea5e9' },
   { name: 'Sales', count: 38, percentage: 24, color: '#FF6B35' },
-  { name: 'HR', count: 22, percentage: 14, color: '#4ADE80' },
+  { name: 'HR', count: 22, percentage: 14, color: '#f97316' },
   { name: 'Support', count: 28, percentage: 18, color: '#60A5FA' },
   { name: 'Management', count: 23, percentage: 15, color: '#F59E0B' }
 ])
@@ -368,7 +368,7 @@ const fetchAnalyticsData = async () => {
       
       // Process department breakdown
       if (data.departmentBreakdown && Array.isArray(data.departmentBreakdown) && data.departmentBreakdown.length > 0) {
-        const colors = ['#1B8B3C', '#FF6B35', '#4ADE80', '#60A5FA', '#F59E0B']
+        const colors = ['#0ea5e9', '#f97316', '#22c55e', '#ec4899', '#f59e0b']
         const totalCheckins = data.departmentBreakdown.reduce((sum, d) => sum + d.checkins, 0)
         
         departmentDistribution.value = data.departmentBreakdown.map((dept, idx) => ({

@@ -27,7 +27,7 @@
         <div class="flex items-center space-x-4">
           <router-link
             :to="`/${orgSlug}/checkin`"
-            class="hidden md:flex items-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg text-sm shadow-sm transition-all duration-200 active:scale-95"
+            class="hidden md:flex items-center space-x-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg text-sm shadow-sm transition-all duration-200 active:scale-95"
           >
             <MapPinIcon class="w-4 h-4" />
             <span>Check In</span>
@@ -69,21 +69,25 @@
           <!-- Brand Header -->
           <div class="p-6 border-b border-slate-800">
             <div class="flex items-center space-x-3 mb-6">
-              <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-                <span class="font-bold text-lg leading-none">{{ orgInitial }}</span>
+              <!-- Organization Logo or Initial -->
+              <div v-if="orgLogo" class="w-12 h-12 rounded-lg overflow-hidden bg-white shadow-md shadow-primary-500/20 flex-shrink-0 border border-primary-200">
+                <img :src="orgLogo" :alt="orgName" class="w-full h-full object-cover" />
+              </div>
+              <div v-else class="w-12 h-12 rounded-lg bg-primary-600 flex items-center justify-center text-white shadow-md shadow-primary-500/20 flex-shrink-0 font-bold text-lg">
+                <span class="leading-none">{{ orgInitial }}</span>
               </div>
               <div class="flex flex-col">
-                <span class="text-xs font-bold text-indigo-400 uppercase tracking-tighter">Enterprise</span>
-                <span class="text-xl font-black text-white tracking-tight">Track<span class="text-indigo-500">Timi</span></span>
+                <span class="text-xs font-bold text-primary-400 uppercase tracking-tighter">Enterprise</span>
+                <span class="text-xl font-black text-white tracking-tight">Track<span class="text-primary-500">Timi</span></span>
               </div>
             </div>
 
             <!-- User Profile Quick View -->
-            <div class="flex items-center space-x-3 p-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-indigo-600/50 transition-colors">
-              <div v-if="userAvatar" class="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
+            <div class="flex items-center space-x-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:border-primary-600/50 transition-colors">
+              <div v-if="userAvatar" class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
                 <img :src="`data:${userAvatarMimeType};base64,${userAvatar}`" :alt="userShortName" class="w-full h-full object-cover" />
               </div>
-              <div v-else class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-lg">
+              <div v-else class="w-12 h-12 rounded-lg bg-primary-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-md">
                 {{ userInitials }}
               </div>
               <div class="flex flex-col overflow-hidden min-w-0">
@@ -104,7 +108,7 @@
                   :to="item.path"
                   class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 group relative"
                   :class="route.path.includes(item.name) 
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' 
+                    ? 'bg-primary-600 text-white shadow-md shadow-primary-600/20' 
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'"
                   @click="sidebarOpen = false"
                 >
@@ -118,11 +122,11 @@
 
           <!-- System Status -->
           <div class="p-6 mt-auto">
-            <div class="bg-indigo-950/30 rounded-xl p-4 border border-indigo-500/20">
-               <div class="flex items-center space-x-2 text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+            <div class="bg-slate-950/30 rounded-xl p-4 border border-primary-500/20">
+               <div class="flex items-center space-x-2 text-[10px] font-bold text-primary-400 uppercase tracking-widest">
                  <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                  </span>
                  <span>System Active</span>
                </div>
@@ -173,6 +177,15 @@ const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
 const orgSlug = computed(() => route.params.orgSlug || authStore.user?.orgSlug || 'firm')
 const orgName = computed(() => authStore.user?.orgName || 'TrackTimi Firm')
 const orgInitial = computed(() => orgName.value.charAt(0).toUpperCase())
+const orgLogo = computed(() => {
+  const logo = authStore.user?.orgLogo || null
+  if (logo && logo.startsWith('data:')) {
+    return logo // Already a data URL
+  } else if (logo) {
+    return `data:image/png;base64,${logo}` // Convert base64 to data URL
+  }
+  return null
+})
 const userRole = computed(() => authStore.user?.role || 'Staff')
 
 const userShortName = computed(() => {

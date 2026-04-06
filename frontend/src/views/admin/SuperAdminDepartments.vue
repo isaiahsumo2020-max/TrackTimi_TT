@@ -79,7 +79,7 @@
                     <p class="text-xs font-bold text-slate-900">{{ dept.Depart_Name }}</p>
                   </td>
                   <td class="px-6 py-4 text-xs text-slate-600">{{ dept.Org_Name }}</td>
-                  <td class="px-6 py-4 text-xs font-bold text-indigo-600">{{ dept.user_count }}</td>
+                  <td class="px-6 py-4 text-xs font-bold text-primary-600">{{ dept.user_count }}</td>
                   <td class="px-6 py-4 text-xs font-bold text-green-600">{{ dept.today_checkins || 0 }}</td>
                 </tr>
               </tbody>

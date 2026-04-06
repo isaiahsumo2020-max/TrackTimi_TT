@@ -4,7 +4,7 @@
     <!-- 1. Premium Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-1">Personnel Portal</p>
+        <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em] mb-1">Personnel Portal</p>
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">
           Hello, {{ user?.firstName }} <span class="font-light text-slate-400">👋</span>
         </h1>
@@ -17,7 +17,7 @@
         </div>
         <!-- Quick Action Button -->
         <router-link :to="`/checkin`" 
-          class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+          class="px-6 py-3 bg-primary-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary-100 hover:bg-primary-700 transition-all active:scale-95">
           Clock Center 📍
         </router-link>
       </div>
@@ -49,13 +49,13 @@
       <div class="lg:col-span-2 bg-slate-900 p-8 rounded-[3rem] shadow-2xl text-white relative overflow-hidden">
         <div class="relative z-10 flex flex-col h-full">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xs font-black uppercase tracking-[0.2em] opacity-50 text-indigo-400">Next Scheduled Shift</h3>
+            <h3 class="text-xs font-black uppercase tracking-[0.2em] opacity-50 text-primary-400">Next Scheduled Shift</h3>
             <CalendarIcon class="w-4 h-4 opacity-50" />
           </div>
           
           <div v-if="nextShift" class="flex-1 flex flex-col justify-center">
             <div class="flex items-center space-x-4 mb-4">
-              <span class="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg text-[10px] font-black uppercase border border-indigo-500/30">
+              <span class="px-3 py-1 bg-primary-500/20 text-primary-300 rounded-lg text-[10px] font-black uppercase border border-primary-500/30">
                 {{ nextShift.Depart_Name || 'General' }}
               </span>
               <span class="text-xs font-bold opacity-60">{{ formatDate(nextShift.Shift_Date) }}</span>
@@ -68,7 +68,7 @@
             <p class="text-xs font-black uppercase opacity-30 tracking-[0.3em]">No Upcoming Shifts Found</p>
           </div>
         </div>
-        <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full"></div>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-primary-600/10 blur-[80px] rounded-full"></div>
       </div>
     </div>
 
@@ -79,16 +79,16 @@
       <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
         <div class="flex justify-between items-center mb-8">
           <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center">
-            <HistoryIcon class="w-4 h-4 mr-2 text-indigo-500" /> Recent Pulse History
+            <HistoryIcon class="w-4 h-4 mr-2 text-primary-500" /> Recent Pulse History
           </h3>
-          <router-link :to="`/history`" class="text-[9px] font-black text-indigo-600 uppercase border-b-2 border-indigo-50">View All Logs</router-link>
+          <router-link :to="`/history`" class="text-[9px] font-black text-primary-600 uppercase border-b-2 border-primary-50">View All Logs</router-link>
         </div>
 
         <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
           <div v-for="checkin in checkins" :key="checkin.Attend_ID" 
             class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-white border border-transparent hover:border-slate-100 transition-all group">
             <div class="flex items-center space-x-4">
-              <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm font-black text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+              <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm font-black text-primary-600 group-hover:bg-primary-600 group-hover:text-white transition-colors">
                 {{ checkin.Check_Type === 'IN' ? '↓' : '↑' }}
               </div>
               <div>
@@ -116,7 +116,7 @@
           <svg class="w-full h-full transform -rotate-90">
             <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" class="text-slate-50" />
             <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" 
-              class="text-indigo-600 transition-all duration-1000"
+              class="text-primary-600 transition-all duration-1000"
               :stroke-dasharray="440"
               :stroke-dashoffset="440 - (440 * weeklyProgress / 100)"
               stroke-linecap="round" />
@@ -128,7 +128,7 @@
         </div>
         
         <div class="pt-4 space-y-2">
-          <p class="text-xs font-bold text-slate-600">You've completed <span class="text-indigo-600">{{ currentWeeklyHours }}h</span> this week.</p>
+          <p class="text-xs font-bold text-slate-600">You've completed <span class="text-primary-600">{{ currentWeeklyHours }}h</span> this week.</p>
           <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Keep it up! 🚀</p>
         </div>
       </div>
@@ -138,7 +138,7 @@
     <!-- Add New Shift Button -->
     <div class="flex justify-end">
       <button @click="showAddShiftModal = true"
-              class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+              class="px-6 py-3 bg-primary-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary-100 hover:bg-primary-700 transition-all active:scale-95">
         + Add New Shift
       </button>
     </div>
@@ -157,7 +157,7 @@
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-2">Employee *</label>
             <select v-model="shiftForm.userId" required
-                    class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition-all">
+                    class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-100 transition-all">
               <option value="">Select Employee</option>
               <option v-for="emp in employees" :key="emp.User_ID" :value="emp.User_ID">
                 {{ emp.firstName }} {{ emp.surName }}
@@ -169,19 +169,19 @@
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-2">Shift Date * (dd/mm/yyyy)</label>
             <input v-model="shiftForm.shiftDate" type="date" required
-                   class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition-all">
+                    class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-100 transition-all">
           </div>
 
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-2">Start Time * (--:-- --)</label>
             <input v-model="shiftForm.shiftStartTime" type="time" required
-                   class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition-all">
+                   class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-100 transition-all">
           </div>
 
           <div>
             <label class="block text-sm font-semibold text-slate-700 mb-2">End Time * (--:-- --)</label>
             <input v-model="shiftForm.shiftEndTime" type="time" required
-                   class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 transition-all">
+                   class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-100 transition-all">
           </div>
 
           <div class="flex justify-end space-x-3 pt-6 border-t border-slate-200">
@@ -190,7 +190,7 @@
               Cancel
             </button>
             <button type="submit"
-                    class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-all active:scale-95">
+                    class="px-5 py-2.5 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-all active:scale-95">
               Create Shift
             </button>
           </div>

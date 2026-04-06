@@ -25,7 +25,7 @@
         </div>
         <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm">
           <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Distance</p>
-          <p class="text-lg md:text-2xl font-black text-indigo-600">{{ distance }}m</p>
+          <p class="text-lg md:text-2xl font-black text-primary-600">{{ distance }}m</p>
         </div>
         <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm">
           <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Time</p>
@@ -37,7 +37,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         
         <!-- Enhanced GPS Check-in Card -->
-        <div class="lg:col-span-2 bg-gradient-to-br from-indigo-600 to-indigo-700 p-8 md:p-12 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden">
+        <div class="lg:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 p-8 md:p-12 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden">
           <div class="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
           
           <div class="relative z-10 space-y-8">
@@ -99,7 +99,7 @@
               @click="handleSubmit" 
               :disabled="!inRange || loading || !location"
               class="w-full py-6 md:py-8 rounded-2xl font-black text-lg md:text-2xl shadow-2xl transition-all active:scale-95 uppercase tracking-wider"
-              :class="inRange && location ? 'bg-white text-indigo-600 shadow-white/30 hover:shadow-white/40' : 'bg-white/20 text-white/50 cursor-not-allowed backdrop-blur-sm'"
+              :class="inRange && location ? 'bg-white text-primary-600 shadow-white/30 hover:shadow-white/40' : 'bg-white/20 text-white/50 cursor-not-allowed backdrop-blur-sm'"
             >
               <span v-if="loading" class="flex items-center justify-center gap-2">
                 <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -122,7 +122,7 @@
           <div class="flex-1 flex flex-col justify-center items-center space-y-6">
             <!-- Large Time Display -->
             <div class="text-center">
-              <div class="text-5xl md:text-6xl font-black text-indigo-600 tracking-tight font-mono">
+              <div class="text-5xl md:text-6xl font-black text-primary-600 tracking-tight font-mono">
                 {{ elapsedTime }}
               </div>
               <p class="text-xs font-bold text-slate-400 uppercase mt-2">{{ isCheckedIn ? 'Time Worked' : 'Next Shift' }}</p>
@@ -153,7 +153,7 @@
               </div>
               <div class="bg-slate-50 p-3 rounded-xl">
                 <p class="text-slate-400 font-bold uppercase mb-1">Target</p>
-                <p class="text-lg font-black text-indigo-600">{{ shiftDuration }}h</p>
+                <p class="text-lg font-black text-primary-600">{{ shiftDuration }}h</p>
               </div>
             </div>
           </div>
@@ -190,7 +190,7 @@
           </div>
           <div class="bg-slate-50 p-4 md:p-5 rounded-xl border border-slate-200">
             <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Breaks</p>
-            <p class="text-2xl md:text-3xl font-black text-indigo-600">{{ totalBreaks }}</p>
+            <p class="text-2xl md:text-3xl font-black text-primary-600">{{ totalBreaks }}</p>
             <p class="text-xs text-slate-500 mt-1">Today</p>
           </div>
           <div class="bg-slate-50 p-4 md:p-5 rounded-xl border border-slate-200">
@@ -215,13 +215,13 @@
       <!-- Schedule Section with Calendar -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         <!-- Current/Next Shift -->
-        <div class="lg:col-span-2 bg-gradient-to-br from-indigo-600 to-purple-600 p-6 md:p-8 rounded-[2.5rem] shadow-lg text-white relative overflow-hidden">
+        <div class="lg:col-span-2 bg-gradient-to-br from-primary-600 to-purple-600 p-6 md:p-8 rounded-[2.5rem] shadow-lg text-white relative overflow-hidden">
           <div class="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
           
           <div class="relative z-10">
             <div class="flex justify-between items-start mb-6">
               <div>
-                <p class="text-[10px] font-bold text-indigo-200 uppercase tracking-widest mb-2">Next Scheduled</p>
+                <p class="text-[10px] font-bold text-primary-200 uppercase tracking-widest mb-2">Next Scheduled</p>
                 <h2 class="text-2xl md:text-3xl font-black tracking-tight">Upcoming Shift</h2>
               </div>
               <svg class="w-6 h-6 md:w-8 h-8 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +251,7 @@
         <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
             <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">This Week</h3>
-            <router-link :to="`/schedule`" class="text-[9px] font-black text-indigo-600 hover:text-indigo-700 uppercase border-b-2 border-indigo-100">View All</router-link>
+            <router-link :to="`/schedule`" class="text-[9px] font-black text-primary-600 hover:text-primary-700 uppercase border-b-2 border-primary-100">View All</router-link>
           </div>
 
           <div v-if="upcomingSchedules.length > 0" class="space-y-2 max-h-80 overflow-y-auto pr-2">
@@ -317,7 +317,7 @@
           <p class="text-xs font-black text-slate-700 uppercase mb-4">Weekly Activity</p>
           <div class="flex items-end justify-between gap-2 h-32">
             <div v-for="(day, idx) in weeklyActivity" :key="idx" class="flex-1 flex flex-col items-center group">
-              <div class="w-full bg-gradient-to-t from-indigo-500 to-indigo-400 rounded-t-lg hover:from-indigo-600 hover:to-indigo-500 transition-all"
+              <div class="w-full bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg hover:from-primary-600 hover:to-primary-500 transition-all"
                    :style="{ height: (day.hours / 12 * 100) + '%', minHeight: '8px' }">
               </div>
               <p class="text-[10px] font-bold text-slate-600 mt-2 upper">{{ day.day }}</p>

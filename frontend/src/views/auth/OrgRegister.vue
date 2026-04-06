@@ -2,30 +2,30 @@
   <div class="min-h-screen bg-[#FDFDFD] flex items-center justify-center px-6 py-20 relative overflow-hidden font-sans">
     
     <!-- Background Decorative Blobs -->
-    <div class="absolute -top-24 -left-24 w-96 h-96 bg-indigo-100/50 rounded-full blur-[100px]"></div>
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-primary-100/50 rounded-full blur-[100px]"></div>
     <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-slate-100 rounded-full blur-[100px]"></div>
 
     <div class="w-full max-w-3xl relative z-10 animate-in fade-in zoom-in duration-700">
       <!-- Header -->
       <div class="text-center mb-12 space-y-3">
         <router-link to="/" class="inline-flex items-center space-x-3 group mb-4">
-          <div class="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-xl shadow-indigo-200 group-hover:rotate-6 transition-transform">
+          <div class="w-12 h-12 rounded-2xl bg-primary-600 flex items-center justify-center shadow-xl shadow-primary-200 group-hover:rotate-6 transition-transform">>
             <ZapIcon class="w-7 h-7 text-white fill-white" />
           </div>
-          <span class="text-2xl font-black tracking-tighter text-slate-900">TrackTimi<span class="text-indigo-600">.</span></span>
+          <span class="text-2xl font-black tracking-tighter text-slate-900">TrackTimi<span class="text-primary-600">.</span></span>
         </router-link>
         <h2 class="text-4xl font-black tracking-tight text-slate-900">Establish Workspace</h2>
         <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.3em]">Initialize your organization node</p>
       </div>
 
       <!-- Registration Card -->
-      <div class="bg-white rounded-[3.5rem] border border-slate-100 p-10 md:p-16 shadow-2xl shadow-indigo-100/50">
+      <div class="bg-white rounded-[3.5rem] border border-slate-100 p-10 md:p-16 shadow-2xl shadow-primary-100/50">
         <form @submit.prevent="handleRegister" class="space-y-12">
           
           <!-- Section 1: Identity Matrix -->
           <div class="space-y-8">
-            <div class="flex items-center space-x-3 border-l-4 border-indigo-600 pl-4">
-              <BuildingIcon class="w-5 h-5 text-indigo-600" />
+            <div class="flex items-center space-x-3 border-l-4 border-primary-600 pl-4">
+              <BuildingIcon class="w-5 h-5 text-primary-600" />
               <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Identity Matrix</h3>
             </div>
 
@@ -33,19 +33,19 @@
               <div class="space-y-1.5">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">Organization Name</label>
                 <input v-model="form.orgName" type="text" required placeholder="e.g. Acme Corp"
-                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-bold text-slate-900" />
+                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 transition-all text-sm font-bold" />
               </div>
 
               <div class="space-y-1.5">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">Network Domain</label>
                 <input v-model="form.orgDomain" type="text" required placeholder="acme.tracktimi.com" @input="onDomainInput"
-                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-bold text-indigo-600 font-mono" />
+                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 transition-all text-sm font-bold text-primary-600 font-mono" />
               </div>
 
               <div class="space-y-1.5">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">Organization Type</label>
                 <select v-model="form.orgTypeId" required
-                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-bold text-slate-700">
+                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 transition-all text-sm font-bold text-slate-700">
                   <option value="">Select Sector</option>
                   <option v-for="type in organizationTypes" :key="type.Org_Type_ID" :value="type.Org_Type_ID">{{ type.Type_Name }}</option>
                 </select>
@@ -54,7 +54,7 @@
               <div class="space-y-1.5">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">Workspace Capacity</label>
                 <select v-model="form.orgSize" required
-                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-bold text-slate-700">
+                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 transition-all text-sm font-bold text-slate-700">
                   <option value="">Select Range</option>
                   <option value="startup">Startup (1-25)</option>
                   <option value="small">Small (26-100)</option>
@@ -67,7 +67,7 @@
             <div class="space-y-1.5">
               <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest text-right">Regional Node</label>
               <select v-model="form.regionId" required
-                class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm font-bold text-slate-700">
+                class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 transition-all text-sm font-bold text-slate-700">
                 <option value="">Select County/Region</option>
                 <option v-for="region in regions" :key="region.Region_ID" :value="region.Region_ID">{{ region.Region_Name }}</option>
               </select>
@@ -77,10 +77,10 @@
             <div class="space-y-4">
               <div class="flex justify-between items-center px-2">
                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">
-                  <MapPinIcon class="w-3 h-3 mr-2 text-indigo-500" /> HQ Geolocation
+                  <MapPinIcon class="w-3 h-3 mr-2 text-primary-500" /> HQ Geolocation
                 </label>
                 <button type="button" @click="refreshLocation" :disabled="locationLoading"
-                  class="text-[9px] font-black text-indigo-600 uppercase bg-indigo-50 px-3 py-1 rounded-lg hover:bg-indigo-100 transition-colors disabled:opacity-50">
+                  class="text-[9px] font-black text-primary-600 uppercase bg-primary-50 px-3 py-1 rounded-lg hover:bg-primary-100 transition-colors disabled:opacity-50">
                   {{ locationLoading ? 'Syncing...' : '📡 Re-Sync GPS' }}
                 </button>
               </div>
@@ -88,7 +88,7 @@
               <div class="p-6 bg-slate-950 rounded-3xl border border-slate-800 shadow-inner relative overflow-hidden group">
                 <div class="relative z-10 flex justify-between items-center">
                   <div class="space-y-1">
-                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-tighter">{{ locationStatus }}</p>
+                    <p class="text-[10px] font-black text-primary-400 uppercase tracking-tighter">{{ locationStatus }}</p>
                     <p class="font-mono text-xs text-white tracking-widest">
                       {{ form.location.latitude.toFixed(6) }} , {{ form.location.longitude.toFixed(6) }}
                     </p>
@@ -114,7 +114,7 @@
                     <ImageIcon class="w-6 h-6 text-slate-300" />
                   </div>
                   <input type="file" accept="image/*" @change="handleLogoUpload" 
-                    class="flex-1 text-[10px] text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-slate-100 file:text-slate-600 hover:file:bg-indigo-50 hover:file:text-indigo-600 cursor-pointer" />
+                    class="flex-1 text-[10px] text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-slate-100 file:text-slate-600 hover:file:bg-primary-50 hover:file:text-primary-600 cursor-pointer" />
                 </div>
               </div>
 
@@ -130,8 +130,8 @@
 
           <!-- Section 2: Master Credentials -->
           <div class="space-y-8 pt-10 border-t border-slate-100">
-            <div class="flex items-center space-x-3 border-l-4 border-indigo-600 pl-4">
-              <ShieldCheckIcon class="w-5 h-5 text-indigo-600" />
+            <div class="flex items-center space-x-3 border-l-4 border-primary-600 pl-4">
+              <ShieldCheckIcon class="w-5 h-5 text-primary-600" />
               <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Master Credentials</h3>
             </div>
 
@@ -139,44 +139,44 @@
               <div class="space-y-1.5">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">First Name</label>
                 <input v-model="form.firstName" type="text" required placeholder="John"
-                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold" />
+                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 text-sm font-bold" />
               </div>
               <div class="space-y-1.5">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">Surname</label>
                 <input v-model="form.lastName" type="text" required placeholder="Doe"
-                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold" />
+                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 text-sm font-bold" />
               </div>
             </div>
 
             <div class="space-y-1.5">
               <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">Primary SuperAdmin Email</label>
               <input v-model="form.email" type="email" required placeholder="admin@company.com"
-                class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold" />
+                class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 text-sm font-bold" />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div class="space-y-1.5">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">Passphrase</label>
                 <input v-model="form.password" type="password" required minlength="8" placeholder="••••••••"
-                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold" />
+                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 text-sm font-bold" />
               </div>
               <div class="space-y-1.5">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">Confirm Passphrase</label>
                 <input v-model="form.confirmPassword" type="password" required placeholder="••••••••"
-                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold" />
+                  class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-primary-500 text-sm font-bold" />
               </div>
             </div>
           </div>
 
           <!-- Consent & Submit -->
           <div class="space-y-8">
-            <label class="flex items-start space-x-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 cursor-pointer hover:bg-indigo-50/50 transition-colors group">
+            <label class="flex items-start space-x-4 p-6 bg-slate-50 rounded-[2rem] border border-slate-100 cursor-pointer hover:bg-primary-50/50 transition-colors group">
               <input v-model="form.agreeToTerms" type="checkbox" required
-                class="mt-1 w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all cursor-pointer" />
+                class="mt-1 w-5 h-5 rounded border-slate-300 text-primary-600 focus:ring-primary-500 transition-all cursor-pointer" />
               <span class="text-[11px] font-bold text-slate-500 leading-relaxed uppercase tracking-wider group-hover:text-slate-700">
                 I authorize the creation of this node and agree to the 
-                <a href="#" class="text-indigo-600 underline">Operational Protocols</a> and 
-                <a href="#" class="text-indigo-600 underline">Privacy Matrix</a>.
+                <a href="#" class="text-primary-600 underline">Operational Protocols</a> and 
+                <a href="#" class="text-primary-600 underline">Privacy Matrix</a>.
               </span>
             </label>
 
@@ -185,7 +185,7 @@
             </div>
 
             <button type="submit" :disabled="isSubmitting || !form.agreeToTerms || !isFormValid"
-              class="w-full py-6 bg-slate-900 hover:bg-indigo-600 text-white rounded-3xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-40 flex items-center justify-center">
+              class="w-full py-6 bg-slate-900 hover:bg-primary-600 text-white rounded-3xl font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-primary-100 transition-all active:scale-[0.98] disabled:opacity-40 flex items-center justify-center">
               <Loader2Icon v-if="isSubmitting" class="w-5 h-5 animate-spin mr-3" />
               <span>{{ isSubmitting ? 'Initializing Node...' : 'Establish Workspace' }}</span>
             </button>
@@ -195,7 +195,7 @@
 
       <p class="mt-12 text-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
         Existing Authority?
-        <router-link to="/login" class="text-indigo-600 hover:text-indigo-800 ml-1">Access Terminal</router-link>
+        <router-link to="/login" class="text-primary-600 hover:text-primary-800 ml-1">Access Terminal</router-link>
       </p>
     </div>
   </div>
@@ -341,7 +341,10 @@ const handleRegister = async () => {
       location: form.location
     })
 
-    if (result.success) router.push('/login')
+    if (result.success) {
+      // Redirect to email verification page instead of login
+      router.push('/verify-email')
+    }
     else errorMessage.value = result.error
   } catch (error) {
     errorMessage.value = 'Node Connection Refused'

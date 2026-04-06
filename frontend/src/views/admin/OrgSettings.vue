@@ -1,10 +1,41 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4 md:px-6">
+    <!-- Real-time Notifications (Toast) -->
+    <RealtimeNotifications 
+      :notifications="displayNotifications"
+      @dismiss="dismissNotification"
+    />
+
+    <!-- Notification Panel (Modal) -->
+    <NotificationPanel
+      :isOpen="showNotificationsPanel"
+      :notifications="notifications"
+      :unreadCount="unreadCount"
+      @close="showNotificationsPanel = false"
+      @mark-as-read="markNotificationAsRead"
+      @delete="deleteNotification"
+      @mark-all-read="markAllAsRead"
+    />
+
     <div class="max-w-6xl mx-auto">
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-4xl font-black text-slate-900">Organization Settings</h1>
-        <p class="text-slate-600 mt-2">Configure attendance policies and system-wide settings</p>
+      <!-- Header with Notification Bell -->
+      <div class="mb-8 flex justify-between items-start">
+        <div>
+          <h1 class="text-4xl font-black text-slate-900">Organization Settings</h1>
+          <p class="text-slate-600 mt-2">Configure attendance policies and system-wide settings</p>
+        </div>
+        <!-- Notification Bell -->
+        <button 
+          @click="showNotificationsPanel = !showNotificationsPanel"
+          class="relative p-3 bg-white rounded-lg border border-slate-200 hover:border-primary-300 shadow-sm transition-all hover:shadow-md"
+        >
+          <svg class="w-6 h-6 text-slate-600 hover:text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+          </svg>
+          <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse shadow-lg border-2 border-white">
+            {{ unreadCount > 9 ? '9+' : unreadCount }}
+          </span>
+        </button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -17,7 +48,7 @@
               :key="section.id"
               @click="activeSection = section.id"
               :class="{
-                'bg-indigo-100 text-indigo-700': activeSection === section.id,
+                'bg-primary-100 text-primary-700': activeSection === section.id,
                 'text-slate-600 hover:bg-slate-50': activeSection !== section.id
               }"
               class="w-full text-left px-4 py-3 rounded-lg font-bold text-sm transition-colors"
@@ -47,7 +78,7 @@
                   type="number"
                   min="0"
                   max="120"
-                  class="flex-1 px-4 py-3 border border-slate-300 rounded-lg font-bold text-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  class="flex-1 px-4 py-3 border border-slate-300 rounded-lg font-bold text-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
                 <span class="text-2xl font-black text-slate-900">minutes</span>
               </div>
@@ -72,7 +103,7 @@
                   type="number"
                   min="5"
                   max="60"
-                  class="flex-1 px-4 py-3 border border-slate-300 rounded-lg font-bold text-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  class="flex-1 px-4 py-3 border border-slate-300 rounded-lg font-bold text-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
                 <span class="text-2xl font-black text-slate-900">minutes</span>
               </div>
@@ -84,9 +115,9 @@
             </div>
 
             <!-- Preview -->
-            <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
-              <p class="text-xs font-bold text-indigo-900 uppercase mb-2">⏰ Policy Preview</p>
-              <div class="text-sm text-indigo-800 space-y-1">
+            <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+              <p class="text-xs font-bold text-primary-900 uppercase mb-2">⏰ Policy Preview</p>
+              <div class="text-sm text-primary-800 space-y-1">
                 <p>✓ Clock-in available for <span class="font-black">{{ formData.clockInWindow }} minutes</span> after shift starts</p>
                 <p>✓ Clock-out alert sent <span class="font-black">{{ formData.clockOutAlert }} minutes</span> before shift ends</p>
                 <p>✓ Late clock-ins marked and tracked in system</p>
@@ -97,7 +128,7 @@
             <button
               @click="saveSettings"
               :disabled="savingSettings || !formChanged"
-              class="w-full py-4 bg-indigo-600 text-white font-black rounded-lg uppercase hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              class="w-full py-4 bg-primary-600 text-white font-black rounded-lg uppercase hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {{ savingSettings ? 'Saving...' : 'Save Settings' }}
             </button>
@@ -189,7 +220,7 @@
             <button
               @click="saveSettings"
               :disabled="savingSettings || !formChanged"
-              class="w-full mt-8 py-4 bg-indigo-600 text-white font-black rounded-lg uppercase hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              class="w-full mt-8 py-4 bg-primary-600 text-white font-black rounded-lg uppercase hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {{ savingSettings ? 'Saving...' : 'Save Settings' }}
             </button>
@@ -240,14 +271,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/utils/api'
+import { getNotifications, markNotificationAsRead, getUnreadNotificationCount, deleteNotification as deleteNotifApi, markAllNotificationsAsRead } from '@/services/orgApi'
+import RealtimeNotifications from '@/components/dashboard/RealtimeNotifications.vue'
+import NotificationPanel from '@/components/dashboard/NotificationPanel.vue'
 
 // State
 const activeSection = ref('attendance')
 const savingSettings = ref(false)
 const settingsSaved = ref(false)
 const geofences = ref([])
+const notifications = ref([])
+const unreadCount = ref(0)
+const notifRefreshInterval = ref(null)
+const showNotificationsPanel = ref(false)
 
 const settingsSections = [
   { id: 'attendance', label: '⏰ Attendance Policies' },
@@ -269,6 +307,13 @@ const initialFormData = ref({...formData.value})
 
 const formChanged = computed(() => {
   return JSON.stringify(formData.value) !== JSON.stringify(initialFormData.value)
+})
+
+// Computed for notifications display (unread only, newest first)
+const displayNotifications = computed(() => {
+  return notifications.value
+    .filter(n => !n.Is_Read)
+    .sort((a, b) => new Date(b.Created_at) - new Date(a.Created_at))
 })
 
 // Load settings
@@ -325,9 +370,70 @@ const saveSettings = async () => {
   }
 }
 
+// Load notifications
+const loadNotifications = async () => {
+  try {
+    const res = await getNotifications(20)
+    notifications.value = res.data || []
+    
+    // Also get unread count
+    const countRes = await getUnreadNotificationCount()
+    unreadCount.value = countRes.data?.unreadCount || 0
+  } catch (err) {
+    console.error('Failed to load notifications:', err)
+  }
+}
+
+// Dismiss notification (mark as read)
+const dismissNotification = async (notificationId) => {
+  try {
+    await markNotificationAsRead(notificationId)
+    notifications.value = notifications.value.map(n => 
+      n.Notify_ID === notificationId ? {...n, Is_Read: 1} : n
+    )
+    // Decrement unread count
+    if (unreadCount.value > 0) unreadCount.value--
+  } catch (err) {
+    console.error('Failed to dismiss notification:', err)
+  }
+}
+
+// Delete notification
+const deleteNotification = async (notifyId) => {
+  try {
+    await deleteNotifApi(notifyId)
+    notifications.value = notifications.value.filter(n => n.Notify_ID !== notifyId)
+  } catch (err) {
+    console.error('Failed to delete notification:', err)
+  }
+}
+
+// Mark all as read
+const markAllAsRead = async () => {
+  try {
+    await markAllNotificationsAsRead()
+    notifications.value = notifications.value.map(n => ({...n, Is_Read: 1}))
+    unreadCount.value = 0
+  } catch (err) {
+    console.error('Failed to mark all as read:', err)
+  }
+}
+
 onMounted(() => {
   loadSettings()
   loadGeofences()
+  loadNotifications()
+  
+  // Refresh notifications every 3 seconds for real-time updates
+  notifRefreshInterval.value = setInterval(() => {
+    loadNotifications()
+  }, 3000)
+})
+
+onBeforeUnmount(() => {
+  if (notifRefreshInterval.value) {
+    clearInterval(notifRefreshInterval.value)
+  }
 })
 </script>
 

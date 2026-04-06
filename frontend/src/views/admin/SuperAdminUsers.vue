@@ -88,7 +88,16 @@
               <tbody class="divide-y divide-slate-100">
                 <tr v-for="user in filteredUsers.slice(0, 50)" :key="user.User_ID" class="hover:bg-slate-50 transition-colors">
                   <td class="px-6 py-4">
-                    <p class="text-xs font-bold" style="color: #000000;">{{ user.First_Name }} {{ user.SurName }}</p>
+                    <div class="flex items-center gap-4">
+                      <!-- User Avatar -->
+                      <div v-if="user.Avatar_Data" class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-slate-200 shadow-md">
+                        <img :src="formatAvatarPath(user.Avatar_Data, user.Avatar_MIME_Type)" :alt="`${user.First_Name} ${user.SurName}`" class="w-full h-full object-cover" @error="handleImageError" />
+                      </div>
+                      <div v-else class="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-md">
+                        {{ getInitials(user.First_Name, user.SurName) }}
+                      </div>
+                      <p class="text-xs font-bold" style="color: #000000;">{{ user.First_Name }} {{ user.SurName }}</p>
+                    </div>
                   </td>
                   <td class="px-6 py-4 text-xs" style="color: #000000;">{{ user.Email }}</td>
                   <td class="px-6 py-4 text-xs font-bold" style="color: #D97A2B;">{{ user.Org_Name }}</td>
@@ -115,7 +124,7 @@
             <div class="space-y-3">
               <div v-for="org in topOrganizations" :key="org.org" class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                 <p class="text-xs font-bold text-slate-900">{{ org.org }}</p>
-                <span class="text-xs font-black text-indigo-600">{{ org.count }} users</span>
+                <span class="text-xs font-black text-primary-600">{{ org.count }} users</span>
               </div>
             </div>
           </div>
@@ -225,6 +234,34 @@ const loadUsers = async () => {
 const handleLogout = () => {
   localStorage.removeItem('superAdminToken')
   router.push('/superadmin/login')
+}
+
+// Format avatar path for display
+const formatAvatarPath = (avatarData, mimeType) => {
+  if (!avatarData) return null
+  // If it's already a data URL, return as is
+  if (avatarData.startsWith('data:')) {
+    return avatarData
+  }
+  // If it's base64 without data: prefix, add it
+  if (!avatarData.startsWith('http')) {
+    return `data:${mimeType || 'image/png'};base64,${avatarData}`
+  }
+  // Otherwise return as is
+  return avatarData
+}
+
+// Get user initials
+const getInitials = (firstName, lastName) => {
+  const first = (firstName || '').charAt(0).toUpperCase()
+  const last = (lastName || '').charAt(0).toUpperCase()
+  return (first + last) || '?'
+}
+
+// Handle image load errors
+const handleImageError = (event) => {
+  console.error('Failed to load avatar image')
+  event.target.style.display = 'none'
 }
 
 onMounted(loadUsers)

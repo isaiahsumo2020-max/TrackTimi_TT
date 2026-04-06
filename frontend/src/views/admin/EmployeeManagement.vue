@@ -1,5 +1,22 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Real-time Notifications (Toast) -->
+    <RealtimeNotifications 
+      :notifications="displayNotifications"
+      @dismiss="dismissNotification"
+    />
+
+    <!-- Notification Panel (Modal) -->
+    <NotificationPanel
+      :isOpen="showNotificationsPanel"
+      :notifications="notifications"
+      :unreadCount="unreadCount"
+      @close="showNotificationsPanel = false"
+      @mark-as-read="markNotificationAsRead"
+      @delete="deleteNotification"
+      @mark-all-read="markAllAsRead"
+    />
+
     <!-- Header -->
     <div class="bg-white shadow-sm border-b">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,13 +25,27 @@
             <h1 class="text-2xl font-bold text-gray-900">Employee Management</h1>
             <p class="text-sm text-gray-600 mt-1">Manage your organization's employees</p>
           </div>
-          <button @click="showAddEmployeeModal = true"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Add Employee
-          </button>
+          <div class="flex items-center gap-4">
+            <!-- Notification Bell -->
+            <button 
+              @click="showNotificationsPanel = !showNotificationsPanel"
+              class="relative p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all hover:shadow-md"
+            >
+              <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+              </svg>
+              <span v-if="unreadCount > 0" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse shadow-lg border-2 border-white">
+                {{ unreadCount > 9 ? '9+' : unreadCount }}
+              </span>
+            </button>
+            <button @click="showAddEmployeeModal = true"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              Add Employee
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -343,9 +374,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import api from '@/utils/api.js'
+import { getNotifications, markNotificationAsRead, getUnreadNotificationCount, deleteNotification as deleteNotifApi, markAllNotificationsAsRead } from '@/services/orgApi'
+import RealtimeNotifications from '@/components/dashboard/RealtimeNotifications.vue'
+import NotificationPanel from '@/components/dashboard/NotificationPanel.vue'
 
 const authStore = useAuthStore()
 
@@ -359,6 +393,10 @@ const showAddEmployeeModal = ref(false)
 const inviting = ref(false)
 const activeToday = ref(0)
 const pendingInvitations = ref(0)
+const notifications = ref([])
+const unreadCount = ref(0)
+const notifRefreshInterval = ref(null)
+const showNotificationsPanel = ref(false)
 
 // User Profile Modal State
 const showProfileModal = ref(false)
@@ -387,6 +425,13 @@ const filteredEmployees = computed(() => {
     `${emp.First_Name} ${emp.SurName}`.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     emp.Email.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
+})
+
+// Computed for notifications display (unread only)
+const displayNotifications = computed(() => {
+  return notifications.value
+    .filter(n => !n.Is_Read)
+    .sort((a, b) => new Date(b.Created_at) - new Date(a.Created_at))
 })
 
 // Methods
@@ -516,7 +561,68 @@ onMounted(async () => {
   await Promise.all([
     loadEmployees(),
     loadInvitations(),
-    loadDepartments()
+    loadDepartments(),
+    loadNotifications()
   ])
+  
+  // Refresh notifications every 3 seconds for real-time updates
+  notifRefreshInterval.value = setInterval(() => {
+    loadNotifications()
+  }, 3000)
 })
+
+onBeforeUnmount(() => {
+  if (notifRefreshInterval.value) {
+    clearInterval(notifRefreshInterval.value)
+  }
+})
+
+// Load notifications
+const loadNotifications = async () => {
+  try {
+    const res = await getNotifications(20)
+    notifications.value = res.data || []
+    
+    // Also get unread count
+    const countRes = await getUnreadNotificationCount()
+    unreadCount.value = countRes.data?.unreadCount || 0
+  } catch (err) {
+    console.error('Failed to load notifications:', err)
+  }
+}
+
+// Dismiss notification (mark as read)
+const dismissNotification = async (notificationId) => {
+  try {
+    await markNotificationAsRead(notificationId)
+    notifications.value = notifications.value.map(n => 
+      n.Notify_ID === notificationId ? {...n, Is_Read: 1} : n
+    )
+    // Decrement unread count
+    if (unreadCount.value > 0) unreadCount.value--
+  } catch (err) {
+    console.error('Failed to dismiss notification:', err)
+  }
+}
+
+// Delete notification
+const deleteNotification = async (notifyId) => {
+  try {
+    await deleteNotifApi(notifyId)
+    notifications.value = notifications.value.filter(n => n.Notify_ID !== notifyId)
+  } catch (err) {
+    console.error('Failed to delete notification:', err)
+  }
+}
+
+// Mark all as read
+const markAllAsRead = async () => {
+  try {
+    await markAllNotificationsAsRead()
+    notifications.value = notifications.value.map(n => ({...n, Is_Read: 1}))
+    unreadCount.value = 0
+  } catch (err) {
+    console.error('Failed to mark all as read:', err)
+  }
+}
 </script>

@@ -4,12 +4,12 @@
     <!-- Premium Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-1">Configuration</p>
+        <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em] mb-1">Configuration</p>
         <h1 class="text-4xl font-black text-slate-900 tracking-tight">Workspace Settings</h1>
         <p class="text-sm text-slate-400 font-medium mt-1">Configure your organization's identity and security rules.</p>
       </div>
       <button @click="saveAllSettings" :disabled="saving" 
-        class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white px-8 py-4 rounded-[1.5rem] font-black text-xs uppercase shadow-xl shadow-indigo-100 transition-all active:scale-95 flex items-center">
+        class="bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 text-white px-8 py-4 rounded-[1.5rem] font-black text-xs uppercase shadow-xl shadow-primary-100 transition-all active:scale-95 flex items-center">
         <SaveIcon v-if="!saving" class="w-4 h-4 mr-2" />
         {{ saving ? 'Syncing...' : 'Save Changes' }}
       </button>
@@ -22,26 +22,26 @@
       <div class="lg:col-span-2 space-y-8">
         <div class="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8">
           <div class="flex items-center space-x-3">
-            <BuildingIcon class="w-5 h-5 text-indigo-500" />
+            <BuildingIcon class="w-5 h-5 text-primary-500" />
             <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Business Identity</h2>
           </div>
 
           <div class="grid md:grid-cols-2 gap-6">
             <div class="space-y-1">
               <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Organization Name</label>
-              <input v-model="settings.orgName" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm focus:ring-2 focus:ring-indigo-500" />
+              <input v-model="settings.orgName" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm focus:ring-2 focus:ring-primary-500" />
             </div>
             <div class="space-y-1">
               <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Official Email</label>
-              <input v-model="settings.email" type="email" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm focus:ring-2 focus:ring-indigo-500" />
+              <input v-model="settings.email" type="email" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm focus:ring-2 focus:ring-primary-500" />
             </div>
             <div class="space-y-1">
               <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Support Phone</label>
-              <input v-model="settings.phone" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm focus:ring-2 focus:ring-indigo-500" />
+              <input v-model="settings.phone" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm focus:ring-2 focus:ring-primary-500" />
             </div>
             <div class="space-y-1">
               <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Headquarters Address</label>
-              <input v-model="settings.address" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm focus:ring-2 focus:ring-indigo-500" />
+              <input v-model="settings.address" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm focus:ring-2 focus:ring-primary-500" />
             </div>
           </div>
         </div>
@@ -55,17 +55,17 @@
           
           <div class="grid md:grid-cols-2 gap-8">
             <div class="space-y-4">
-              <label class="flex items-center space-x-3 p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-indigo-50 transition-colors">
-                <input type="checkbox" v-model="settings.requireGPS" class="w-4 h-4 rounded text-indigo-600" />
+              <label class="flex items-center space-x-3 p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-primary-50 transition-colors">
+                <input type="checkbox" v-model="settings.requireGPS" class="w-4 h-4 rounded text-primary-600" />
                 <span class="text-xs font-bold text-slate-700">Enforce GPS Geofencing</span>
               </label>
-              <label class="flex items-center space-x-3 p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-indigo-50 transition-colors">
-                <input type="checkbox" v-model="settings.deviceLockdown" class="w-4 h-4 rounded text-indigo-600" />
+              <label class="flex items-center space-x-3 p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-primary-50 transition-colors">
+                <input type="checkbox" v-model="settings.deviceLockdown" class="w-4 h-4 rounded text-primary-600" />
                 <span class="text-xs font-bold text-slate-700">Device Identity Lockdown</span>
               </label>
             </div>
-            <div class="bg-indigo-50 p-6 rounded-[2rem] border border-indigo-100">
-              <p class="text-[9px] font-black text-indigo-600 uppercase mb-2">Active Workspace Seats</p>
+            <div class="bg-primary-50 p-6 rounded-[2rem] border border-primary-100">
+              <p class="text-[9px] font-black text-primary-600 uppercase mb-2">Active Workspace Seats</p>
               <h3 class="text-xl font-black text-slate-900">{{ settings.numEmployees }} Employees</h3>
               <p class="text-xs text-slate-500 mt-1">Managed via Enterprise SaaS</p>
             </div>
@@ -77,7 +77,7 @@
       <div class="space-y-8">
         <div class="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8">
           <div class="flex items-center space-x-3">
-            <PaletteIcon class="w-5 h-5 text-indigo-500" />
+            <PaletteIcon class="w-5 h-5 text-primary-500" />
             <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Branding</h2>
           </div>
 
@@ -91,7 +91,7 @@
                 <ImageIcon class="w-8 h-8" />
               </div>
               <!-- Upload Trigger -->
-              <label class="absolute -bottom-2 -right-2 p-3 bg-indigo-600 rounded-2xl text-white cursor-pointer shadow-lg hover:scale-110 transition-transform">
+              <label class="absolute -bottom-2 -right-2 p-3 bg-primary-600 rounded-2xl text-white cursor-pointer shadow-lg hover:scale-110 transition-transform">
                 <CameraIcon class="w-4 h-4" />
                 <input type="file" @change="handleLogoUpload" hidden accept="image/*" />
               </label>

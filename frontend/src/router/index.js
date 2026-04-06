@@ -7,6 +7,7 @@ const routes = [
   { path: '/about', name: 'About', component: () => import('@/views/About.vue') },
   { path: '/login', name: 'Login', component: () => import('@/views/auth/Login.vue') },
   { path: '/register-org', name: 'RegisterOrg', component: () => import('@/views/auth/OrgRegister.vue') },
+  { path: '/verify-email', name: 'VerifyEmail', component: () => import('@/views/auth/VerifyEmail.vue') },
   { path: '/activate/:token', name: 'EmployeeActivation', component: () => import('@/views/auth/EmployeeActivation.vue') },
 
   // SUPERADMIN (LOGIN + DASHBOARD + PAGES)
@@ -54,7 +55,7 @@ router.beforeEach((to, from, next) => {
   const superAdminToken = localStorage.getItem('superAdminToken')
 
   // Public routes
-  if (['Landing', 'Login', 'RegisterOrg', 'SuperAdminLogin', 'About'].includes(to.name)) {
+  if (['Landing', 'Login', 'RegisterOrg', 'VerifyEmail', 'SuperAdminLogin', 'About'].includes(to.name)) {
     next()
     return
   }

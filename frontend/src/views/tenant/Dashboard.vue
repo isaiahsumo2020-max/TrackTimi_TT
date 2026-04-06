@@ -4,7 +4,7 @@
     <!-- 1. Header: Dynamic Org Name & Health Score -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] mb-1">Intelligence Command</p>
+        <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em] mb-1">Intelligence Command</p>
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">
           {{ orgDisplayName }} <span class="font-light text-slate-400">Overview</span>
         </h1>
@@ -50,11 +50,11 @@
         <div class="relative z-10 flex flex-col h-full">
           <div class="flex justify-between items-center mb-10">
             <div>
-              <h3 class="text-xs font-black uppercase tracking-[0.2em] text-indigo-400">Weekly Dashboard</h3>
+              <h3 class="text-xs font-black uppercase tracking-[0.2em] text-primary-400">Weekly Dashboard</h3>
               <p class="text-[10px] font-bold opacity-40 mt-1 uppercase">7-day attendance activity</p>
             </div>
             <div class="flex items-center space-x-2">
-              <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+              <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
               <span class="text-[10px] font-bold opacity-60">Peak: {{ maxAttendance }}</span>
             </div>
           </div>
@@ -64,13 +64,13 @@
             <div v-for="day in trendData" :key="day.date" class="flex-1 flex flex-col items-center group">
               <!-- Bar -->
               <div class="w-full flex flex-col items-center justify-end flex-1">
-                <div class="w-full bg-gradient-to-t from-indigo-500 via-indigo-400 to-indigo-300 rounded-t-2xl hover:from-indigo-400 hover:via-indigo-300 hover:to-indigo-200 transition-all duration-300 shadow-lg relative group/bar cursor-pointer"
+                <div class="w-full bg-gradient-to-t from-primary-500 via-primary-400 to-primary-300 rounded-t-2xl hover:from-primary-400 hover:via-primary-300 hover:to-primary-200 transition-all duration-300 shadow-lg relative group/bar cursor-pointer"
                      :style="{ 
                        height: maxAttendance > 0 ? (day.count / maxAttendance * 100) + '%' : '12px',
                        minHeight: day.count > 0 ? '24px' : '12px'
                      }">
                   <!-- Glow Effect -->
-                  <div class="absolute inset-0 rounded-t-2xl bg-indigo-300/20 animate-pulse group-hover/bar:animate-none"></div>
+                  <div class="absolute inset-0 rounded-t-2xl bg-primary-300/20 animate-pulse group-hover/bar:animate-none"></div>
                   
                   <!-- Hover Tooltip -->
                   <div v-if="day.count > 0" class="absolute -top-14 left-1/2 -translate-x-1/2 bg-white text-slate-900 px-3 py-2 rounded-xl text-[11px] font-black opacity-0 group-hover/bar:opacity-100 transition-all shadow-xl whitespace-nowrap z-20">
@@ -106,7 +106,7 @@
             </div>
           </div>
         </div>
-        <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-indigo-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-primary-600/20 rounded-full blur-[100px]"></div>
       </div>
 
       <!-- Live Pulse Feed -->
@@ -116,13 +116,13 @@
             <ZapIcon class="w-4 h-4 mr-2 text-amber-500 fill-amber-500" />
             Activity Pulse
           </h3>
-          <div class="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></div>
+          <div class="w-2 h-2 bg-primary-500 rounded-full animate-ping"></div>
         </div>
         
         <div class="space-y-6 overflow-y-auto flex-1 pr-2 custom-scrollbar">
           <TransitionGroup name="list">
             <div v-for="(log, index) in activityLogs" :key="index" class="flex items-start space-x-3 group">
-              <div :class="log.type === 'attendance' ? 'bg-green-500 shadow-green-100' : 'bg-indigo-500 shadow-indigo-100'" 
+              <div :class="log.type === 'attendance' ? 'bg-green-500 shadow-green-100' : 'bg-primary-500 shadow-primary-100'" 
                    class="w-2 h-2 rounded-full mt-1.5 shrink-0 shadow-lg"></div>
               <div class="flex-1">
                 <p class="text-xs font-black text-slate-800 leading-tight">
@@ -146,7 +146,7 @@
           <div class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div> Present Personnel
         </h3>
         <div class="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-          <div v-for="user in presentList" :key="user.name" class="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-indigo-100 hover:bg-white transition-all">
+          <div v-for="user in presentList" :key="user.name" class="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-primary-100 hover:bg-white transition-all">
             <div class="flex items-center space-x-3">
               <div v-if="user.avatar" class="w-9 h-9 bg-slate-900 text-white rounded-xl overflow-hidden flex-shrink-0">
                 <img :src="`data:${user.avatarMimeType};base64,${user.avatar}`" :alt="user.name" class="w-full h-full object-cover" />
@@ -158,7 +158,7 @@
               </div>
             </div>
             <div class="text-right">
-              <p class="text-[9px] font-black text-indigo-600">{{ user.isSystemActive ? 'ONLINE' : formatTimeOnly(user.checkIn) }}</p>
+              <p class="text-[9px] font-black text-primary-600">{{ user.isSystemActive ? 'ONLINE' : formatTimeOnly(user.checkIn) }}</p>
               <p class="text-[7px] font-black text-slate-300 uppercase">{{ user.isSystemActive ? 'SYSTEM ADMIN' : 'Verified' }}</p>
             </div>
           </div>
@@ -194,7 +194,7 @@
               <span class="text-[10px] font-black text-slate-900">{{ dept.staff_count }}</span>
             </div>
             <div class="h-2 w-full bg-slate-50 rounded-full overflow-hidden p-0.5 border border-slate-100">
-              <div class="h-full bg-indigo-600 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(79,70,229,0.3)]" 
+              <div class="h-full bg-primary-600 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(79,70,229,0.3)]" 
                 :style="{ width: metrics.total > 0 ? (dept.staff_count / metrics.total * 100) + '%' : '0%' }"></div>
             </div>
           </div>
@@ -207,7 +207,7 @@
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center">
-            <HistoryIcon class="w-4 h-4 mr-2 text-indigo-600" />
+            <HistoryIcon class="w-4 h-4 mr-2 text-primary-600" />
             Attendance Ledger
           </h3>
           <p class="text-[10px] font-bold text-slate-400 uppercase mt-1">Audit logs & complete history</p>
@@ -216,10 +216,10 @@
         <div class="flex flex-wrap items-center gap-3">
           <div class="relative">
             <SearchIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-            <input v-model="ledgerSearch" placeholder="Filter by name..." class="pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-none text-[11px] font-bold focus:ring-2 focus:ring-indigo-50 w-48 outline-none" />
+            <input v-model="ledgerSearch" placeholder="Filter by name..." class="pl-10 pr-4 py-3 bg-slate-50 rounded-xl border-none text-[11px] font-bold focus:ring-2 focus:ring-primary-50 w-48 outline-none" />
           </div>
-          <input type="date" v-model="ledgerDate" class="px-4 py-3 bg-slate-50 rounded-xl border-none text-[11px] font-bold focus:ring-2 focus:ring-indigo-50 outline-none" />
-          <button @click="downloadCSV" class="px-5 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all flex items-center">
+          <input type="date" v-model="ledgerDate" class="px-4 py-3 bg-slate-50 rounded-xl border-none text-[11px] font-bold focus:ring-2 focus:ring-primary-50 outline-none" />
+          <button @click="downloadCSV" class="px-5 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-600 transition-all flex items-center">
             <FileDownIcon class="w-3.5 h-3.5 mr-2" />
             Export Ledger
           </button>
@@ -244,7 +244,7 @@
                   <div v-if="log.avatar" class="w-8 h-8 border border-slate-100 rounded-lg overflow-hidden flex-shrink-0">
                     <img :src="`data:${log.avatarMimeType};base64,${log.avatar}`" :alt="log.name" class="w-full h-full object-cover" />
                   </div>
-                  <div v-else class="w-8 h-8 bg-white border border-slate-100 rounded-lg flex items-center justify-center font-black text-slate-400 text-[10px] group-hover:bg-indigo-600 group-hover:text-white transition-colors">{{ log.name[0] }}</div>
+                  <div v-else class="w-8 h-8 bg-white border border-slate-100 rounded-lg flex items-center justify-center font-black text-slate-400 text-[10px] group-hover:bg-primary-600 group-hover:text-white transition-colors">{{ log.name[0] }}</div>
                   <div>
                     <p class="text-[11px] font-black text-slate-900">{{ log.name }}</p>
                     <p class="text-[8px] font-bold text-slate-400 uppercase">{{ log.job }}</p>
@@ -359,7 +359,7 @@ const avgTrend = computed(() => {
 })
 
 const stats = computed(() => [
-  { label: 'Workforce', value: metrics.value.total, icon: UsersIcon, color: 'bg-indigo-600 shadow-indigo-100' },
+  { label: 'Workforce', value: metrics.value.total, icon: UsersIcon, color: 'bg-primary-600 shadow-primary-100' },
   { label: 'Present Today', value: metrics.value.present, icon: CheckCircleIcon, color: 'bg-green-500 shadow-green-100' },
   { label: 'Currently On-Site', value: metrics.value.onSite, icon: ClockIcon, color: 'bg-orange-500 shadow-orange-100' },
   { label: 'Absent Today', value: metrics.value.absent, icon: XCircleIcon, color: 'bg-slate-400 shadow-slate-100' },

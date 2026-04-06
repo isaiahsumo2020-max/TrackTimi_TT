@@ -65,7 +65,7 @@ const notificationClasses = (type) => {
     warning: 'border-amber-500 bg-amber-50',
     info: 'border-blue-500 bg-blue-50',
     break: 'border-amber-500 bg-amber-50',
-    shift: 'border-indigo-500 bg-indigo-50',
+    shift: 'border-primary-500 bg-primary-50',
     analytics: 'border-purple-500 bg-purple-50',
   }
   return typeClasses[type] || 'border-slate-300'
@@ -91,7 +91,7 @@ const notificationTextColor = (type) => {
     warning: 'text-amber-700',
     info: 'text-blue-700',
     break: 'text-amber-700',
-    shift: 'text-indigo-700',
+    shift: 'text-primary-700',
     analytics: 'text-purple-700',
   }
   return colors[type] || 'text-slate-700'
@@ -104,7 +104,7 @@ const notificationProgressColor = (type) => {
     warning: 'bg-amber-500',
     info: 'bg-blue-500',
     break: 'bg-amber-500',
-    shift: 'bg-indigo-500',
+    shift: 'bg-primary-500',
     analytics: 'bg-purple-500',
   }
   return colors[type] || 'bg-slate-300'

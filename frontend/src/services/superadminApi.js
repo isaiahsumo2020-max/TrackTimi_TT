@@ -44,6 +44,12 @@ export const updateOrgSettings = (orgId, settings) => superadminApi.put(`/organi
 export const toggleOrgStatus = (orgId, isActive) => superadminApi.put(`/organizations/${orgId}/status`, { isActive })
 export const deleteOrganization = (orgId) => superadminApi.delete(`/organizations/${orgId}`)
 
+// Organization Logo Management
+export const uploadOrgLogo = (orgId, logoData, mimeType) => 
+  superadminApi.put(`/organizations/${orgId}/logo`, { logoData, mimeType })
+export const deleteOrgLogo = (orgId) => 
+  superadminApi.delete(`/organizations/${orgId}/logo`)
+
 // Organization User Management
 export const assignUserToOrg = (orgId, userId) => superadminApi.post(`/organizations/${orgId}/users`, { userId })
 export const removeUserFromOrg = (orgId, userId) => superadminApi.delete(`/organizations/${orgId}/users/${userId}`)
@@ -83,5 +89,12 @@ export const getUserLogins = (days = 7) => superadminApi.get(`/activity/user-log
 
 // Alerts
 export const getAlerts = () => superadminApi.get('/alerts')
+
+// SuperAdmin Notifications
+export const getNotifications = (limit = 50) => superadminApi.get(`/notifications?limit=${limit}`)
+export const getUnreadNotificationCount = () => superadminApi.get('/notifications/unread/count')
+export const markNotificationAsRead = (notifyId) => superadminApi.put(`/notifications/${notifyId}/read`)
+export const markAllNotificationsAsRead = () => superadminApi.put('/notifications/mark-all-read')
+export const deleteNotification = (notifyId) => superadminApi.delete(`/notifications/${notifyId}`)
 
 export default superadminApi

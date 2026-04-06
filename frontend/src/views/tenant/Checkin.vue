@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div class="space-y-2">
-        <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em]">System Settings</p>
+        <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em]">System Settings</p>
         <h1 class="text-4xl font-black text-slate-900 tracking-tight">Work Zones</h1>
         <p class="text-sm text-slate-500 font-medium">Create authorized locations where staff are allowed to clock in.</p>
       </div>
@@ -22,15 +22,15 @@
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <div v-for="zone in zones" :key="zone.Fence_ID" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all group">
         <div class="flex justify-between items-start mb-6">
-          <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center">
-            <MapPinIcon class="w-6 h-6 text-indigo-600" />
+          <div class="w-12 h-12 bg-primary-50 rounded-2xl flex items-center justify-center">
+            <MapPinIcon class="w-6 h-6 text-primary-600" />
           </div>
           <button @click="deleteZone(zone.Fence_ID)" class="p-2 text-slate-200 hover:text-red-500 transition-colors">
             <TrashIcon class="w-4 h-4" />
           </button>
         </div>
         <h3 class="text-xl font-black text-slate-900">{{ zone.Location_Name }}</h3>
-        <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-1">Radius: {{ zone.Radius }}m</p>
+        <p class="text-[10px] font-bold text-primary-600 uppercase tracking-widest mt-1">Radius: {{ zone.Radius }}m</p>
         <div class="mt-8 pt-6 border-t border-slate-50 space-y-2">
           <div class="flex justify-between text-[10px] font-mono text-slate-400 font-bold uppercase">
             <span>Lat: {{ zone.Latitude?.toFixed(4) }}</span>
@@ -51,13 +51,13 @@
             <input v-model="form.longitude" type="number" step="any" placeholder="Longitude" class="p-4 bg-slate-50 rounded-2xl border-none text-sm" required />
           </div>
           <!-- AUTO DETECT BUTTON -->
-          <button type="button" @click="detectGPS" class="w-full py-3 text-[10px] font-black text-indigo-600 uppercase bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-all">
+          <button type="button" @click="detectGPS" class="w-full py-3 text-[10px] font-black text-primary-600 uppercase bg-primary-50 rounded-xl hover:bg-primary-100 transition-all">
             📍 Use My Current Location
           </button>
           <input v-model="form.radius" type="number" placeholder="Radius (meters) e.g. 500" class="w-full p-4 bg-slate-50 rounded-2xl border-none text-sm" required />
           <div class="flex gap-4 pt-6">
             <button type="button" @click="showAddModal = false" class="flex-1 py-4 font-bold text-slate-400 text-xs">CANCEL</button>
-            <button type="submit" :disabled="loading" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-xs uppercase shadow-lg shadow-indigo-100">
+            <button type="submit" :disabled="loading" class="flex-1 py-4 bg-primary-600 text-white rounded-2xl font-bold text-xs uppercase shadow-lg shadow-primary-100">
               {{ loading ? 'SAVING...' : 'SAVE ZONE' }}
             </button>
           </div>

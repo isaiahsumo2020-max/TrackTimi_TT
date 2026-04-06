@@ -18,7 +18,7 @@
         <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
           <div>
             <h3 class="text-xl font-black text-slate-900">{{ dept.name }}</h3>
-            <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em]">Department</p>
+            <p class="text-[10px] font-bold text-primary-600 uppercase tracking-[0.2em]">Department</p>
           </div>
           <div class="text-right">
             <span class="text-3xl font-black text-slate-900">{{ dept.users.length }}</span>
@@ -52,9 +52,9 @@
                     </div>
                   </td>
                   <td class="py-4 px-2 text-xs font-medium text-slate-500">{{ user.email }}</td>
-                  <td class="py-4 px-2 text-[10px] font-black text-indigo-500 uppercase">{{ user.job || 'Staff' }}</td>
+                  <td class="py-4 px-2 text-[10px] font-black text-primary-500 uppercase">{{ user.job || 'Staff' }}</td>
                   <td class="py-4 px-2 text-right">
-                    <button class="text-slate-300 hover:text-indigo-600 transition-colors">
+                    <button class="text-slate-300 hover:text-primary-600 transition-colors">
                       <SettingsIcon class="w-4 h-4 inline" />
                     </button>
                   </td>

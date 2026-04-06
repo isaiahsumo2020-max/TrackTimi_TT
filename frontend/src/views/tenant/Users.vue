@@ -5,7 +5,7 @@
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div class="space-y-4">
         <div class="space-y-1">
-          <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em]">Personnel Management</p>
+          <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em]">Personnel Management</p>
           <h1 class="text-4xl font-black text-slate-900 tracking-tight">Workforce Directory</h1>
         </div>
         
@@ -23,21 +23,21 @@
         </div>
       </div>
 
-      <button @click="showCreateModal = true" class="px-8 py-4 bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-100 active:scale-95 flex items-center">
+      <button @click="showCreateModal = true" class="px-8 py-4 bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-primary-600 transition-all shadow-xl shadow-primary-100 active:scale-95 flex items-center">
         <PlusIcon class="w-4 h-4 mr-2" />
-        Provision Personnel
+        Invite Member
       </button>
     </div>
 
     <!-- 2. Search & Filter Bar -->
     <div class="flex flex-col md:flex-row gap-4">
       <div class="relative flex-1 group">
-        <SearchIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+        <SearchIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-primary-600 transition-colors" />
         <input 
           v-model="searchQuery"
           type="text" 
           placeholder="Search by name, email, or employee ID..." 
-          class="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-indigo-50 outline-none transition-all shadow-sm"
+          class="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary-50 outline-none transition-all shadow-sm"
         />
       </div>
       <select v-model="filterStatus" class="px-6 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500 outline-none shadow-sm">
@@ -97,7 +97,7 @@
 
         <!-- Department -->
         <div class="col-span-2">
-          <p class="text-xs font-black text-indigo-600 uppercase tracking-tight">{{ user.jobTitle || 'Staff' }}</p>
+          <p class="text-xs font-black text-primary-600 uppercase tracking-tight">{{ user.jobTitle || 'Staff' }}</p>
         </div>
 
         <!-- Status -->
@@ -111,7 +111,7 @@
         <!-- Action Menu -->
         <div class="col-span-1 flex justify-end">
           <div class="relative group/menu pointer-events-auto">
-            <button @click.stop="toggleUserMenu(user.User_ID)" class="p-2 text-slate-300 hover:text-indigo-600 transition-colors cursor-pointer pointer-events-auto">
+            <button @click.stop="toggleUserMenu(user.User_ID)" class="p-2 text-slate-300 hover:text-primary-600 transition-colors cursor-pointer pointer-events-auto">
               <MoreHorizontalIcon class="w-5 h-5" />
             </button>
             <!-- Dropdown Menu -->
@@ -143,8 +143,8 @@
         <div class="bg-white rounded-[3.5rem] p-12 max-w-xl w-full shadow-2xl relative z-10 animate-in zoom-in duration-300">
            <div class="flex justify-between items-start mb-10">
              <div class="space-y-1">
-               <h2 class="text-3xl font-black text-slate-900 tracking-tight">Provision Access</h2>
-               <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Add a new member to your workspace</p>
+               <h2 class="text-3xl font-black text-slate-900 tracking-tight">Invite Member</h2>
+               <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Send invitation email to new team member</p>
              </div>
              <button @click="showCreateModal = false" class="p-2 hover:bg-slate-50 rounded-xl transition-colors">
                <XIcon class="w-6 h-6 text-slate-400" />
@@ -173,27 +173,27 @@
           <!-- Tabs -->
           <div class="mb-6 flex border-b border-slate-200">
             <button @click="profileTab = 'view'"
-                    :class="profileTab === 'view' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-600'"
+                    :class="profileTab === 'view' ? 'border-b-2 border-primary-600 text-primary-600' : 'text-slate-600'"
                     class="px-4 py-2 font-medium text-sm">
               Profile
             </button>
             <button @click="profileTab = 'avatar'"
-                    :class="profileTab === 'avatar' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-600'"
+                    :class="profileTab === 'avatar' ? 'border-b-2 border-primary-600 text-primary-600' : 'text-slate-600'"
                     class="px-4 py-2 font-medium text-sm">
               Avatar
             </button>
             <button @click="profileTab = 'edit'"
-                    :class="profileTab === 'edit' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-600'"
+                    :class="profileTab === 'edit' ? 'border-b-2 border-primary-600 text-primary-600' : 'text-slate-600'"
                     class="px-4 py-2 font-medium text-sm">
               Edit Profile
             </button>
             <button @click="profileTab = 'password'"
-                    :class="profileTab === 'password' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-600'"
+                    :class="profileTab === 'password' ? 'border-b-2 border-primary-600 text-primary-600' : 'text-slate-600'"
                     class="px-4 py-2 font-medium text-sm">
               Change Password
             </button>
             <button @click="openShiftTab"
-                    :class="profileTab === 'shift' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-600'"
+                    :class="profileTab === 'shift' ? 'border-b-2 border-primary-600 text-primary-600' : 'text-slate-600'"
                     class="px-4 py-2 font-medium text-sm">
               Manage Shift
             </button>
@@ -245,7 +245,7 @@
 
             <!-- Preview Mode -->
             <div v-if="!avatarPreview" class="space-y-4">
-              <div class="bg-slate-50 p-8 rounded-xl border-2 border-dashed border-slate-300 text-center cursor-pointer hover:border-indigo-600 hover:bg-indigo-50 transition"
+              <div class="bg-slate-50 p-8 rounded-xl border-2 border-dashed border-slate-300 text-center cursor-pointer hover:border-primary-600 hover:bg-primary-50 transition"
                    @click="$refs.avatarInput.click()">
                 <svg class="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -301,7 +301,7 @@
               <div class="w-full h-32 bg-gradient-to-br from-slate-100 to-slate-50 rounded-xl border-2 border-slate-200 overflow-hidden flex items-center justify-center">
                 <div class="text-center">
                   <p class="text-xs font-bold text-slate-600 mb-2">Preview (256x256)</p>
-                  <div id="previewBox" class="w-24 h-24 bg-white rounded-lg shadow-md border-2 border-indigo-300 overflow-hidden"></div>
+                  <div id="previewBox" class="w-24 h-24 bg-white rounded-lg shadow-md border-2 border-primary-300 overflow-hidden"></div>
                 </div>
               </div>
 
@@ -315,7 +315,7 @@
                 <button @click="cancelAvatarUpload" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition">
                   Cancel
                 </button>
-                <button @click="saveAvatarUpload" :disabled="loading" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition disabled:opacity-50">
+                <button @click="saveAvatarUpload" :disabled="loading" class="flex-1 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition disabled:opacity-50">
                   {{ loading ? 'Saving...' : 'Save Avatar' }}
                 </button>
               </div>
@@ -334,26 +334,26 @@
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">First Name</label>
-                <input v-model="editFormData.firstName" type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <input v-model="editFormData.firstName" type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
               </div>
               <div>
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Last Name</label>
-                <input v-model="editFormData.surName" type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <input v-model="editFormData.surName" type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
               </div>
             </div>
             <div>
               <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Email</label>
-              <input v-model="editFormData.email" type="email" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" />
+              <input v-model="editFormData.email" type="email" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
             </div>
             <div>
               <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Job Title</label>
-              <input v-model="editFormData.jobTitle" type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" />
+              <input v-model="editFormData.jobTitle" type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
             </div>
             <div class="flex gap-3 pt-4">
               <button type="button" @click="profileTab = 'view'" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition">
                 Cancel
               </button>
-              <button type="submit" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition">
+              <button type="submit" class="flex-1 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition">
                 Save Changes
               </button>
             </div>
@@ -366,11 +366,11 @@
             </div>
             <div>
               <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">New Password</label>
-              <input v-model="passwordData.newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" />
+              <input v-model="passwordData.newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
             </div>
             <div>
               <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Confirm Password</label>
-              <input v-model="passwordData.confirmPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" />
+              <input v-model="passwordData.confirmPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
             </div>
             <div v-if="passwordError" class="bg-red-50 p-3 rounded-xl border border-red-200">
               <p class="text-sm text-red-700 font-bold">{{ passwordError }}</p>
@@ -388,8 +388,8 @@
           <!-- Manage Shift Tab -->
           <div v-if="profileTab === 'shift'" class="space-y-6">
             <!-- Current Shift Display -->
-            <div v-if="userShift" class="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-xl border border-indigo-200 space-y-4">
-              <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-2">✅ Schedule Assigned</p>
+            <div v-if="userShift" class="bg-gradient-to-br from-primary-50 to-blue-50 p-6 rounded-xl border border-primary-200 space-y-4">
+              <p class="text-xs font-bold text-primary-600 uppercase tracking-widest mb-2">✅ Schedule Assigned</p>
               <div class="space-y-3">
                 <div class="flex justify-between items-center p-3 bg-white rounded-lg">
                   <span class="text-sm font-medium text-slate-600">Shift Date:</span>
@@ -397,11 +397,11 @@
                 </div>
                 <div class="flex justify-between items-center p-3 bg-white rounded-lg">
                   <span class="text-sm font-medium text-slate-600">Start Time:</span>
-                  <span class="text-sm font-black text-indigo-600">{{ userShift.Shift_Start_Time }}</span>
+                  <span class="text-sm font-black text-primary-600">{{ userShift.Shift_Start_Time }}</span>
                 </div>
                 <div class="flex justify-between items-center p-3 bg-white rounded-lg">
                   <span class="text-sm font-medium text-slate-600">End Time:</span>
-                  <span class="text-sm font-black text-indigo-600">{{ userShift.Shift_End_Time }}</span>
+                  <span class="text-sm font-black text-primary-600">{{ userShift.Shift_End_Time }}</span>
                 </div>
               </div>
             </div>
@@ -419,17 +419,17 @@
                 
                 <div>
                   <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Shift Date</label>
-                  <input v-model="shiftForm.shiftDate" type="date" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" required />
+                  <input v-model="shiftForm.shiftDate" type="date" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" required />
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Start Time</label>
-                    <input v-model="shiftForm.shiftStartTime" type="time" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" required />
+                    <input v-model="shiftForm.shiftStartTime" type="time" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" required />
                   </div>
                   <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">End Time</label>
-                    <input v-model="shiftForm.shiftEndTime" type="time" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" required />
+                    <input v-model="shiftForm.shiftEndTime" type="time" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" required />
                   </div>
                 </div>
 
@@ -441,7 +441,7 @@
                   <button type="button" @click="profileTab = 'view'" class="flex-1 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition">
                     Cancel
                   </button>
-                  <button type="submit" :disabled="shiftLoading" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition disabled:opacity-50">
+                  <button type="submit" :disabled="shiftLoading" class="flex-1 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition disabled:opacity-50">
                     {{ shiftLoading ? 'Saving...' : 'Save Changes' }}
                   </button>
                 </div>

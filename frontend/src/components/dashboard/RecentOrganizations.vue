@@ -31,7 +31,11 @@
             <!-- Organization Name -->
             <td class="px-10 py-6">
               <div class="flex items-center space-x-4">
-                <div class="w-10 h-10 bg-[#1B8B3C] text-white rounded-lg flex items-center justify-center font-black text-sm shadow-sm">
+                <!-- Logo Display with Fallback -->
+                <div v-if="org.Logo_Path" class="w-14 h-14 rounded-lg overflow-hidden border-2 border-slate-200 bg-white shadow-md flex-shrink-0">
+                  <img :src="formatLogoPath(org.Logo_Path)" :alt="org.Org_Name" class="w-full h-full object-cover" @error="handleImageError" />
+                </div>
+                <div v-else class="w-14 h-14 bg-[#1B8B3C] text-white rounded-lg flex items-center justify-center font-black text-lg shadow-md flex-shrink-0">
                   {{ org.Org_Name[0] }}
                 </div>
                 <div>
@@ -84,5 +88,26 @@ const props = defineProps({
 const formatDate = (dateStr) => {
   if (!dateStr) return 'Pending'
   return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
+// Format logo path for display
+const formatLogoPath = (logoPath) => {
+  if (!logoPath) return null
+  // If it's already a data URL, return as is
+  if (logoPath.startsWith('data:')) {
+    return logoPath
+  }
+  // If it's base64 without data: prefix, add it
+  if (!logoPath.startsWith('http')) {
+    return `data:image/png;base64,${logoPath}`
+  }
+  // Otherwise return as is (it's a URL)
+  return logoPath
+}
+
+// Handle image load errors
+const handleImageError = (event) => {
+  console.error('Failed to load logo image')
+  event.target.style.display = 'none'
 }
 </script>

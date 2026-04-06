@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-primary-100 selection:text-primary-700">
     
     <!-- 1. DYNAMIC NAVIGATION SIDEBAR (Master Consistency) -->
     <aside 
@@ -7,12 +7,12 @@
     >
       <div class="p-6 border-b border-slate-800 flex items-center justify-between h-24">
         <div v-if="sidebarOpen" class="flex items-center space-x-3 animate-in fade-in slide-in-from-left-4">
-          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
             <ZapIcon class="w-6 h-6 text-white fill-white" />
           </div>
           <div class="flex flex-col">
             <span class="text-xl font-black tracking-tighter uppercase leading-none italic">TrackTimi</span>
-            <span class="text-[8px] font-black text-indigo-400 uppercase tracking-[0.4em] mt-1">Billing Node</span>
+            <span class="text-[8px] font-black text-primary-400 uppercase tracking-[0.4em] mt-1">Billing Node</span>
           </div>
         </div>
         <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all active:scale-90">
@@ -26,7 +26,7 @@
         
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
           class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
-          :class="[$route.path === item.path ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
+          :class="[$route.path === item.path ? 'bg-primary-600 text-white shadow-xl shadow-primary-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']">
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -54,13 +54,13 @@
         <div class="flex flex-col">
           <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center italic uppercase">
             Subscription Matrix
-            <span class="ml-3 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100">Live Tiering</span>
+            <span class="ml-3 px-3 py-1 bg-primary-50 text-primary-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-primary-100">Live Tiering</span>
           </h1>
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Tenant Plan Distribution & Quota Enforcement</p>
         </div>
 
         <div class="flex items-center space-x-4">
-          <button @click="loadSubscriptionData" :disabled="loading" class="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all active:scale-90 shadow-sm border border-slate-100">
+          <button @click="loadSubscriptionData" :disabled="loading" class="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-all active:scale-90 shadow-sm border border-slate-100">
              <RefreshCwIcon :class="{'animate-spin': loading}" class="w-5 h-5" />
           </button>
         </div>
@@ -86,7 +86,7 @@
             <div class="relative z-10">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Active Subscriptions</p>
               <h3 class="text-5xl font-black text-slate-900 tracking-tighter mt-1">{{ count }}</h3>
-              <p class="text-[9px] font-black text-indigo-500 uppercase mt-4">Calculated from global registry</p>
+              <p class="text-[9px] font-black text-primary-500 uppercase mt-4">Calculated from global registry</p>
             </div>
             <div class="absolute -right-4 -bottom-4 opacity-[0.03]">
                <CreditCardIcon class="w-32 h-32 text-slate-900" />
@@ -98,17 +98,17 @@
         <div class="space-y-8">
           <div class="flex items-center justify-between">
              <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center">
-                <LayoutGridIcon class="w-4 h-4 mr-2 text-indigo-600" /> System Plan Definitions
+                <LayoutGridIcon class="w-4 h-4 mr-2 text-primary-600" /> System Plan Definitions
              </h3>
              <span class="text-[10px] font-bold text-slate-400 uppercase">3 Defined Protocols</span>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
              <div v-for="plan in platformPlans" :key="plan.id" 
-                  class="bg-white p-10 rounded-[3.5rem] border-2 border-slate-50 hover:border-indigo-100 transition-all group">
+                  class="bg-white p-10 rounded-[3.5rem] border-2 border-slate-50 hover:border-primary-100 transition-all group">
                 <div class="flex justify-between items-center mb-8">
                    <h4 class="text-2xl font-black text-slate-900 tracking-tighter">{{ plan.name }}</h4>
-                   <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-tighter">
+                   <span class="text-[10px] font-black text-primary-600 bg-primary-50 px-3 py-1 rounded-full uppercase tracking-tighter">
                      {{ plan.price }}
                    </span>
                 </div>
@@ -121,7 +121,7 @@
                 </div>
 
                 <div class="pt-8 border-t border-slate-50 flex items-center justify-between">
-                   <button @click="viewPlanDetail(plan)" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all">
+                   <button @click="viewPlanDetail(plan)" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-600 transition-all">
                       Configure Tier
                    </button>
                    <div class="text-right">
@@ -157,7 +157,7 @@
                 <tr v-for="org in organizations" :key="org.Org_ID" class="group hover:bg-slate-50 transition-all duration-300">
                   <td class="px-10 py-8">
                     <div class="flex items-center space-x-4">
-                      <div class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-indigo-400 shadow-xl group-hover:rotate-6 transition-transform">
+                      <div class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-primary-400 shadow-xl group-hover:rotate-6 transition-transform">
                         {{ org.Org_Name[0] }}
                       </div>
                       <div>
@@ -181,7 +181,7 @@
                     </div>
                   </td>
                   <td class="px-10 py-8 text-right">
-                    <button @click="openTenantDetail(org.Org_ID)" class="px-6 py-3 bg-slate-100 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">
+                    <button @click="openTenantDetail(org.Org_ID)" class="px-6 py-3 bg-slate-100 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary-600 hover:text-white transition-all">
                       Modify Tier
                     </button>
                   </td>
@@ -200,7 +200,7 @@
     <!-- Global Loading Overlay -->
     <div v-if="loading" class="fixed inset-0 z-[100] bg-slate-900/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
        <div class="bg-slate-950 p-6 rounded-3xl shadow-3xl flex items-center space-x-4 text-white border border-white/10 animate-in zoom-in">
-          <RefreshCwIcon class="w-5 h-5 animate-spin text-indigo-400" />
+          <RefreshCwIcon class="w-5 h-5 animate-spin text-primary-400" />
           <span class="text-[10px] font-black uppercase tracking-[0.4em]">Processing Billing Registry</span>
        </div>
     </div>
@@ -276,14 +276,14 @@ const loadSubscriptionData = async () => {
 
 const getPlanColor = (plan) => {
   if (plan === 'enterprise') return 'bg-slate-900'
-  if (plan === 'pro') return 'bg-indigo-600'
+  if (plan === 'pro') return 'bg-primary-600'
   return 'bg-slate-400'
 }
 
 const getPlanBadgeStyle = (plan) => {
   const p = (plan || '').toLowerCase()
   if (p.includes('enterprise')) return 'bg-purple-50 text-purple-600 border-purple-100'
-  if (p.includes('pro')) return 'bg-indigo-50 text-indigo-600 border-indigo-100'
+  if (p.includes('pro')) return 'bg-primary-50 text-primary-600 border-primary-100'
   return 'bg-slate-50 text-slate-500 border-slate-100'
 }
 

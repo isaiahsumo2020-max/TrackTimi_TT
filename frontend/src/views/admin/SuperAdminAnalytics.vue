@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-indigo-100 selection:text-indigo-700">
+  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden selection:bg-primary-100 selection:text-primary-700">
     
     <!-- 1. PREMIUM SIDEBAR NAVIGATION -->
     <aside 
@@ -7,12 +7,12 @@
     >
       <div class="p-6 border-b border-slate-800 flex items-center justify-between h-24">
         <div v-if="sidebarOpen" class="flex items-center space-x-3 animate-in fade-in slide-in-from-left-4">
-          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
             <ZapIcon class="w-6 h-6 text-white fill-white" />
           </div>
           <div class="flex flex-col">
             <span class="text-xl font-black tracking-tighter uppercase leading-none italic">TrackTimi</span>
-            <span class="text-[8px] font-black text-indigo-400 uppercase tracking-[0.4em] mt-1">Analytics Node</span>
+            <span class="text-[8px] font-black text-primary-400 uppercase tracking-[0.4em] mt-1">Analytics Node</span>
           </div>
         </div>
         <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all">
@@ -26,7 +26,7 @@
         
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
           class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
-          :class="[$route.path === item.path ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
+          :class="[$route.path === item.path ? 'bg-primary-600 text-white shadow-xl shadow-primary-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']">
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -54,17 +54,17 @@
         <div class="flex flex-col">
           <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center italic">
             Intelligence Matrix
-            <span class="ml-3 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100">Live Telemetry</span>
+            <span class="ml-3 px-3 py-1 bg-primary-50 text-primary-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-primary-100">Live Telemetry</span>
           </h1>
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Cross-tenant trend analysis & behavior modeling</p>
         </div>
 
         <div class="flex items-center space-x-4">
           <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-             <button @click="loadAnalyticsData" :disabled="loading" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-indigo-600 active:scale-90">
+             <button @click="loadAnalyticsData" :disabled="loading" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-primary-600 active:scale-90">
                <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
              </button>
-             <button @click="exportAnalyticsReport" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-indigo-600 active:scale-90">
+             <button @click="exportAnalyticsReport" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-primary-600 active:scale-90">
                <FileDownIcon class="w-4 h-4" />
              </button>
           </div>
@@ -111,11 +111,11 @@
             <div class="relative z-10 flex flex-col h-full">
               <div class="flex justify-between items-center mb-12">
                 <div>
-                   <h3 class="text-sm font-black uppercase tracking-[0.2em] text-indigo-400">Usage Volatility</h3>
+                   <h3 class="text-sm font-black uppercase tracking-[0.2em] text-primary-400">Usage Volatility</h3>
                    <p class="text-[10px] font-bold opacity-40 mt-1 uppercase">Aggregated attendance pulses (30-Day Window)</p>
                 </div>
                 <div class="flex bg-white/5 p-1 rounded-xl">
-                   <button class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase bg-indigo-600">Daily</button>
+                   <button class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase bg-primary-600">Daily</button>
                    <button class="px-4 py-1.5 rounded-lg text-[9px] font-black uppercase hover:bg-white/5 transition-colors">Hourly</button>
                 </div>
               </div>
@@ -123,7 +123,7 @@
               <!-- Advanced Bar Chart with Overlays -->
               <div class="flex-1 flex items-end justify-between gap-3 pb-6 px-4 border-b border-white/5">
                 <div v-for="(day, idx) in trendData" :key="idx" class="flex-1 flex flex-col items-center group cursor-pointer">
-                  <div class="w-full bg-indigo-500/10 rounded-t-xl relative group-hover:bg-indigo-500 transition-all duration-700 min-h-[12px]" 
+                  <div class="w-full bg-primary-500/10 rounded-t-xl relative group-hover:bg-primary-500 transition-all duration-700 min-h-[12px]" 
                     :style="{ height: day.height + '%' }">
                     <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-950 px-3 py-1.5 rounded-xl text-[10px] font-black opacity-0 group-hover:opacity-100 transition-all shadow-2xl">
                       {{ day.value }}%
@@ -151,13 +151,13 @@
                  </div>
               </div>
             </div>
-            <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[150px] rounded-full -mr-48 -mt-48 animate-pulse"></div>
+            <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-600/10 blur-[150px] rounded-full -mr-48 -mt-48 animate-pulse"></div>
           </div>
 
           <!-- RETENTION HEATMAP -->
           <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm flex flex-col">
             <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-10 flex items-center">
-              <HistoryIcon class="w-4 h-4 mr-2 text-indigo-500" /> Tenant Stickiness
+              <HistoryIcon class="w-4 h-4 mr-2 text-primary-500" /> Tenant Stickiness
             </h3>
             
             <div class="flex-1 space-y-10">
@@ -167,14 +167,14 @@
                     <span class="text-xs font-black text-slate-900">{{ r.value }}%</span>
                   </div>
                   <div class="h-4 w-full bg-slate-50 rounded-lg overflow-hidden flex">
-                    <div class="h-full bg-indigo-600 transition-all duration-1000 shadow-[0_0_15px_rgba(79,70,229,0.4)]" :style="{ width: r.value + '%' }"></div>
+                    <div class="h-full bg-primary-600 transition-all duration-1000 shadow-[0_0_15px_rgba(79,70,229,0.4)]" :style="{ width: r.value + '%' }"></div>
                   </div>
                   <p class="text-[9px] font-bold text-slate-400 uppercase">{{ r.desc }}</p>
                </div>
             </div>
 
             <div class="mt-12 p-6 bg-slate-950 rounded-[2.5rem] text-white">
-               <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Health Indicator</p>
+               <p class="text-[9px] font-black text-primary-400 uppercase tracking-widest mb-1">Health Indicator</p>
                <p class="text-xs font-bold leading-relaxed">Platform stickiness is <span class="text-green-400">Optimal</span>. Tenants show high recurring check-in activity.</p>
             </div>
           </div>
@@ -189,7 +189,7 @@
               <div class="space-y-6">
                  <div v-for="loc in hotspots" :key="loc.name" class="flex items-center justify-between group cursor-pointer p-2 rounded-2xl hover:bg-slate-50 transition-all">
                     <div class="flex items-center space-x-4">
-                       <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                       <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center group-hover:bg-primary-600 group-hover:text-white transition-colors">
                           <MapPinIcon class="w-4 h-4" />
                        </div>
                        <div>
@@ -225,7 +225,7 @@
                        </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50">
-                       <tr v-for="org in organizations" :key="org.id" class="group hover:bg-indigo-50/30 transition-all duration-300">
+                       <tr v-for="org in organizations" :key="org.id" class="group hover:bg-primary-50/30 transition-all duration-300">
                           <td class="px-10 py-6">
                              <p class="text-xs font-black text-slate-900">{{ org.name }}</p>
                              <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{{ org.domain }}</p>
@@ -240,7 +240,7 @@
                              <p class="text-xs font-black text-slate-900">{{ org.users }}</p>
                           </td>
                           <td class="px-10 py-6 text-right">
-                             <div class="inline-flex items-center px-4 py-1.5 bg-indigo-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest">
+                             <div class="inline-flex items-center px-4 py-1.5 bg-primary-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest">
                                 {{ org.score }}
                              </div>
                           </td>
@@ -257,7 +257,7 @@
     <!-- Global Loading Overlay -->
     <div v-if="loading" class="fixed inset-0 z-[100] bg-slate-900/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
        <div class="bg-slate-950 p-6 rounded-3xl shadow-3xl flex items-center space-x-4 text-white border border-white/10 animate-in zoom-in duration-300">
-          <RefreshCwIcon class="w-5 h-5 animate-spin text-indigo-400" />
+          <RefreshCwIcon class="w-5 h-5 animate-spin text-primary-400" />
           <span class="text-[10px] font-black uppercase tracking-[0.4em]">Processing Data Matrix</span>
        </div>
     </div>
@@ -295,7 +295,7 @@ const analyticMetrics = computed(() => [
   { label: 'Platform DAU', value: metrics.value.todayCheckins, trend: '↑ 14.2%', trendColor: 'text-green-500', sparkColor: '#6366f1' },
   { label: 'Active Tenants', value: metrics.value.totalOrgs, trend: '↑ 2.4%', trendColor: 'text-green-500', sparkColor: '#10b981' },
   { label: 'Infrastructure Nodes', value: '14/14', trend: 'STABLE', trendColor: 'text-slate-400', sparkColor: '#94a3b8' },
-  { label: 'Verify Accuracy', value: '99.9%', trend: 'OPTIMAL', trendColor: 'text-indigo-500', sparkColor: '#4f46e5' },
+  { label: 'Verify Accuracy', value: '99.9%', trend: 'OPTIMAL', trendColor: 'text-primary-500', sparkColor: '#4f46e5' },
 ])
 
 const trendData = ref([
@@ -326,7 +326,7 @@ const organizations = ref([])
 const systemPulsers = [
   { name: 'API Latency', value: '24ms', statusColor: 'bg-green-500' },
   { name: 'DB I/O Ops', value: 'Nominal', statusColor: 'bg-green-500' },
-  { name: 'Cache Hit', value: '94%', statusColor: 'bg-indigo-400' }
+  { name: 'Cache Hit', value: '94%', statusColor: 'bg-primary-400' }
 ]
 
 const navItems = [

@@ -99,7 +99,7 @@
             <div class="space-y-3">
               <div v-for="(shift, idx) in shifts.slice(0, 5)" :key="shift.Shift_ID" class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                 <p class="text-xs font-bold text-slate-900">{{ shift.Shift_Name }}</p>
-                <span class="text-xs font-black text-indigo-600">{{ shift.assigned_users }} users</span>
+                <span class="text-xs font-black text-primary-600">{{ shift.assigned_users }} users</span>
               </div>
             </div>
           </div>

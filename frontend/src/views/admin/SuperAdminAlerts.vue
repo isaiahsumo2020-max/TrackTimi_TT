@@ -1,13 +1,13 @@
 <template>
-  <div class="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden">
+  <div class="flex h-screen bg-slate-50 font-sans overflow-hidden">
     <!-- Sidebar -->
-    <aside :class="[sidebarOpen ? 'w-72' : 'w-20', 'bg-slate-950 text-white shadow-2xl transition-all duration-500 flex flex-col z-20']">
+    <aside :class="[sidebarOpen ? 'w-72' : 'w-20', 'bg-slate-950 text-white shadow-lg transition-all duration-500 flex flex-col z-20']">
       <div class="p-6 border-b border-slate-800 flex items-center justify-between">
         <div v-if="sidebarOpen" class="flex items-center space-x-3">
-          <ZapIcon class="w-6 h-6" style="color: #F2D479;" />
-          <span class="text-xl font-black uppercase" style="color: #000000;">TrackTimi</span>
+          <ZapIcon class="w-6 h-6" style="color: #f97316;" />
+          <span class="text-xl font-black uppercase" style="color: #ffffff;">TrackTimi</span>
         </div>
-        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-xl bg-slate-900">
+        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-lg bg-slate-900">
           <MenuIcon v-if="!sidebarOpen" class="w-5 h-5" />
           <ChevronLeftIcon v-else class="w-5 h-5" />
         </button>
@@ -15,9 +15,9 @@
 
       <nav class="flex-1 py-8 px-4 space-y-2">
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase transition-all"
-          :class="[$route.path === item.path ? 'text-white shadow-xl' : 'text-slate-400 hover:bg-slate-900']"
-          :style="$route.path === item.path ? { backgroundColor: '#D97A2B' } : {}"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase transition-all"
+          :class="[$route.path === item.path ? 'text-white shadow-md' : 'text-slate-400 hover:bg-slate-900']"
+          :style="$route.path === item.path ? { backgroundColor: '#ea580c' } : {}"
         >
           <component :is="item.icon" class="w-5 h-5" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -25,7 +25,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <button @click="handleLogout" class="w-full p-3 rounded-xl text-xs font-bold uppercase text-white" style="background-color: #D97A2B;">
+        <button @click="handleLogout" class="w-full p-3 rounded-lg text-xs font-bold uppercase text-white" style="background-color: #ea580c;">
           Logout
         </button>
       </div>
@@ -34,8 +34,8 @@
     <!-- Main Content -->
     <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
       <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-10 sticky top-0 z-10">
-        <h1 class="text-xl font-black uppercase" style="color: #000000;">System Notifications</h1>
-        <button @click="loadAlerts" class="p-3 bg-slate-50 rounded-xl hover:bg-slate-100" style="color: #D97A2B;">
+        <h1 class="text-xl font-black uppercase" style="color: #ffffff;">System Notifications</h1>
+        <button @click="loadAlerts" class="p-3 bg-slate-50 rounded-lg hover:bg-slate-100" style="color: #ea580c;">
           <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
         </button>
       </header>
@@ -43,26 +43,26 @@
       <div class="flex-1 overflow-y-auto p-10 space-y-8">
         <!-- Alert Summary -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div class="rounded-2xl p-6" style="background-color: #FFE5E5; border: 1px solid #D97A2B;">
-            <p class="text-[10px] font-black uppercase" style="color: #D97A2B;">Critical</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #D97A2B;">{{ criticalCount }}</h3>
+          <div class="rounded-lg p-6" style="background-color: #fee2e2; border: 1px solid #ea580c;">
+            <p class="text-[10px] font-black uppercase" style="color: #ea580c;">Critical</p>
+            <h3 class="text-3xl font-black mt-2" style="color: #ea580c;">{{ criticalCount }}</h3>
           </div>
-          <div class="rounded-2xl p-6" style="background-color: #FFFAED; border: 1px solid #F2D479;">
-            <p class="text-[10px] font-black uppercase" style="color: #F2D479;">Warnings</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #D97A2B;">{{ warningCount }}</h3>
+          <div class="rounded-lg p-6" style="background-color: #fffbeb; border: 1px solid #f59e0b;">
+            <p class="text-[10px] font-black uppercase" style="color: #f59e0b;">Warnings</p>
+            <h3 class="text-3xl font-black mt-2" style="color: #ea580c;">{{ warningCount }}</h3>
           </div>
-          <div class="rounded-2xl p-6" style="background-color: #F0F9FF; border: 1px solid #D97A2B;">
-            <p class="text-[10px] font-black uppercase" style="color: #D97A2B;">Info</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #D97A2B;">{{ infoCount }}</h3>
+          <div class="rounded-lg p-6" style="background-color: #cffafe; border: 1px solid #0ea5e9;">
+            <p class="text-[10px] font-black uppercase" style="color: #0ea5e9;">Info</p>
+            <h3 class="text-3xl font-black mt-2" style="color: #0ea5e9;">{{ infoCount }}</h3>
           </div>
-          <div class="rounded-2xl p-6" style="background-color: #F0FDF4; border: 1px solid #6FAF4F;">
-            <p class="text-[10px] font-black uppercase" style="color: #6FAF4F;">Resolved</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #6FAF4F;">{{ resolvedCount }}</h3>
+          <div class="rounded-lg p-6" style="background-color: #dcfce7; border: 1px solid #22c55e;">
+            <p class="text-[10px] font-black uppercase" style="color: #22c55e;">Resolved</p>
+            <h3 class="text-3xl font-black mt-2" style="color: #22c55e;">{{ resolvedCount }}</h3>
           </div>
         </div>
 
         <!-- Active Alerts -->
-        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="bg-white rounded-lg border border-slate-100 overflow-hidden">
           <div class="p-8 border-b border-slate-100">
             <h2 class="text-sm font-black uppercase" style="color: #000000;">Active Notifications</h2>
           </div>
@@ -100,7 +100,7 @@
         </div>
 
         <!-- Alert Settings -->
-        <div class="bg-white rounded-2xl border border-slate-100 p-8">
+        <div class="bg-white rounded-lg border border-slate-100 p-8\">
           <h2 class="text-sm font-black text-slate-900 uppercase mb-6">Alert Preferences</h2>
           
           <div class="space-y-4">
