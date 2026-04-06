@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const db = require('../config/db');
 const { generateUniqueEmployeeId } = require('../utils/employeeId');
 const { sendVerificationEmail, sendResendVerificationEmail, sendInvitationEmail } = require('../utils/emailService');
+const NotificationBroadcaster = require('../utils/notificationBroadcaster');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tracktimi_secret_2026';
 
@@ -388,9 +389,22 @@ exports.activateInvitation = async (req, res) => {
             WHERE u.User_ID = ?
           `;
 
-          db.get(sql, [userId], (err, user) => {
+          db.get(sql, [userId], async (err, user) => {
             if (err) {
               return res.status(500).json({ error: 'Failed to retrieve user' });
+            }
+
+            // Send notification to admins about new user
+            try {
+              await NotificationBroadcaster.onInvitationAccepted({
+                userId: user.User_ID,
+                firstName: user.First_Name,
+                lastName: user.SurName,
+                email: user.Email,
+                orgId: user.Org_ID
+              });
+            } catch (notifErr) {
+              console.error('Failed to send notification:', notifErr);
             }
 
             // Generate JWT

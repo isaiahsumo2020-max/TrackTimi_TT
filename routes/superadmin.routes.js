@@ -1534,7 +1534,13 @@ router.get('/alerts', (req, res) => {
       (SELECT COUNT(*) FROM Attendance WHERE DATE(Check_in_time) = DATE('now', 'localtime')) as todayCheckins`,
     [],
     (err, systemStats) => {
-      const stats = systemStats[0] || {};
+      if (err) {
+        console.error('Error fetching system stats:', err);
+        checkAllComplete();
+        return;
+      }
+      
+      const stats = (systemStats && systemStats[0]) || {};
       
       // Generate system health alert if needed
       if ((stats.activeOrgs || 0) === 0) {
@@ -2023,6 +2029,373 @@ router.delete('/notifications/:notifyId', (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
+});
+
+// =============================================================
+// 16. FEEDBACK MANAGEMENT (SuperAdmin feedback oversight)
+// =============================================================
+
+// GET: Fetch all feedback from database (SuperAdmin view)
+router.get('/feedback', (req, res) => {
+  const { orgId, status, category, limit = 50, offset = 0 } = req.query;
+
+  let sql = `
+    SELECT 
+      f.Feedback_ID,
+      f.User_ID,
+      f.Org_ID,
+      f.Title,
+      f.Message,
+      f.Category,
+      f.Rating,
+      f.Status,
+      f.Response,
+      f.Responded_By,
+      f.Responded_at,
+      f.Created_at,
+      u.First_Name,
+      u.SurName,
+      u.Email,
+      o.Org_Name
+    FROM Feedback f
+    LEFT JOIN User u ON f.User_ID = u.User_ID
+    LEFT JOIN Organization o ON f.Org_ID = o.Org_ID
+    WHERE 1=1
+  `;
+
+  const params = [];
+
+  // Optional filters
+  if (orgId) {
+    sql += ` AND f.Org_ID = ?`;
+    params.push(orgId);
+  }
+
+  if (status) {
+    sql += ` AND f.Status = ?`;
+    params.push(status);
+  }
+
+  if (category) {
+    sql += ` AND f.Category = ?`;
+    params.push(category);
+  }
+
+  sql += ` ORDER BY f.Created_at DESC LIMIT ? OFFSET ?`;
+  params.push(parseInt(limit), parseInt(offset));
+
+  db.all(sql, params, (err, feedback) => {
+    if (err) {
+      console.error('❌ Error fetching feedback:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch feedback: ' + err.message });
+    }
+
+    // Get total count for pagination
+    let countSql = `SELECT COUNT(*) as total FROM Feedback f WHERE 1=1`;
+    let countParams = [];
+
+    if (orgId) {
+      countSql += ` AND f.Org_ID = ?`;
+      countParams.push(orgId);
+    }
+    if (status) {
+      countSql += ` AND f.Status = ?`;
+      countParams.push(status);
+    }
+    if (category) {
+      countSql += ` AND f.Category = ?`;
+      countParams.push(category);
+    }
+
+    db.get(countSql, countParams, (err2, countRow) => {
+      if (err2) {
+        console.error('❌ Error counting feedback:', err2.message);
+        return res.status(500).json({ error: 'Failed to count feedback' });
+      }
+
+      console.log(`✅ Fetched ${feedback?.length || 0} feedback items`);
+
+      res.json({
+        success: true,
+        feedback: feedback || [],
+        pagination: {
+          total: countRow?.total || 0,
+          limit: parseInt(limit),
+          offset: parseInt(offset),
+          page: Math.floor(parseInt(offset) / parseInt(limit)) + 1
+        }
+      });
+    });
+  });
+});
+
+// GET: Get feedback by ID (single feedback detail)
+router.get('/feedback/:feedbackId', (req, res) => {
+  const { feedbackId } = req.params;
+
+  const sql = `
+    SELECT 
+      f.Feedback_ID,
+      f.User_ID,
+      f.Org_ID,
+      f.Title,
+      f.Message,
+      f.Category,
+      f.Rating,
+      f.Status,
+      f.Response,
+      f.Responded_By,
+      f.Responded_at,
+      f.Created_at,
+      u.First_Name,
+      u.SurName,
+      u.Email,
+      u.Phone_Num,
+      o.Org_Name,
+      o.Org_Domain
+    FROM Feedback f
+    LEFT JOIN User u ON f.User_ID = u.User_ID
+    LEFT JOIN Organization o ON f.Org_ID = o.Org_ID
+    WHERE f.Feedback_ID = ?
+  `;
+
+  db.get(sql, [feedbackId], (err, feedback) => {
+    if (err) {
+      console.error('❌ Error fetching feedback detail:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch feedback' });
+    }
+
+    if (!feedback) {
+      return res.status(404).json({ error: 'Feedback not found' });
+    }
+
+    console.log(`✅ Fetched feedback ${feedbackId}`);
+
+    res.json({
+      success: true,
+      feedback
+    });
+  });
+});
+
+// POST: Respond to feedback
+router.post('/feedback/:feedbackId/respond', (req, res) => {
+  const { feedbackId } = req.params;
+  const { response } = req.body;
+
+  if (!response || response.trim().length === 0) {
+    return res.status(400).json({ error: 'Response message is required' });
+  }
+
+  const superAdminId = req.superAdmin?.id || req.superAdmin?.userId || 1;
+  const respondedBy = `SuperAdmin (${superAdminId})`;
+
+  const sql = `
+    UPDATE Feedback
+    SET Response = ?,
+        Responded_By = ?,
+        Responded_at = datetime('now', 'localtime'),
+        Status = 'responded'
+    WHERE Feedback_ID = ?
+  `;
+
+  db.run(sql, [response, respondedBy, feedbackId], function(err) {
+    if (err) {
+      console.error('❌ Error responding to feedback:', err.message);
+      return res.status(500).json({ error: 'Failed to respond to feedback' });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Feedback not found' });
+    }
+
+    // Log the action
+    db.run(
+      `INSERT INTO Audit_Log (Action, Table_Name, Record_ID, New_Data) VALUES (?, ?, ?, ?)`,
+      ['FEEDBACK_RESPONDED', 'Feedback', feedbackId, JSON.stringify({ response, respondedBy })],
+      (logErr) => {
+        if (logErr) console.error('⚠️ Failed to log feedback response:', logErr);
+      }
+    );
+
+    console.log(`✅ Responded to feedback ${feedbackId}`);
+
+    res.json({
+      success: true,
+      message: 'Response sent successfully',
+      feedback_id: feedbackId,
+      status: 'responded'
+    });
+  });
+});
+
+// PUT: Update feedback status (open, responded, closed)
+router.put('/feedback/:feedbackId/status', (req, res) => {
+  const { feedbackId } = req.params;
+  const { status } = req.body;
+
+  const validStatuses = ['open', 'responded', 'closed'];
+  if (!status || !validStatuses.includes(status)) {
+    return res.status(400).json({ error: `Status must be one of: ${validStatuses.join(', ')}` });
+  }
+
+  const sql = `
+    UPDATE Feedback
+    SET Status = ?,
+        Updated_at = datetime('now', 'localtime')
+    WHERE Feedback_ID = ?
+  `;
+
+  db.run(sql, [status, feedbackId], function(err) {
+    if (err) {
+      console.error('❌ Error updating feedback status:', err.message);
+      return res.status(500).json({ error: 'Failed to update status' });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Feedback not found' });
+    }
+
+    // Log the action
+    db.run(
+      `INSERT INTO Audit_Log (Action, Table_Name, Record_ID, New_Data) VALUES (?, ?, ?, ?)`,
+      ['FEEDBACK_STATUS_UPDATED', 'Feedback', feedbackId, JSON.stringify({ status })],
+      (logErr) => {
+        if (logErr) console.error('⚠️ Failed to log status update:', logErr);
+      }
+    );
+
+    console.log(`✅ Updated feedback ${feedbackId} status to ${status}`);
+
+    res.json({
+      success: true,
+      message: `Feedback marked as ${status}`,
+      feedback_id: feedbackId,
+      status
+    });
+  });
+});
+
+// DELETE: Delete feedback
+router.delete('/feedback/:feedbackId', (req, res) => {
+  const { feedbackId } = req.params;
+
+  // First get feedback details for logging
+  db.get(
+    `SELECT Feedback_ID, Org_ID, Title FROM Feedback WHERE Feedback_ID = ?`,
+    [feedbackId],
+    (err, feedback) => {
+      if (err) {
+        console.error('❌ Error fetching feedback:', err.message);
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (!feedback) {
+        return res.status(404).json({ error: 'Feedback not found' });
+      }
+
+      // Delete the feedback
+      db.run(
+        `DELETE FROM Feedback WHERE Feedback_ID = ?`,
+        [feedbackId],
+        function(err) {
+          if (err) {
+            console.error('❌ Error deleting feedback:', err.message);
+            return res.status(500).json({ error: 'Failed to delete feedback' });
+          }
+
+          // Log the action
+          db.run(
+            `INSERT INTO Audit_Log (Action, Table_Name, Record_ID, New_Data, Org_ID) VALUES (?, ?, ?, ?, ?)`,
+            ['FEEDBACK_DELETED', 'Feedback', feedbackId, JSON.stringify({ title: feedback.Title }), feedback.Org_ID],
+            (logErr) => {
+              if (logErr) console.error('⚠️ Failed to log feedback deletion:', logErr);
+            }
+          );
+
+          console.log(`✅ Deleted feedback ${feedbackId}`);
+
+          res.json({
+            success: true,
+            message: 'Feedback deleted successfully',
+            feedback_id: feedbackId
+          });
+        }
+      );
+    }
+  );
+});
+
+// GET: Feedback statistics/summary
+router.get('/feedback/stats/summary', (req, res) => {
+  const { orgId } = req.query;
+
+  let sql = `
+    SELECT 
+      COUNT(*) as total_feedback,
+      SUM(CASE WHEN Status = 'open' THEN 1 ELSE 0 END) as open_count,
+      SUM(CASE WHEN Status = 'responded' THEN 1 ELSE 0 END) as responded_count,
+      SUM(CASE WHEN Status = 'closed' THEN 1 ELSE 0 END) as closed_count,
+      AVG(CAST(Rating as FLOAT)) as avg_rating,
+      SUM(CASE WHEN Rating = 5 THEN 1 ELSE 0 END) as five_star_count,
+      SUM(CASE WHEN Rating = 4 THEN 1 ELSE 0 END) as four_star_count,
+      SUM(CASE WHEN Rating = 3 THEN 1 ELSE 0 END) as three_star_count,
+      SUM(CASE WHEN Rating = 2 THEN 1 ELSE 0 END) as two_star_count,
+      SUM(CASE WHEN Rating = 1 THEN 1 ELSE 0 END) as one_star_count
+    FROM Feedback
+    WHERE 1=1
+  `;
+
+  const params = [];
+
+  if (orgId) {
+    sql += ` AND Org_ID = ?`;
+    params.push(orgId);
+  }
+
+  db.get(sql, params, (err, stats) => {
+    if (err) {
+      console.error('❌ Error fetching feedback stats:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch statistics' });
+    }
+
+    const summary = stats || {
+      total_feedback: 0,
+      open_count: 0,
+      responded_count: 0,
+      closed_count: 0,
+      avg_rating: 0,
+      five_star_count: 0,
+      four_star_count: 0,
+      three_star_count: 0,
+      two_star_count: 0,
+      one_star_count: 0
+    };
+
+    console.log(`✅ Fetched feedback stats: ${summary.total_feedback} total`);
+
+    res.json({
+      success: true,
+      stats: {
+        totalFeedback: summary.total_feedback || 0,
+        status: {
+          open: summary.open_count || 0,
+          responded: summary.responded_count || 0,
+          closed: summary.closed_count || 0
+        },
+        rating: {
+          average: parseFloat(summary.avg_rating || 0).toFixed(1),
+          distribution: {
+            five: summary.five_star_count || 0,
+            four: summary.four_star_count || 0,
+            three: summary.three_star_count || 0,
+            two: summary.two_star_count || 0,
+            one: summary.one_star_count || 0
+          }
+        }
+      }
+    });
+  });
 });
 
 module.exports = router;

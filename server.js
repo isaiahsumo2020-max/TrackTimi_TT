@@ -80,6 +80,14 @@ app.use('/api/attendance', require('./routes/attendance.routes'));
 app.use('/api/excuses', authenticateToken);
 app.use('/api/excuses', require('./routes/excuse.routes'));
 
+// 5. Notifications (require JWT)
+app.use('/api/notifications', authenticateToken);
+app.use('/api/notifications', require('./routes/notification.routes'));
+
+// 6. Feedback (require JWT)
+app.use('/api/feedback', authenticateToken);
+app.use('/api/feedback', require('./routes/feedback.routes'));
+
 // Other routes...
 // Keep legacy /api/users but prefer admin routes under /api/org/users
 app.use('/api/users', require('./routes/users.routes'));
@@ -119,30 +127,34 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 4000;
-const server = app.listen(PORT, () => {
-  console.log(`🚀 TrackTimi API → http://localhost:${PORT}`);
-  console.log(`📱 Frontend → http://localhost:5173`);
-  console.log(`💾 DB → backend/data/tracktimi.db`);
-});
 
-// Initialize Socket.IO for real-time updates
-try {
-  const socketHelper = require('./utils/socket');
-  socketHelper.init(server);
-} catch (err) {
-  console.error('Socket.IO init error:', err);
-}
+// Wait for database initialization to complete before starting server
+global.dbReadyCallback = () => {
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 TrackTimi API → http://localhost:${PORT}`);
+    console.log(`📱 Frontend → http://localhost:5173`);
+    console.log(`💾 DB → backend/data/tracktimi.db`);
+  });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('🛑 Shutting down gracefully...');
-  server.close(() => {
-    db.close((err) => {
-      if (err) console.error('DB close error:', err);
-      console.log('✅ DB closed');
-      process.exit(0);
+  // Initialize Socket.IO for real-time updates
+  try {
+    const socketHelper = require('./utils/socket');
+    socketHelper.init(server);
+  } catch (err) {
+    console.error('Socket.IO init error:', err);
+  }
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('🛑 Shutting down gracefully...');
+    server.close(() => {
+      db.close((err) => {
+        if (err) console.error('DB close error:', err);
+        console.log('✅ DB closed');
+        process.exit(0);
+      });
     });
   });
-});
+};
 
 module.exports = app;

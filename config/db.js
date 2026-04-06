@@ -8,12 +8,12 @@ const db = new sqlite3.Database(dbPath, (err) => {
     console.error('❌ Failed to connect to TrackTimi DB:', err.message);
   } else {
     console.log('✅ TrackTimi DB connected:', dbPath);
-    initializeTables();
+    // Enable foreign keys
+    db.run('PRAGMA foreign_keys = ON', () => {
+      initializeTables();
+    });
   }
 });
-
-// Enable foreign keys
-db.run('PRAGMA foreign_keys = ON');
 
 function initializeTables() {
   db.serialize(() => {
@@ -247,6 +247,49 @@ function initializeTables() {
       FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID) ON DELETE CASCADE
     )`);
 
+    // ⭐ 19. NOTIFICATION (for real-time updates)
+    db.run(`CREATE TABLE IF NOT EXISTS Notification (
+      Notify_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+      User_ID INTEGER,
+      Org_ID INTEGER,
+      Title TEXT NOT NULL,
+      Message TEXT NOT NULL,
+      Type TEXT DEFAULT 'info',
+      Category TEXT DEFAULT 'general',
+      Action_URL TEXT,
+      Related_Record_ID INTEGER,
+      Is_Read BOOLEAN DEFAULT 0,
+      Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      Read_at DATETIME,
+      FOREIGN KEY (User_ID) REFERENCES User(User_ID) ON DELETE CASCADE,
+      FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID) ON DELETE CASCADE
+    )`);
+
+    // ⭐ 20. FEEDBACK (user feedback feature)
+    db.run(`CREATE TABLE IF NOT EXISTS Feedback (
+      Feedback_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+      User_ID INTEGER NOT NULL,
+      Org_ID INTEGER NOT NULL,
+      Title TEXT NOT NULL,
+      Message TEXT NOT NULL,
+      Category TEXT DEFAULT 'general',
+      Rating INTEGER DEFAULT 5,
+      Status TEXT DEFAULT 'pending',
+      Response TEXT,
+      Responded_By INTEGER,
+      Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      Responded_at DATETIME,
+      FOREIGN KEY (User_ID) REFERENCES User(User_ID) ON DELETE CASCADE,
+      FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID) ON DELETE CASCADE,
+      FOREIGN KEY (Responded_By) REFERENCES Super_Admin(Super_Admin_ID) ON DELETE SET NULL
+    )`, function(err) {
+      if (err) {
+        console.error('❌ Error creating Feedback table:', err.message);
+      } else {
+        console.log('✅ Feedback table initialized');
+      }
+    });
+
     // AUTO ASSIGN FREE PLAN TO NEW ORGS
     db.run(`INSERT OR IGNORE INTO OrganizationSubscription 
       (Org_ID, Plan_ID, Start_Date, End_Date, Status) 
@@ -354,6 +397,11 @@ function initializeTables() {
     console.log('✅ Plans: Free(10), Starter(50), Pro(200), Enterprise(9999)');
     console.log('🔐 SuperAdmin: superadmin@tracktimi.com / tracktimi2026');
     console.log('🔒 Security: 1 User = 1 Device | GPS Geofence Ready');
+    
+    // Fire the callback when DB is ready
+    if (global.dbReadyCallback) {
+      global.dbReadyCallback();
+    }
   });
 }
 

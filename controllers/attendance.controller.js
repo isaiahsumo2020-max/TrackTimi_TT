@@ -3,6 +3,7 @@ const geo = require('../utils/geo');
 const socketHelper = require('../utils/socket');
 const Notification = require('../models/Notification');
 const ClockOutAlert = require('../models/ClockOutAlert');
+const NotificationBroadcaster = require('../utils/notificationBroadcaster');
 
 // =============================================================
 // HELPER: Get organization clock-in settings
@@ -197,8 +198,21 @@ exports.checkIn = async (req, res) => {
       ) VALUES (?, ?, datetime('now', 'localtime'), 1, 3, ?, ?, 1, ?, ?)
     `;
 
-    db.run(sql, [userId, orgId, latitude, longitude, timeCheckResult.isLate ? 1 : 0, timeCheckResult.minutesLate || 0], function(err) {
+    db.run(sql, [userId, orgId, latitude, longitude, timeCheckResult.isLate ? 1 : 0, timeCheckResult.minutesLate || 0], async function(err) {
       if (err) return res.status(500).json({ error: 'DB Error: ' + err.message });
+      
+      // Get user details for notification
+      db.get('SELECT First_Name, SurName FROM User WHERE User_ID = ?', [userId], async (userErr, user) => {
+        // Send notification to admins
+        if (user) {
+          await NotificationBroadcaster.onEmployeeCheckin({
+            userId: userId,
+            firstName: user.First_Name,
+            lastName: user.SurName,
+            orgId: orgId
+          });
+        }
+      });
       
       // Emit realtime event
       try {
