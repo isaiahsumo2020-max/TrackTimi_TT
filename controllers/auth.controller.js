@@ -5,6 +5,7 @@ const db = require('../config/db');
 const { generateUniqueEmployeeId } = require('../utils/employeeId');
 const { sendVerificationEmail, sendResendVerificationEmail, sendInvitationEmail } = require('../utils/emailService');
 const NotificationBroadcaster = require('../utils/notificationBroadcaster');
+const { notifyNewOrganization, notifyEmployeeAdded } = require('../utils/notificationService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tracktimi_secret_2026';
 
@@ -98,6 +99,10 @@ exports.registerOrg = async (req, res) => {
     sendVerificationEmail(adminEmail.toLowerCase(), verificationCode, verificationToken)
       .then(() => console.log('✅ Verification email sent to:', adminEmail))
       .catch((err) => console.error('⚠️  Failed to send verification email:', err.message));
+
+    // Send notification to superadmin about new org registration (non-blocking)
+    notifyNewOrganization({ Org_ID: orgId, Org_Name: orgName })
+      .catch((err) => console.error('⚠️  Failed to send registration notification:', err.message));
 
     // Return success response
     return res.status(201).json({ 
@@ -406,6 +411,11 @@ exports.activateInvitation = async (req, res) => {
             } catch (notifErr) {
               console.error('Failed to send notification:', notifErr);
             }
+
+            // Also send employee onboarding notification using new service
+            const { notifyEmployeeOnboarding } = require('../utils/notificationService');
+            notifyEmployeeOnboarding(user.User_ID, user.First_Name, user.SurName, user.Org_ID, user.Org_Name)
+              .catch((err) => console.error('⚠️  Failed to send onboarding notification:', err.message));
 
             // Generate JWT
             const jwtToken = jwt.sign(

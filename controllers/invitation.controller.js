@@ -3,6 +3,7 @@ const Invitation = require('../models/Invitation');
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const { sendInvitationEmail } = require('../utils/emailService');
+const { notifyNewUser, notifyOrgAdminAction } = require('../utils/notificationHelper');
 
 exports.inviteEmployee = async (req, res) => {
   try {
@@ -73,6 +74,15 @@ exports.inviteEmployee = async (req, res) => {
                 console.error('❌ Failed to send invitation email to:', value.email, 'Error:', emailResult.error);
               }
 
+              // Notify the org admin about sending the invitation
+              notifyOrgAdminAction(
+                invitedBy,
+                orgId,
+                '👤 Employee Invitation Sent',
+                `You sent an invitation to ${value.firstName} ${value.surName} (${value.email})`,
+                'user'
+              );
+
               res.status(201).json({ 
                 invited: true, 
                 token: inv.Token,
@@ -134,6 +144,25 @@ exports.activateInvitation = async (req, res) => {
           }
           const userId = this.lastID;
           console.log('✅ User created successfully:', pending.Email, 'with ID:', userId);
+
+          // Trigger notification for org admins about new user activation
+          console.log('📢 Triggering notification for new user activation');
+          const userData = {
+            User_ID: userId,
+            First_Name: pending.First_Name,
+            SurName: pending.SurName,
+            Email: pending.Email,
+            Job_Title: pending.Job_Title
+          };
+          const orgData = { Org_ID: pending.Org_ID, Org_Name: 'Your Organization' };
+          
+          notifyNewUser(userData, orgData, (notifyErr) => {
+            if (notifyErr) {
+              console.error('❌ Failed to create user activation notification:', notifyErr);
+            } else {
+              console.log('✅ User activation notification created successfully');
+            }
+          });
 
           Invitation.markUsed(value.token, (errMark) => { 
             if (errMark) console.error('Mark used error:', errMark);

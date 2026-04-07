@@ -252,7 +252,7 @@ exports.checkIn = async (req, res) => {
 // =============================================================
 exports.checkOut = async (req, res) => {
   try {
-    const { latitude, longitude } = req.body;
+    const { latitude, longitude, totalBreaks, totalBreakMinutes, breaks } = req.body;
     const { userId, orgId } = req.user;
 
     // A. Geofence Check
@@ -316,6 +316,32 @@ exports.checkOut = async (req, res) => {
       if (err) return res.status(500).json({ error: 'Check-out failed' });
       if (this.changes === 0) return res.status(400).json({ error: 'No active session found.' });
       
+      // D. Record break activity if breaks were taken
+      if (totalBreaks && totalBreaks > 0) {
+        const activityDate = new Date().toISOString().split('T')[0];
+        const breaksSummary = breaks 
+          ? JSON.stringify(breaks.map(b => ({
+              type: b.breakType,
+              duration: b.durationMinutes || 0,
+              startTime: b.startTime
+            })))
+          : null;
+
+        const activitySql = `
+          INSERT INTO Organization_Activity 
+          (Org_ID, User_ID, Activity_Type, Activity_Date, Total_Breaks, Total_Break_Minutes, Breaks_Summary)
+          VALUES (?, ?, 'break', ?, ?, ?, ?)
+        `;
+
+        db.run(activitySql, [orgId, userId, activityDate, totalBreaks, totalBreakMinutes || 0, breaksSummary], (actErr) => {
+          if (actErr) {
+            console.error('❌ Break activity recording error:', actErr.message);
+          } else {
+            console.log(`✅ Break activity recorded: ${totalBreaks} breaks, ${totalBreakMinutes} minutes`);
+          }
+        });
+      }
+      
       // Get the attendance record to emit with socket
       db.get('SELECT * FROM Attendance WHERE User_ID = ? AND Org_ID = ? AND Check_out_time IS NOT NULL ORDER BY Attend_ID DESC LIMIT 1', [userId, orgId], (err, attend) => {
         // Emit realtime event
@@ -329,7 +355,8 @@ exports.checkOut = async (req, res) => {
             longitude: longitude,
             timestamp: new Date().toISOString(),
             checkOutTime: attend?.Check_out_time,
-            overtimeMinutes: overtimeMinutes
+            overtimeMinutes: overtimeMinutes,
+            breaksRecorded: totalBreaks || 0
           });
         } catch (socketErr) {
           console.error('Failed to emit attendance:updated event:', socketErr.message);
@@ -340,7 +367,7 @@ exports.checkOut = async (req, res) => {
         ? `Clock-out successful. Extra time recorded: ${Math.floor(overtimeMinutes / 60)}h ${overtimeMinutes % 60}m`
         : 'Clock-out successful.';
       
-      res.json({ success: true, message: message, overtimeMinutes: overtimeMinutes });
+      res.json({ success: true, message: message, overtimeMinutes: overtimeMinutes, breaksRecorded: totalBreaks || 0 });
     });
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
@@ -399,24 +426,31 @@ exports.generateReport = (req, res) => res.json({ success: true });
 exports.startBreak = (req, res) => {
   try {
     const { userId, orgId } = req.user;
-    const { latitude, longitude } = req.body;
+    const { latitude, longitude, breakType = 'regular', reason = '', accuracy = 0 } = req.body;
 
     // Check if already on break
     const checkBreak = `SELECT * FROM Break WHERE User_ID = ? AND End_Time IS NULL`;
     
     db.get(checkBreak, [userId], (err, existing) => {
+      if (err) {
+        return res.status(500).json({ error: 'Database error checking break status' });
+      }
+      
       if (existing) {
         return res.status(400).json({ error: 'You are already on a break' });
       }
 
-      // Create break record
+      // Create break record with all fields
       const sql = `
-        INSERT INTO Break (User_ID, Org_ID, Start_Time, Latitude, Longitude)
-        VALUES (?, ?, datetime('now', 'localtime'), ?, ?)
+        INSERT INTO Break (User_ID, Org_ID, Break_Type, Reason, Start_Time, Latitude, Longitude, Start_Accuracy)
+        VALUES (?, ?, ?, ?, datetime('now', 'localtime'), ?, ?, ?)
       `;
 
-      db.run(sql, [userId, orgId, latitude, longitude], function(err) {
-        if (err) return res.status(500).json({ error: 'Failed to start break' });
+      db.run(sql, [userId, orgId, breakType, reason, latitude, longitude, accuracy], function(err) {
+        if (err) {
+          console.error('❌ Break start error:', err.message);
+          return res.status(500).json({ error: 'Failed to start break: ' + err.message });
+        }
 
         // Emit real-time event
         try {
@@ -424,39 +458,81 @@ exports.startBreak = (req, res) => {
           io.to(`org:${orgId}`).emit('break:started', {
             userId: userId,
             breakId: this.lastID,
+            breakType: breakType,
             startTime: new Date().toISOString()
           });
         } catch (socketErr) {
           console.error('Failed to emit break:started event:', socketErr.message);
         }
 
-        res.json({ success: true, message: 'Break started' });
+        res.json({ success: true, message: 'Break started', breakId: this.lastID });
       });
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('❌ Exception in startBreak:', error.message);
+    res.status(500).json({ error: 'Internal Server Error: ' + error.message });
   }
 };
 
 exports.endBreak = (req, res) => {
   try {
     const { userId } = req.user;
-    const { latitude, longitude } = req.body;
+    const { latitude, longitude, accuracy = 0 } = req.body;
 
-    const sql = `
-      UPDATE Break 
-      SET End_Time = datetime('now', 'localtime'), End_Latitude = ?, End_Longitude = ?
-      WHERE User_ID = ? AND End_Time IS NULL
-    `;
+    // Get the current break record first to calculate duration
+    db.get(`SELECT Start_Time FROM Break WHERE User_ID = ? AND End_Time IS NULL`, [userId], (err, breakRecord) => {
+      if (err) {
+        return res.status(500).json({ error: 'Database error fetching break record' });
+      }
+      
+      if (!breakRecord) {
+        return res.status(400).json({ error: 'No active break found' });
+      }
 
-    db.run(sql, [latitude, longitude, userId], function(err) {
-      if (err) return res.status(500).json({ error: 'Failed to end break' });
-      if (this.changes === 0) return res.status(400).json({ error: 'No active break found' });
+      // Calculate duration in minutes
+      const startTime = new Date(breakRecord.Start_Time);
+      const endTime = new Date();
+      const durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
 
-      res.json({ success: true, message: 'Break ended' });
+      const sql = `
+        UPDATE Break 
+        SET End_Time = datetime('now', 'localtime'), 
+            End_Latitude = ?, 
+            End_Longitude = ?,
+            End_Accuracy = ?,
+            Duration_Minutes = ?
+        WHERE User_ID = ? AND End_Time IS NULL
+      `;
+
+      db.run(sql, [latitude, longitude, accuracy, durationMinutes, userId], function(err) {
+        if (err) {
+          console.error('❌ Break end error:', err.message);
+          return res.status(500).json({ error: 'Failed to end break: ' + err.message });
+        }
+
+        if (this.changes === 0) {
+          return res.status(400).json({ error: 'No active break found' });
+        }
+
+        // Emit real-time event
+        try {
+          const io = socketHelper.getIo();
+          const { orgId } = req.user;
+          io.to(`org:${orgId}`).emit('break:ended', {
+            userId: userId,
+            duration: durationMinutes,
+            endTime: new Date().toISOString()
+          });
+        } catch (socketErr) {
+          console.error('Failed to emit break:ended event:', socketErr.message);
+        }
+
+        res.json({ success: true, message: 'Break ended', duration: durationMinutes });
+      });
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('❌ Exception in endBreak:', error.message);
+    res.status(500).json({ error: 'Internal Server Error: ' + error.message });
   }
 };
 
@@ -466,7 +542,7 @@ exports.getBreaks = (req, res) => {
     const today = new Date().toISOString().split('T')[0];
 
     const sql = `
-      SELECT Break_ID, Start_Time, End_Time,
+      SELECT Break_ID, Start_Time, End_Time, Break_Type,
              CASE WHEN End_Time IS NOT NULL
                   THEN (julianday(End_Time) - julianday(Start_Time)) * 24 * 60
                   ELSE 0
@@ -480,7 +556,10 @@ exports.getBreaks = (req, res) => {
       if (err) return res.status(500).json({ error: 'Failed to fetch breaks' });
       
       const breaks = rows.map(b => ({
-        ...b,
+        break_id: b.Break_ID,
+        start_time: b.Start_Time,
+        end_time: b.End_Time,
+        break_type: b.Break_Type || 'regular',
         duration: Math.round(b.duration) // Convert to minutes
       }));
 

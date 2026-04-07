@@ -213,7 +213,48 @@ CREATE TABLE IF NOT EXISTS Notification (
     FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID)
 );
 
--- 15. Indexes for Performance
+-- 15. ShiftType (For scheduling)
+CREATE TABLE IF NOT EXISTS ShiftType (
+    ShiftType_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Org_ID INTEGER NOT NULL,
+    ShiftType_Name TEXT NOT NULL,
+    Start_Time TEXT NOT NULL, -- HH:MM format (e.g., "09:00")
+    End_Time TEXT NOT NULL,   -- HH:MM format (e.g., "17:00")
+    Description TEXT,
+    Color_Code TEXT DEFAULT '#3b82f6',
+    Is_Active BOOLEAN DEFAULT 1,
+    Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID)
+);
+
+-- 16. Schedule (Multi-employee recurring schedules)
+CREATE TABLE IF NOT EXISTS Schedule (
+    Schedule_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Org_ID INTEGER NOT NULL,
+    ShiftType_ID INTEGER NOT NULL,
+    Schedule_Name TEXT NOT NULL,
+    Start_Date TEXT NOT NULL, -- YYYY-MM-DD format
+    End_Date TEXT NOT NULL,   -- YYYY-MM-DD format
+    Description TEXT,
+    Is_Active BOOLEAN DEFAULT 1,
+    Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (Org_ID) REFERENCES Organization(Org_ID),
+    FOREIGN KEY (ShiftType_ID) REFERENCES ShiftType(ShiftType_ID)
+);
+
+-- 17. ScheduleEmployee (Junction table for Schedule-User many-to-many)
+CREATE TABLE IF NOT EXISTS ScheduleEmployee (
+    ScheduleEmployee_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+    Schedule_ID INTEGER NOT NULL,
+    User_ID INTEGER NOT NULL,
+    Created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (Schedule_ID) REFERENCES Schedule(Schedule_ID),
+    FOREIGN KEY (User_ID) REFERENCES User(User_ID)
+);
+
+-- 18. Indexes for Performance
 CREATE INDEX IF NOT EXISTS idx_user_org ON User(Org_ID);
 CREATE INDEX IF NOT EXISTS idx_user_email ON User(Email);
 CREATE INDEX IF NOT EXISTS idx_attendance_user ON Attendance(User_ID);
@@ -222,6 +263,11 @@ CREATE INDEX IF NOT EXISTS idx_geofence_org ON Geofence(Org_ID);
 CREATE INDEX IF NOT EXISTS idx_notification_user ON Notification(User_ID);
 CREATE INDEX IF NOT EXISTS idx_notification_org ON Notification(Org_ID);
 CREATE INDEX IF NOT EXISTS idx_notification_read ON Notification(Is_Read);
+CREATE INDEX IF NOT EXISTS idx_shifttype_org ON ShiftType(Org_ID);
+CREATE INDEX IF NOT EXISTS idx_schedule_org ON Schedule(Org_ID);
+CREATE INDEX IF NOT EXISTS idx_schedule_shifttype ON Schedule(ShiftType_ID);
+CREATE INDEX IF NOT EXISTS idx_scheduleemployee_schedule ON ScheduleEmployee(Schedule_ID);
+CREATE INDEX IF NOT EXISTS idx_scheduleemployee_user ON ScheduleEmployee(User_ID);
 
 -- =====================================================
 -- SAMPLE DATA FOR TESTING

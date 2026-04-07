@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { notifyEmployeeAdded } = require('../utils/notificationService');
 
 // 0. GET ALL ADMINS (with organization info)
 exports.getAdmins = (req, res) => {
@@ -55,6 +56,17 @@ exports.createUser = async (req, res) => {
         if (err.message.includes('UNIQUE')) return res.status(400).json({ error: 'Email already exists' });
         return res.status(500).json({ error: 'Database error: ' + err.message });
       }
+      
+      // Send notification to org admin if this is an employee (user type 3)
+      if ((userTypeId || 3) === 3) {
+        db.get('SELECT Org_Name FROM Organization WHERE Org_ID = ?', [adminOrgId], (orgErr, org) => {
+          if (!orgErr && org) {
+            notifyEmployeeAdded(this.lastID, firstName, surName, adminOrgId, org.Org_Name)
+              .catch((err) => console.error('⚠️  Failed to send employee added notification:', err.message));
+          }
+        });
+      }
+      
       res.status(201).json({ message: 'User provisioned successfully' });
     });
   } catch (error) {

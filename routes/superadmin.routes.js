@@ -1821,7 +1821,7 @@ router.put('/organizations/:id/reset-admin-password', async (req, res) => {
 // =============================================================
 
 // Get superadmin notifications with counts by category
-router.get('/notifications', (req, res) => {
+router.get('/notifications', authenticateSuperAdmin, (req, res) => {
   try {
     const userId = req.user?.userId;
     const limit = parseInt(req.query.limit) || 50;
@@ -1936,7 +1936,7 @@ router.get('/notifications', (req, res) => {
 });
 
 // Get unread superadmin notifications count
-router.get('/notifications/unread/count', (req, res) => {
+router.get('/notifications/unread/count', authenticateSuperAdmin, (req, res) => {
   try {
     const userId = req.user?.userId;
 
@@ -1966,7 +1966,7 @@ router.get('/notifications/unread/count', (req, res) => {
 });
 
 // Mark superadmin notification as read
-router.put('/notifications/:notifyId/read', (req, res) => {
+router.put('/notifications/:notifyId/read', authenticateSuperAdmin, (req, res) => {
   try {
     const { notifyId } = req.params;
     const userId = req.user?.userId;
@@ -1990,7 +1990,7 @@ router.put('/notifications/:notifyId/read', (req, res) => {
 });
 
 // Mark all superadmin notifications as read
-router.put('/notifications/mark-all-read', (req, res) => {
+router.put('/notifications/mark-all-read', authenticateSuperAdmin, (req, res) => {
   try {
     const userId = req.user?.userId;
 
@@ -2012,7 +2012,7 @@ router.put('/notifications/mark-all-read', (req, res) => {
 });
 
 // Delete superadmin notification
-router.delete('/notifications/:notifyId', (req, res) => {
+router.delete('/notifications/:notifyId', authenticateSuperAdmin, (req, res) => {
   try {
     const { notifyId } = req.params;
     const userId = req.user?.userId;

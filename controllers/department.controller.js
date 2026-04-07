@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { notifyDepartmentCreated } = require('../utils/notificationService');
 
 exports.createDepartment = (req, res) => {
   const { departName, orgId } = req.body;
@@ -7,7 +8,19 @@ exports.createDepartment = (req, res) => {
   
   db.run(sql, [departName, orgId], function(err) {
     if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ Dep_ID: this.lastID, Depart_Name: departName });
+    
+    const deptId = this.lastID;
+    
+    // Get org name for notification
+    db.get('SELECT Org_Name FROM Organization WHERE Org_ID = ?', [orgId], (orgErr, org) => {
+      if (!orgErr && org) {
+        // Send notification to org admin (non-blocking)
+        notifyDepartmentCreated(departName, orgId, org.Org_Name, deptId)
+          .catch((err) => console.error('⚠️  Failed to send dept creation notification:', err.message));
+      }
+    });
+    
+    res.status(201).json({ Dep_ID: deptId, Depart_Name: departName });
   });
 };
 

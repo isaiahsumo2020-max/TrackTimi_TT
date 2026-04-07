@@ -34,8 +34,32 @@ const createNotification = (notificationData, callback) => {
       console.error('❌ Full error:', err);
       if (callback) return callback(err);
     }
-    console.log('✅ Notification created successfully. Notify_ID:', this.lastID);
-    if (callback) callback(null, { Notify_ID: this.lastID, ...notificationData });
+    
+    const notifyId = this.lastID;
+    console.log('✅ Notification created successfully. Notify_ID:', notifyId);
+    
+    // Broadcast real-time notification via Socket.IO
+    try {
+      const { getIo } = require('./socket');
+      const io = getIo();
+      
+      // Send to specific user if notification is for them
+      io.to(`user:${notificationData.userId}`).emit('notification:new', {
+        Notify_ID: notifyId,
+        title: notificationData.title,
+        message: notificationData.message,
+        type: notificationData.type || 'info',
+        category: notificationData.category || 'general',
+        timestamp: new Date().toISOString(),
+        actionUrl: notificationData.actionUrl || null
+      });
+      
+      console.log(`📡 Real-time notification broadcast to user:${notificationData.userId}`);
+    } catch (socketErr) {
+      console.warn('⚠️ Socket.IO broadcast failed (user may be offline):', socketErr.message);
+    }
+    
+    if (callback) callback(null, { Notify_ID: notifyId, ...notificationData });
   });
 };
 
@@ -232,6 +256,59 @@ const notifySystemAlert = (alertData, callback) => {
 };
 
 /**
+ * Notify organization admin about their actions (user invitation, department creation, etc.)
+ */
+const notifyOrgAdminAction = (userId, orgId, title, message, category = 'general', actionUrl = null, callback) => {
+  // Notify the organization admin (the user performing the action)
+  console.log(`📢 Notifying org admin (userId: ${userId}) about action in org ${orgId}`);
+  
+  createNotification({
+    userId,
+    orgId,
+    title,
+    message,
+    type: 'success',
+    category,
+    actionUrl
+  }, (err) => {
+    if (err) {
+      console.error('❌ Failed to create org admin notification:', err);
+    } else {
+      console.log('✅ Org admin notification created successfully');
+    }
+    if (callback) callback(err);
+  });
+
+  // Also notify SuperAdmin about significant org admin actions
+  // (Invitations, department creation, geofence creation)
+  const significantActions = ['user', 'department', 'location'];
+  if (significantActions.includes(category)) {
+    console.log(`📢 Also notifying SuperAdmin about org admin action: ${category}`);
+    
+    // Get organization name for context
+    db.get('SELECT Org_Name FROM Organization WHERE Org_ID = ?', [orgId], (err, org) => {
+      const orgName = org?.Org_Name || 'Organization';
+      
+      createNotification({
+        userId: 1, // SuperAdmin
+        orgId,
+        title: `📋 Org Admin Action: ${title}`,
+        message: `[${orgName}] ${message}`,
+        type: 'info',
+        category: `org_${category}`,
+        actionUrl
+      }, (err) => {
+        if (err) {
+          console.error('❌ Failed to notify SuperAdmin about org action:', err);
+        } else {
+          console.log('✅ SuperAdmin notified about org admin action');
+        }
+      });
+    });
+  }
+};
+
+/**
  * Notify about subscription/billing event
  */
 const notifySubscriptionEvent = (eventData, callback) => {
@@ -256,5 +333,6 @@ module.exports = {
   notifyNewGeofence,
   notifyAttendanceMilestone,
   notifySystemAlert,
+  notifyOrgAdminAction,
   notifySubscriptionEvent
 };

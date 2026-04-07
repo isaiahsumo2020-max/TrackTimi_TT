@@ -2,7 +2,8 @@ const router = require('express').Router();
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const { authenticateToken, requireAdmin } = require('../middleware/role.middleware');
-const { notifyNewUser, notifyNewDepartment, notifyNewGeofence } = require('../utils/notificationHelper');
+const { notifyNewUser, notifyNewDepartment, notifyNewGeofence, notifyOrgAdminAction } = require('../utils/notificationHelper');
+const { notifyLocationCreated } = require('../utils/notificationService');
 
 // Apply authentication to all organization-level routes
 router.use(authenticateToken);
@@ -197,6 +198,7 @@ router.get('/departments', requireAdmin, (req, res) => {
 router.post('/departments', requireAdmin, (req, res) => {
   const { name } = req.body;
   const orgId = req.user.orgId;
+  const userId = req.user.userId;
 
   if (!name) return res.status(400).json({ error: 'Department name is required' });
 
@@ -204,9 +206,7 @@ router.post('/departments', requireAdmin, (req, res) => {
   
   db.run(sql, [name, orgId], function(err) {
     if (err) {
-      // LOG THE REAL ERROR TO YOUR TERMINAL
       console.error("❌ DEPT CREATE ERROR:", err.message);
-      // SEND THE REAL ERROR TO THE FRONTEND
       return res.status(500).json({ error: 'Database Error: ' + err.message });
     }
 
@@ -230,7 +230,110 @@ router.post('/departments', requireAdmin, (req, res) => {
       }
     });
 
+    // Notify org admin about their action
+    notifyOrgAdminAction(
+      userId,
+      orgId,
+      '🏢 Department Created',
+      `You successfully created the department "${name}"`,
+      'department',
+      `/org/departments/${newDeptId}`
+    );
+
     res.status(201).json({ success: true, id: newDeptId, name });
+  });
+});
+
+// Update department name
+router.put('/departments/:id', requireAdmin, (req, res) => {
+  const { name } = req.body;
+  const deptId = req.params.id;
+  const orgId = req.user.orgId;
+  const userId = req.user.userId;
+
+  if (!name) return res.status(400).json({ error: 'Department name is required' });
+
+  const sql = `UPDATE Department SET Depart_Name = ? WHERE Dep_ID = ? AND Org_ID = ?`;
+  
+  db.run(sql, [name, deptId, orgId], function(err) {
+    if (err) {
+      console.error("❌ DEPT UPDATE ERROR:", err.message);
+      return res.status(500).json({ error: 'Database Error: ' + err.message });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Department not found' });
+    }
+
+    console.log(`✅ Department ${deptId} updated successfully`);
+
+    // Notify org admin about their action
+    notifyOrgAdminAction(
+      userId,
+      orgId,
+      '🏢 Department Updated',
+      `You successfully updated the department to "${name}"`,
+      'department',
+      `/org/departments/${deptId}`
+    );
+
+    res.json({ success: true, id: deptId, name });
+  });
+});
+
+// Delete department (soft delete)
+router.delete('/departments/:id', requireAdmin, (req, res) => {
+  const deptId = parseInt(req.params.id);
+  const orgId = req.user.orgId;
+  const userId = req.user.userId;
+
+  console.log(`🗑️ [DELETE DEPT] Attempting to delete deptId: ${deptId}, orgId: ${orgId}`);
+
+  // First get the department name for notification
+  const getNameSql = `SELECT Depart_Name FROM Department WHERE Dep_ID = ? AND Org_ID = ?`;
+  
+  db.get(getNameSql, [deptId, orgId], (err, dept) => {
+    if (err) {
+      console.error("❌ [DELETE DEPT] Query error:", err.message);
+      return res.status(500).json({ error: 'Database Error: ' + err.message });
+    }
+
+    if (!dept) {
+      console.error(`❌ [DELETE DEPT] Department not found - deptId: ${deptId}, orgId: ${orgId}`);
+      return res.status(404).json({ error: 'Department not found' });
+    }
+
+    const deptName = dept.Depart_Name;
+    console.log(`✅ [DELETE DEPT] Found department: ${deptName}`);
+
+    // Soft delete
+    const deleteSql = `UPDATE Department SET Is_Active = 0 WHERE Dep_ID = ? AND Org_ID = ?`;
+    
+    db.run(deleteSql, [deptId, orgId], function(err) {
+      if (err) {
+        console.error("❌ [DELETE DEPT] Update error:", err.message);
+        return res.status(500).json({ error: 'Failed to delete department: ' + err.message });
+      }
+
+      if (this.changes === 0) {
+        console.error(`❌ [DELETE DEPT] No rows updated for deptId: ${deptId}`);
+        return res.status(400).json({ error: 'Department not found or already deleted' });
+      }
+
+      console.log(`✅ [DELETE DEPT] Successfully deleted department ${deptId} (${deptName})`);
+
+      // Notify org admin about their action
+      notifyOrgAdminAction(
+        userId,
+        orgId,
+        '🗑️ Department Deleted',
+        `You successfully deleted the department "${deptName}"`,
+        'department',
+        `/org/departments`
+      );
+
+      res.json({ success: true, message: 'Department deleted successfully' });
+    });
   });
 });
 
@@ -333,15 +436,14 @@ router.get('/geofences', authenticateToken, (req, res) => {
 router.post('/geofences', requireAdmin, (req, res) => {
   const { locationName, latitude, longitude, radius } = req.body;
   const orgId = req.user.orgId;
+  const userId = req.user.userId;
 
-  // Log exactly what is arriving to the backend
   console.log("📥 Attempting to save zone:", { locationName, latitude, longitude, orgId });
 
   const sql = `INSERT INTO Geofence (Org_ID, Location_Name, Latitude, Longitude, Radius, Is_Active) VALUES (?, ?, ?, ?, ?, 1)`;
   
   db.run(sql, [orgId, locationName, latitude, longitude, radius || 200], function(err) {
     if (err) {
-      // THIS WILL SHOW THE EXACT ERROR IN YOUR TERMINAL
       console.error("❌ SQLITE ERROR:", err.message);
       return res.status(500).json({ error: `Database Error: ${err.message}` });
     }
@@ -371,6 +473,24 @@ router.post('/geofences', requireAdmin, (req, res) => {
       }
     });
 
+    // Also notify org admin using new notification service
+    db.get('SELECT Org_Name FROM Organization WHERE Org_ID = ?', [orgId], (orgErr, org) => {
+      if (!orgErr && org) {
+        notifyLocationCreated(locationName, orgId, org.Org_Name, newFenceId)
+          .catch((err) => console.error('⚠️  Failed to send location creation notification:', err.message));
+      }
+    });
+
+    // Notify org admin about their action
+    notifyOrgAdminAction(
+      userId,
+      orgId,
+      '📍 Geofence Created',
+      `You successfully created the geofence "${locationName}"`,
+      'location',
+      `/org/geofences/${newFenceId}`
+    );
+
     res.status(201).json({ success: true, id: newFenceId });
   });
 });
@@ -388,36 +508,14 @@ router.delete('/geofences/:id', requireAdmin, (req, res) => {
 
 // --- ORGANIZATION SETTINGS MANAGEMENT ---
 
-// 1. GET: Fetch settings for the current Org
-router.get('/settings', requireAdmin, (req, res) => {
+// 1. GET: Fetch settings for the current Org (accessible to all authenticated users)
+router.get('/settings', authenticateToken, (req, res) => {
   const orgId = req.user.orgId;
   const sql = `SELECT * FROM Organization WHERE Org_ID = ?`;
 
   db.get(sql, [orgId], (err, row) => {
     if (err) return res.status(500).json({ error: 'Failed to load settings' });
     res.json(row);
-  });
-});
-
-// 2. PUT: Update settings
-router.put('/settings', requireAdmin, (req, res) => {
-  const orgId = req.user.orgId;
-  const { orgName, email, phone, address, themeColor, logoPath, logoMimeType } = req.body;
-
-  const sql = `
-    UPDATE Organization 
-    SET Org_Name = ?, Email = ?, Phone_Num = ?, Address = ?, 
-        Theme_Color = ?, Logo_Path = ?, Logo_MIME_Type = ?, Updated_at = CURRENT_TIMESTAMP
-    WHERE Org_ID = ?`;
-
-  db.run(sql, [orgName, email, phone, address, themeColor, logoPath, logoMimeType, orgId], function(err) {
-    if (err) return res.status(500).json({ error: 'Database update failed' });
-    
-    // Add to Audit Log for SaaS tracking
-    db.run(`INSERT INTO Audit_Log (User_ID, Org_ID, Action, Table_Name) VALUES (?, ?, 'UPDATE_SETTINGS', 'Organization')`, 
-           [req.user.userId, orgId]);
-
-    res.json({ success: true, message: 'Settings updated' });
   });
 });
 
@@ -1039,7 +1137,8 @@ router.get('/settings', requireAdmin, (req, res) => {
     SELECT 
       Org_ID,
       Clock_In_Window_Minutes,
-      Clock_Out_Alert_Minutes
+      Clock_Out_Alert_Minutes,
+      Max_Breaks_Per_Shift
     FROM Organization 
     WHERE Org_ID = ?`;
 
@@ -1050,7 +1149,8 @@ router.get('/settings', requireAdmin, (req, res) => {
     }
     res.json(row || { 
       Clock_In_Window_Minutes: 30, 
-      Clock_Out_Alert_Minutes: 15 
+      Clock_Out_Alert_Minutes: 15,
+      Max_Breaks_Per_Shift: 2
     });
   });
 });
@@ -1058,7 +1158,7 @@ router.get('/settings', requireAdmin, (req, res) => {
 // PUT: Update organization settings (admin only)
 router.put('/settings', requireAdmin, (req, res) => {
   const orgId = req.user.orgId;
-  const { Clock_In_Window_Minutes, Clock_Out_Alert_Minutes } = req.body;
+  const { Clock_In_Window_Minutes, Clock_Out_Alert_Minutes, maxBreaksPerShift } = req.body;
 
   // Validate inputs
   if (Clock_In_Window_Minutes !== undefined && (Clock_In_Window_Minutes < 0 || Clock_In_Window_Minutes > 120)) {
@@ -1067,6 +1167,10 @@ router.put('/settings', requireAdmin, (req, res) => {
   
   if (Clock_Out_Alert_Minutes !== undefined && (Clock_Out_Alert_Minutes < 5 || Clock_Out_Alert_Minutes > 60)) {
     return res.status(400).json({ error: 'Clock-out alert must be between 5 and 60 minutes' });
+  }
+
+  if (maxBreaksPerShift !== undefined && (maxBreaksPerShift < 1 || maxBreaksPerShift > 10)) {
+    return res.status(400).json({ error: 'Maximum breaks per shift must be between 1 and 10' });
   }
 
   const updates = [];
@@ -1080,6 +1184,11 @@ router.put('/settings', requireAdmin, (req, res) => {
   if (Clock_Out_Alert_Minutes !== undefined) {
     updates.push('Clock_Out_Alert_Minutes = ?');
     values.push(Clock_Out_Alert_Minutes);
+  }
+
+  if (maxBreaksPerShift !== undefined) {
+    updates.push('Max_Breaks_Per_Shift = ?');
+    values.push(maxBreaksPerShift);
   }
 
   if (updates.length === 0) {
@@ -1114,6 +1223,9 @@ router.put('/settings', requireAdmin, (req, res) => {
       }
       if (Clock_Out_Alert_Minutes !== undefined) {
         changes.push(`Clock-out alert changed to ${Clock_Out_Alert_Minutes} minutes`);
+      }
+      if (maxBreaksPerShift !== undefined) {
+        changes.push(`Maximum breaks per shift changed to ${maxBreaksPerShift}`);
       }
 
       const message = `Attendance policy updated: ${changes.join(', ')}. Please review your dashboard for details.`;
@@ -1152,6 +1264,347 @@ router.get('/geofences', requireAdmin, (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch geofences' });
     }
     res.json(rows || []);
+  });
+});
+
+// =============================================================
+// ORGANIZATION ACTIVITY TRACKING (Break Activities)
+// =============================================================
+
+// POST: Record break activity when user clocks out
+router.post('/track-breaks', authenticateToken, (req, res) => {
+  const { orgId } = req.user;
+  const userId = req.user.userId;
+  const { totalBreaks, totalBreakMinutes, breaks } = req.body;
+  const activityDate = new Date().toISOString().split('T')[0];
+
+  if (!totalBreaks || totalBreaks === 0) {
+    console.log(`ℹ️  No breaks taken by user ${userId} on ${activityDate}`);
+    return res.json({ success: true, message: 'No breaks recorded' });
+  }
+
+  // Create breaks summary
+  const breaksSummary = breaks 
+    ? JSON.stringify(breaks.map(b => ({
+        type: b.breakType,
+        duration: b.durationMinutes || 0,
+        startTime: b.startTime
+      })))
+    : null;
+
+  const sql = `
+    INSERT INTO Organization_Activity 
+    (Org_ID, User_ID, Activity_Type, Activity_Date, Total_Breaks, Total_Break_Minutes, Breaks_Summary)
+    VALUES (?, ?, 'break', ?, ?, ?, ?)
+  `;
+
+  db.run(sql, [orgId, userId, activityDate, totalBreaks, totalBreakMinutes || 0, breaksSummary], function(err) {
+    if (err) {
+      console.error('❌ Break Activity Recording Error:', err.message);
+      return res.status(500).json({ error: 'Failed to record break activity' });
+    }
+    console.log(`✅ Break activity recorded for user ${userId}: ${totalBreaks} breaks, ${totalBreakMinutes} minutes`);
+    res.json({ 
+      success: true, 
+      message: 'Break activity recorded',
+      activityId: this.lastID 
+    });
+  });
+});
+
+// GET: Fetch organization break activities (admin only)
+router.get('/activities', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+  const { startDate, endDate, userId } = req.query;
+
+  let sql = `
+    SELECT 
+      a.Activity_ID,
+      a.User_ID,
+      a.Activity_Date,
+      a.Total_Breaks,
+      a.Total_Break_Minutes,
+      a.Breaks_Summary,
+      u.First_Name,
+      u.SurName,
+      u.Email,
+      u.Employee_ID
+    FROM Organization_Activity a
+    JOIN User u ON a.User_ID = u.User_ID
+    WHERE a.Org_ID = ? AND a.Activity_Type = 'break'
+  `;
+
+  const params = [orgId];
+
+  if (startDate) {
+    sql += ` AND a.Activity_Date >= ?`;
+    params.push(startDate);
+  }
+
+  if (endDate) {
+    sql += ` AND a.Activity_Date <= ?`;
+    params.push(endDate);
+  }
+
+  if (userId) {
+    sql += ` AND a.User_ID = ?`;
+    params.push(userId);
+  }
+
+  sql += ` ORDER BY a.Activity_Date DESC, a.Activity_ID DESC`;
+
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      console.error('❌ Activities Fetch Error:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch activities' });
+    }
+
+    // Map rows to include userName from First_Name and SurName, and userEmail
+    const activities = (rows || []).map(row => ({
+      ...row,
+      userName: `${row.First_Name} ${row.SurName}`,
+      userEmail: row.Email,
+      breaks: row.Breaks_Summary ? JSON.parse(row.Breaks_Summary) : []
+    }));
+
+    res.json(activities);
+  });
+});
+
+// GET: Fetch user break summary for today (for dashboard)
+router.get('/activities-today', authenticateToken, (req, res) => {
+  const orgId = req.user.orgId;
+  const userId = req.user.userId;
+  const today = new Date().toISOString().split('T')[0];
+
+  const sql = `
+    SELECT 
+      Total_Breaks,
+      Total_Break_Minutes,
+      Breaks_Summary
+    FROM Organization_Activity
+    WHERE Org_ID = ? AND User_ID = ? AND Activity_Date = ? AND Activity_Type = 'break'
+    LIMIT 1
+  `;
+
+  db.get(sql, [orgId, userId, today], (err, row) => {
+    if (err) {
+      console.error('❌ Today Activity Fetch Error:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch today activity' });
+    }
+
+    if (!row) {
+      return res.json({
+        totalBreaks: 0,
+        totalBreakMinutes: 0,
+        breaks: []
+      });
+    }
+
+    res.json({
+      totalBreaks: row.Total_Breaks || 0,
+      totalBreakMinutes: row.Total_Break_Minutes || 0,
+      breaks: row.Breaks_Summary ? JSON.parse(row.Breaks_Summary) : []
+    });
+  });
+});
+
+// ============================================================
+// 🕐 TIME TRACKING REPORT: Complete attendance & breaks for admins
+// ============================================================
+
+/**
+ * GET /org/time-tracking-report
+ * Admin endpoint to view complete time tracking data for all employees
+ * Combines Attendance (clock-in/out) with Organization_Activity (breaks)
+ * 
+ * Query Parameters:
+ *   - startDate: YYYY-MM-DD (filter from this date)
+ *   - endDate: YYYY-MM-DD (filter to this date)
+ *   - userId: INTEGER (filter by specific employee)
+ *   - departmentId: INTEGER (filter by department)
+ *   - status: STRING (present/absent/late/half-day)
+ */
+router.get('/time-tracking-report', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+  const { startDate, endDate, userId, departmentId, status } = req.query;
+
+  // Build dynamic SQL query to fetch attendance and break data
+  let sql = `
+    SELECT 
+      a.Attend_ID,
+      a.User_ID,
+      u.First_Name,
+      u.SurName,
+      u.Email,
+      u.Employee_ID,
+      d.Depart_Name AS departmentName,
+      DATE(a.Check_in_time) AS attendanceDate,
+      TIME(a.Check_in_time) AS clockInTime,
+      TIME(a.Check_out_time) AS clockOutTime,
+      CASE 
+        WHEN a.Check_out_time IS NULL THEN 'Active'
+        ELSE 'Completed'
+      END AS shiftStatus,
+      a.Is_Late_Clock_In AS isLateClockIn,
+      a.Minutes_Late AS minutesLate,
+      CAST((julianday(COALESCE(a.Check_out_time, datetime('now', 'localtime'))) - julianday(a.Check_in_time)) * 24 * 60 AS INTEGER) AS totalShiftMinutes,
+      COALESCE(oa.Total_Breaks, 0) AS totalBreaks,
+      COALESCE(oa.Total_Break_Minutes, 0) AS totalBreakMinutes,
+      oa.Breaks_Summary,
+      a.Check_in_time,
+      a.Check_out_time
+    FROM Attendance a
+    LEFT JOIN User u ON a.User_ID = u.User_ID
+    LEFT JOIN Department d ON u.Dep_ID = d.Dep_ID
+    LEFT JOIN Organization_Activity oa ON a.User_ID = oa.User_ID 
+      AND DATE(a.Check_in_time) = oa.Activity_Date 
+      AND oa.Org_ID = a.Org_ID
+    WHERE a.Org_ID = ? AND u.Is_Active = 1
+  `;
+
+  const params = [orgId];
+
+  // Add filters
+  if (startDate) {
+    sql += ` AND DATE(a.Check_in_time) >= ?`;
+    params.push(startDate);
+  }
+
+  if (endDate) {
+    sql += ` AND DATE(a.Check_in_time) <= ?`;
+    params.push(endDate);
+  }
+
+  if (userId) {
+    sql += ` AND a.User_ID = ?`;
+    params.push(userId);
+  }
+
+  if (departmentId) {
+    sql += ` AND u.Dep_ID = ?`;
+    params.push(departmentId);
+  }
+
+  sql += ` ORDER BY a.Check_in_time DESC`;
+
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      console.error('❌ Time Tracking Report Error:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch time tracking data' });
+    }
+
+    // Process and enhance the data
+    const report = (rows || []).map(row => {
+      let rowStatus = 'present';
+      
+      if (!row.Check_in_time) {
+        rowStatus = 'absent';
+      } else if (row.isLateClockIn) {
+        rowStatus = 'late';
+      } else if (!row.Check_out_time) {
+        rowStatus = 'active';
+      }
+
+      // Apply status filter if requested
+      if (status && rowStatus !== status) {
+        return null;
+      }
+
+      // Parse breaks summary
+      let breaksList = [];
+      try {
+        if (row.Breaks_Summary) {
+          breaksList = JSON.parse(row.Breaks_Summary);
+        }
+      } catch (e) {
+        console.error('Error parsing breaks:', e.message);
+      }
+
+      return {
+        attendId: row.Attend_ID,
+        userId: row.User_ID,
+        employeeId: row.Employee_ID,
+        firstName: row.First_Name,
+        surName: row.SurName,
+        email: row.Email,
+        fullName: `${row.First_Name} ${row.SurName}`,
+        department: row.departmentName || 'Unassigned',
+        date: row.attendanceDate,
+        clockInTime: row.clockInTime,
+        clockOutTime: row.clockOutTime || 'Active',
+        shiftStatus: row.shiftStatus,
+        totalShiftMinutes: row.totalShiftMinutes || 0,
+        totalShiftHours: ((row.totalShiftMinutes || 0) / 60).toFixed(2),
+        isLate: row.isLateClockIn === 1,
+        minutesLate: row.minutesLate || 0,
+        totalBreaks: row.totalBreaks,
+        totalBreakMinutes: row.totalBreakMinutes,
+        breaks: breaksList,
+        status: rowStatus
+      };
+    }).filter(item => item !== null); // Remove filtered items
+
+    // Calculate summary statistics
+    const summary = {
+      totalRecords: report.length,
+      presentCount: report.filter(r => r.status === 'present' || r.status === 'active').length,
+      absentCount: report.filter(r => r.status === 'absent').length,
+      lateCount: report.filter(r => r.status === 'late').length,
+      averageShiftHours: report.length > 0 
+        ? (report.reduce((sum, r) => sum + parseFloat(r.totalShiftHours), 0) / report.length).toFixed(2)
+        : 0,
+      totalBreakTime: report.reduce((sum, r) => sum + r.totalBreakMinutes, 0),
+      uniqueEmployees: new Set(report.map(r => r.userId)).size
+    };
+
+    res.json({
+      success: true,
+      summary,
+      report
+    });
+  });
+});
+
+/**
+ * GET /org/time-tracking-summary
+ * Quick summary statistics for dashboard
+ */
+router.get('/time-tracking-summary', requireAdmin, (req, res) => {
+  const orgId = req.user.orgId;
+  const today = new Date().toISOString().split('T')[0];
+
+  const sql = `
+    SELECT 
+      COUNT(DISTINCT a.User_ID) AS totalEmployees,
+      COUNT(CASE WHEN DATE(a.Check_in_time) = ? AND a.Check_out_time IS NOT NULL THEN 1 END) AS completedShifts,
+      COUNT(CASE WHEN DATE(a.Check_in_time) = ? AND a.Check_out_time IS NULL THEN 1 END) AS activeShifts,
+      COUNT(CASE WHEN a.Is_Late_Clock_In = 1 AND DATE(a.Check_in_time) = ? THEN 1 END) AS lateArrivals,
+      ROUND(AVG(CAST((julianday(COALESCE(a.Check_out_time, datetime('now', 'localtime'))) - julianday(a.Check_in_time)) * 24 * 60 AS INTEGER))) AS avgShiftMinutes,
+      SUM(COALESCE(oa.Total_Break_Minutes, 0)) AS totalBreakMinutes
+    FROM Attendance a
+    LEFT JOIN User u ON a.User_ID = u.User_ID
+    LEFT JOIN Organization_Activity oa ON a.User_ID = oa.User_ID 
+      AND DATE(a.Check_in_time) = oa.Activity_Date 
+      AND oa.Org_ID = a.Org_ID
+    WHERE a.Org_ID = ? AND DATE(a.Check_in_time) = ?
+  `;
+
+  db.get(sql, [today, today, today, orgId, today], (err, row) => {
+    if (err) {
+      console.error('❌ Summary Error:', err.message);
+      return res.status(500).json({ error: 'Failed to fetch summary' });
+    }
+
+    res.json({
+      date: today,
+      totalEmployees: row.totalEmployees || 0,
+      completedShifts: row.completedShifts || 0,
+      activeShifts: row.activeShifts || 0,
+      lateArrivals: row.lateArrivals || 0,
+      averageShiftHours: row.avgShiftMinutes ? (row.avgShiftMinutes / 60).toFixed(2) : 0,
+      totalBreakHours: row.totalBreakMinutes ? (row.totalBreakMinutes / 60).toFixed(2) : 0
+    });
   });
 });
 
