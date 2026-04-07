@@ -120,12 +120,21 @@
           <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-6">Time Tracking</h3>
           
           <div class="flex-1 flex flex-col justify-center items-center space-y-6">
-            <!-- Large Time Display -->
-            <div class="text-center">
-              <div class="text-5xl md:text-6xl font-black text-primary-600 tracking-tight font-mono">
+            <!-- Top Section: Elapsed Time -->
+            <div class="text-center w-full p-3 bg-green-50 rounded-xl border border-green-200">
+              <p class="text-[9px] font-bold text-green-700 uppercase mb-1">Time Worked</p>
+              <div class="text-2xl md:text-3xl font-black text-green-600 tracking-tight font-mono">
                 {{ elapsedTime }}
               </div>
-              <p class="text-xs font-bold text-slate-400 uppercase mt-2">{{ isCheckedIn ? 'Time Worked' : 'Next Shift' }}</p>
+            </div>
+
+            <!-- Large Time Display - Remaining Time (Countdown) -->
+            <div class="text-center">
+              <p class="text-[9px] font-bold text-slate-400 uppercase mb-2">Remaining Shift Time</p>
+              <div class="text-5xl md:text-6xl font-black tracking-tight font-mono" :class="parseInt(remainingTime.split(':')[0]) < 1 ? 'text-red-600' : 'text-primary-600'">
+                {{ remainingTime }}
+              </div>
+              <p class="text-xs font-bold text-slate-400 uppercase mt-2">Countdown</p>
             </div>
 
             <!-- Progress Ring -->
@@ -148,11 +157,11 @@
             <!-- Stats -->
             <div class="grid grid-cols-2 gap-3 w-full text-center text-xs">
               <div class="bg-slate-50 p-3 rounded-xl">
-                <p class="text-slate-400 font-bold uppercase mb-1">Breaks</p>
-                <p class="text-lg font-black text-slate-900">{{ totalBreaks }}</p>
+                <p class="text-slate-400 font-bold uppercase mb-1">Breaks Used</p>
+                <p class="text-lg font-black text-slate-900">{{ totalBreaks }}/{{ maxBreaksAllowed }}</p>
               </div>
               <div class="bg-slate-50 p-3 rounded-xl">
-                <p class="text-slate-400 font-bold uppercase mb-1">Target</p>
+                <p class="text-slate-400 font-bold uppercase mb-1">Total Hours</p>
                 <p class="text-lg font-black text-primary-600">{{ shiftDuration }}h</p>
               </div>
             </div>
@@ -167,10 +176,13 @@
           <button
             v-if="isCheckedIn && !onBreak"
             @click="startBreak"
-            :disabled="breakLoading"
-            class="px-4 md:px-6 py-2 md:py-3 bg-amber-500 text-white rounded-xl font-bold text-xs md:text-sm uppercase hover:bg-amber-600 transition-all disabled:opacity-50"
+            :disabled="breakLoading || breaksRemaining <= 0"
+            class="px-4 md:px-6 py-2 md:py-3 bg-amber-500 text-white rounded-xl font-bold text-xs md:text-sm uppercase hover:bg-amber-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            {{ breakLoading ? 'PROCESSING...' : 'START BREAK' }}
+            <svg v-if="!breakLoading" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 1114.869 0V5a1 1 0 11-2 0v-.101A5.002 5.002 0 5.999 6H9a1 1 0 000-2H5a1 1 0 00-1 1v.101A5 5 0 004 5v2a1 1 0 11-2 0V3a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            {{ breakLoading ? 'PROCESSING...' : `START BREAK (${totalBreaks}/${maxBreaksAllowed})` }}
           </button>
           <button
             v-else-if="onBreak"
@@ -189,24 +201,35 @@
             <p class="text-xs text-slate-500 mt-1">{{ onBreak ? 'In Progress' : 'No active break' }}</p>
           </div>
           <div class="bg-slate-50 p-4 md:p-5 rounded-xl border border-slate-200">
-            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Breaks</p>
-            <p class="text-2xl md:text-3xl font-black text-primary-600">{{ totalBreaks }}</p>
-            <p class="text-xs text-slate-500 mt-1">Today</p>
+            <p class="text-xs font-bold text-slate-400 uppercase mb-2">Total Break Time</p>
+            <p class="text-2xl md:text-3xl font-black text-primary-600">{{ Math.floor(totalBreakMinutes) }}m</p>
+            <p class="text-xs text-slate-500 mt-1">Deducted from shift</p>
           </div>
-          <div class="bg-slate-50 p-4 md:p-5 rounded-xl border border-slate-200">
+          <div class="bg-slate-50 p-4 md:p-5 rounded-xl border" :class="breaksRemaining > 0 ? 'border-green-200' : 'border-red-200'">
             <p class="text-xs font-bold text-slate-400 uppercase mb-2">Break Limit</p>
-            <p class="text-2xl md:text-3xl font-black" :class="breaksRemaining > 0 ? 'text-green-600' : 'text-red-600'">{{ breaksRemaining }}</p>
-            <p class="text-xs text-slate-500 mt-1">Remaining</p>
+            <p class="text-2xl md:text-3xl font-black" :class="breaksRemaining > 0 ? 'text-green-600' : 'text-red-600'">{{ totalBreaks }}/{{ maxBreaksAllowed }}</p>
+            <p class="text-xs" :class="breaksRemaining > 0 ? 'text-green-600' : 'text-red-600'">{{ breaksRemaining }} remaining</p>
           </div>
         </div>
 
         <!-- Break History -->
         <div v-if="breaks.length > 0" class="mt-6 space-y-2">
           <p class="text-xs font-bold text-slate-600 uppercase">Recent Breaks</p>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-            <div v-for="(brk, idx) in breaks.slice(-4)" :key="idx" class="bg-amber-50 p-3 rounded-lg border border-amber-200">
-              <p class="text-xs font-bold text-amber-700">{{ formatBreakTime(brk.start_time) }}</p>
-              <p class="text-[10px] text-amber-600">{{ brk.duration }}min</p>
+          <div class="space-y-2 max-h-48 overflow-y-auto">
+            <div v-for="(brk, idx) in breaks.slice().reverse()" :key="idx" class="bg-amber-50 p-3 rounded-lg border border-amber-200 flex items-center justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">{{ formatBreakType(brk.break_type) }}</span>
+                  <div>
+                    <p class="text-xs font-bold text-amber-700">{{ capitalizeBreakType(brk.break_type) }} Break</p>
+                    <p class="text-[10px] text-amber-600">{{ formatBreakDate(brk.start_time) }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-bold text-amber-600">{{ Math.round(brk.duration || 0) }}min</p>
+                <p class="text-[10px] text-amber-500">{{ formatBreakTime(brk.start_time) }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -313,17 +336,175 @@
         </div>
 
         <!-- Weekly Activity Chart -->
-        <div class="mt-8 bg-slate-50 p-6 rounded-2xl border border-slate-200">
-          <p class="text-xs font-black text-slate-700 uppercase mb-4">Weekly Activity</p>
-          <div class="flex items-end justify-between gap-2 h-32">
-            <div v-for="(day, idx) in weeklyActivity" :key="idx" class="flex-1 flex flex-col items-center group">
-              <div class="w-full bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg hover:from-primary-600 hover:to-primary-500 transition-all"
-                   :style="{ height: (day.hours / 12 * 100) + '%', minHeight: '8px' }">
+        <div class="mt-8 bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-2xl border border-slate-200">
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-xs font-black text-slate-700 uppercase">Weekly Activity (Live)</p>
+            <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">
+              <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              Live
+            </span>
+          </div>
+          <div class="flex items-end justify-between gap-2 h-48">
+            <div v-for="(day, idx) in weeklyActivity" :key="idx" class="flex-1 h-full flex flex-col items-center group relative">
+              <!-- Animated Bar -->
+              <div class="w-full relative h-full flex items-end justify-center">
+                <div 
+                  class="w-full rounded-t-lg transition-all duration-500 ease-out hover:shadow-lg cursor-pointer relative group/bar bg-primary-500"
+                  :style="{ 
+                    height: (day.hours / 12 * 100) + '%',
+                    minHeight: '8px',
+                    background: `linear-gradient(to top, ${getBarColor(day.hours)}, ${getBarColorLight(day.hours)})`
+                  }"
+                >
+                  <!-- Hover Tooltip -->
+                  <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none z-10">
+                    <div class="bg-slate-800 text-white px-2 py-1 rounded text-[10px] font-bold whitespace-nowrap">
+                      {{ day.hours }}h
+                    </div>
+                    <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+                  </div>
+                </div>
               </div>
-              <p class="text-[10px] font-bold text-slate-600 mt-2 upper">{{ day.day }}</p>
-              <p class="text-[9px] text-slate-500">{{ day.hours }}h</p>
+              
+              <!-- Day Label -->
+              <p class="text-[10px] font-bold text-slate-700 mt-3">{{ day.day }}</p>
+              
+              <!-- Hour Display -->
+              <p class="text-[9px] text-slate-500 font-semibold">{{ day.hours }}h</p>
+              
+              <!-- Status Indicator -->
+              <div class="mt-1">
+                <span v-if="day.hours >= 8" class="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" title="On Target"></span>
+                <span v-else-if="day.hours >= 6" class="inline-block w-2 h-2 rounded-full bg-yellow-500" title="Partial"></span>
+                <span v-else class="inline-block w-2 h-2 rounded-full bg-gray-300" title="Off"></span>
+              </div>
             </div>
           </div>
+          
+          <!-- Weekly Summary -->
+          <div class="mt-6 grid grid-cols-3 gap-3">
+            <div class="bg-white p-3 rounded-lg border border-slate-200">
+              <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Weekly Total</p>
+              <p class="text-lg font-black text-primary-600">{{ weeklyTotal }}h</p>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200">
+              <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Daily Average</p>
+              <p class="text-lg font-black text-purple-600">{{ weeklyAverage }}h</p>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200">
+              <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Trend</p>
+              <p class="text-lg font-black" :class="weeklyTrend >= 0 ? 'text-green-600' : 'text-red-600'">
+                {{ weeklyTrend >= 0 ? '+' : '' }}{{ weeklyTrend }}%
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Break Type Selection Modal -->
+    <div v-if="showBreakModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl md:text-2xl font-black text-slate-900">Select Break Type</h3>
+          <button
+            @click="closeBreakModal"
+            class="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Break Type Options -->
+        <div class="space-y-3 mb-6">
+          <!-- Lunch Break -->
+          <label class="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all" :class="breakType === 'lunch' ? 'border-primary-600 bg-primary-50' : 'border-slate-200 hover:border-slate-300'">
+            <input
+              v-model="breakType"
+              type="radio"
+              value="lunch"
+              :disabled="lunchTaken"
+              class="w-4 h-4 text-primary-600 cursor-pointer"
+            />
+            <div class="ml-3 flex-1">
+              <p class="font-bold text-slate-900">Lunch Break</p>
+              <p class="text-xs text-slate-500">{{ lunchTaken ? '✓ Already taken' : 'Once per shift' }}</p>
+            </div>
+            <span class="text-2xl">🍽️</span>
+          </label>
+
+          <!-- Regular Break -->
+          <label class="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all" :class="breakType === 'regular' ? 'border-primary-600 bg-primary-50' : 'border-slate-200 hover:border-slate-300'">
+            <input
+              v-model="breakType"
+              type="radio"
+              value="regular"
+              class="w-4 h-4 text-primary-600 cursor-pointer"
+            />
+            <div class="ml-3 flex-1">
+              <p class="font-bold text-slate-900">Regular Break</p>
+              <p class="text-xs text-slate-500">Short break during work</p>
+            </div>
+            <span class="text-2xl">☕</span>
+          </label>
+
+          <!-- Bathroom Break -->
+          <label class="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all" :class="breakType === 'bathroom' ? 'border-primary-600 bg-primary-50' : 'border-slate-200 hover:border-slate-300'">
+            <input
+              v-model="breakType"
+              type="radio"
+              value="bathroom"
+              class="w-4 h-4 text-primary-600 cursor-pointer"
+            />
+            <div class="ml-3 flex-1">
+              <p class="font-bold text-slate-900">Bathroom Break</p>
+              <p class="text-xs text-slate-500">Quick restroom visit</p>
+            </div>
+            <span class="text-2xl">🚻</span>
+          </label>
+        </div>
+
+        <!-- Reason Input -->
+        <div class="mb-6">
+          <label class="block text-sm font-bold text-slate-900 mb-2">Reason (Optional)</label>
+          <textarea
+            v-model="breakReason"
+            placeholder="Add any notes about your break..."
+            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent resize-none"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Location Status -->
+        <div v-if="location" class="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <p class="text-xs font-bold text-green-700 flex items-center gap-2">
+            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+            GPS LOCKED - Ready to start break
+          </p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-3">
+          <button
+            @click="closeBreakModal"
+            class="flex-1 px-4 py-3 border border-slate-300 text-slate-900 rounded-xl font-bold hover:bg-slate-50 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            @click="confirmStartBreak"
+            :disabled="breakLoading || !location"
+            class="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <svg v-if="breakLoading" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ breakLoading ? 'Starting...' : 'Start Break' }}
+          </button>
         </div>
       </div>
     </div>
@@ -353,17 +534,65 @@ const upcomingSchedules = ref([])
 
 // Time Tracking
 const elapsedTime = ref('00:00:00')
+const remainingTime = ref('08:00:00') // Countdown from total shift hours
 const timeProgress = ref(0)
 const currentTime = ref('00:00')
 const shiftDuration = ref(8)
+const totalShiftMinutes = ref(480) // 8 hours = 480 minutes
+const usedMinutes = ref(0) // Time already used (breaks, lunch, work)
 
 // Break Management
 const onBreak = ref(false)
 const breakLoading = ref(false)
 const currentBreakTime = ref('00:00')
 const totalBreaks = ref(0)
-const breaksRemaining = ref(3)
+const maxBreaksAllowed = ref(2) // Maximum 2 breaks per shift
+const breaksRemaining = computed(() => maxBreaksAllowed.value - totalBreaks.value)
+const totalBreakMinutes = ref(0) // Total minutes spent on breaks
+const lunchTaken = ref(false)
+const lunchDurationMinutes = ref(60) // 1 hour lunch
 const breaks = ref([])
+const breakStartTime = ref(null) // Track when break started
+
+// Break Modal
+const showBreakModal = ref(false)
+const breakType = ref('regular') // 'lunch' | 'regular' | 'bathroom'
+const breakReason = ref('')
+const breakStartLocation = ref(null)
+
+// Weekly Activity Computed Properties
+const weeklyTotal = computed(() => {
+  return weeklyActivity.value.reduce((sum, day) => sum + (day.hours || 0), 0)
+})
+
+const weeklyAverage = computed(() => {
+  const validDays = weeklyActivity.value.filter(day => day.hours > 0).length
+  return validDays > 0 ? (weeklyTotal.value / validDays).toFixed(1) : 0
+})
+
+const weeklyTrend = computed(() => {
+  if (weeklyActivity.value.length < 2) return 0
+  const firstHalf = weeklyActivity.value.slice(0, Math.ceil(weeklyActivity.value.length / 2))
+  const secondHalf = weeklyActivity.value.slice(Math.ceil(weeklyActivity.value.length / 2))
+  const firstAvg = firstHalf.reduce((sum, day) => sum + (day.hours || 0), 0) / firstHalf.length
+  const secondAvg = secondHalf.reduce((sum, day) => sum + (day.hours || 0), 0) / secondHalf.length
+  return ((secondAvg - firstAvg) / firstAvg * 100).toFixed(0)
+})
+
+// Bar color helper functions
+const getBarColor = (hours) => {
+  if (hours >= 8) return '#22c55e' // Green for on target
+  if (hours >= 6) return '#f59e0b' // Amber for partial
+  if (hours > 0) return '#ef4444' // Red for low
+  return '#d1d5db' // Gray for zero
+}
+
+const getBarColorLight = (hours) => {
+  if (hours >= 8) return '#86efac' // Light green
+  if (hours >= 6) return '#fcd34d' // Light amber
+  if (hours > 0) return '#fca5a5' // Light red
+  return '#e5e7eb' // Light gray
+}
 
 // Analytics
 const avgHoursPerDay = ref(0)
@@ -371,7 +600,15 @@ const checkInRate = ref(95)
 const totalMonthHours = ref(128)
 const targetMonthHours = ref(160)
 const onTimeRate = ref(98)
-const weeklyActivity = ref([])
+const weeklyActivity = ref([
+  { day: 'Mon', hours: 0 },
+  { day: 'Tue', hours: 0 },
+  { day: 'Wed', hours: 0 },
+  { day: 'Thu', hours: 0 },
+  { day: 'Fri', hours: 0 },
+  { day: 'Sat', hours: 0 },
+  { day: 'Sun', hours: 0 }
+])
 
 // Real-time Updates (legacy - will be enhanced)
 const { isConnected, statusUpdate, scheduleUpdate, analyticsUpdate, notificationQueue, dismissNotification } = useRealtimeUpdates()
@@ -379,8 +616,10 @@ const { isConnected, statusUpdate, scheduleUpdate, analyticsUpdate, notification
 // Enhanced real-time metrics from new composable
 const { 
   employeeMetrics, 
+  analyticsMetrics,
   isConnected: metricsConnected,
   requestEmployeeMetrics,
+  requestAnalyticsMetrics,
   alerts: realtimeAlerts
 } = useDashboardMetrics({ dashboardType: 'employee' })
 
@@ -460,6 +699,72 @@ const formatBreakTime = (timeStr) => {
   return new Date(timeStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 }
 
+const formatBreakDate = (dateStr) => {
+  if (!dateStr) return 'N/A'
+  const date = new Date(dateStr)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  
+  // Check if today
+  if (date.toDateString() === today.toDateString()) {
+    return 'Today'
+  }
+  // Check if yesterday
+  if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday'
+  }
+  // Otherwise show date
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+const formatBreakType = (type) => {
+  const icons = {
+    'lunch': '🍽️',
+    'regular': '☕',
+    'bathroom': '🚻',
+    'restroom': '🚻'
+  }
+  return icons[type] || '☕'
+}
+
+const capitalizeBreakType = (type) => {
+  const labels = {
+    'lunch': 'Lunch',
+    'regular': 'Regular',
+    'bathroom': 'Restroom',
+    'restroom': 'Restroom'
+  }
+  return labels[type] || type
+}
+
+const formatTimeHMS = (totalSeconds) => {
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = Math.floor(totalSeconds % 60)
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
+const calculateShiftDuration = () => {
+  if (!currentShift.value) return
+  
+  const [startH, startM] = currentShift.value.Shift_Start_Time.split(':').map(Number)
+  const [endH, endM] = currentShift.value.Shift_End_Time.split(':').map(Number)
+  
+  const startMinutes = startH * 60 + startM
+  const endMinutes = endH * 60 + endM
+  let durationMinutes = endMinutes - startMinutes
+  
+  // Handle overnight shifts
+  if (durationMinutes < 0) {
+    durationMinutes += 24 * 60
+  }
+  
+  totalShiftMinutes.value = durationMinutes
+  shiftDuration.value = (durationMinutes / 60).toFixed(1)
+  remainingTime.value = formatTimeHMS(durationMinutes * 60)
+}
+
 // Fetch current status
 const fetchStatus = async () => {
   try {
@@ -475,6 +780,7 @@ const fetchSchedule = async () => {
   try {
     const currentRes = await api.get('/org/my-current-shift')
     currentShift.value = currentRes.data
+    calculateShiftDuration() // Calculate the shift duration
 
     const upcomingRes = await api.get('/org/my-schedule')
     upcomingSchedules.value = (upcomingRes.data || []).slice(0, 7)
@@ -488,9 +794,38 @@ const fetchBreaks = async () => {
   try {
     const res = await api.get('/attendance/breaks')
     breaks.value = res.data || []
-    totalBreaks.value = breaks.value.filter((b) => b.end_time).length
+    // Count ALL breaks started today (including in-progress ones), not just completed ones
+    totalBreaks.value = breaks.value.length
+    
+    // Calculate total break time from completed breaks only
+    totalBreakMinutes.value = breaks.value
+      .filter((b) => b.end_time) // Only count completed breaks
+      .reduce((sum, b) => sum + (b.duration || 0), 0) // Sum all durations in minutes
+    
+    // Check if there's an ongoing break (one without end_time)
+    const ongoingBreak = breaks.value.find((b) => !b.end_time)
+    if (ongoingBreak) {
+      onBreak.value = true
+      breakStartTime.value = new Date(ongoingBreak.start_time)
+    } else {
+      onBreak.value = false
+      breakStartTime.value = null
+    }
   } catch (err) {
     console.error('Breaks fetch failed:', err)
+  }
+}
+
+// Fetch organization settings
+const fetchOrgSettings = async () => {
+  try {
+    const res = await api.get('/org/settings')
+    if (res.data && res.data.Max_Breaks_Per_Shift) {
+      maxBreaksAllowed.value = res.data.Max_Breaks_Per_Shift
+    }
+  } catch (err) {
+    console.error('Org settings fetch failed:', err)
+    // Keep default value of 2
   }
 }
 
@@ -498,48 +833,67 @@ const fetchBreaks = async () => {
 const fetchAnalytics = async () => {
   try {
     const res = await api.get('/attendance/analytics')
-    avgHoursPerDay.value = (res.data.avgHoursPerDay || 8).toFixed(1)
-    checkInRate.value = res.data.checkInRate || 95
-    totalMonthHours.value = res.data.totalMonthHours || 128
-    onTimeRate.value = res.data.onTimeRate || 98
-    weeklyActivity.value = res.data.weeklyActivity || generateDefaultWeekly()
+    
+    // Always use real data from backend
+    avgHoursPerDay.value = res.data.avgHoursPerDay ? (res.data.avgHoursPerDay).toFixed(1) : '0'
+    checkInRate.value = res.data.checkInRate ? res.data.checkInRate : 0
+    totalMonthHours.value = res.data.totalMonthHours ? res.data.totalMonthHours : 0
+    onTimeRate.value = res.data.onTimeRate ? res.data.onTimeRate : 0
+    targetMonthHours.value = res.data.targetMonthHours || 160
+    
+    // Update weekly activity with real data from database
+    if (res.data.weeklyActivity && Array.isArray(res.data.weeklyActivity)) {
+      weeklyActivity.value = res.data.weeklyActivity
+    }
   } catch (err) {
     console.error('Analytics fetch failed:', err)
-    weeklyActivity.value = generateDefaultWeekly()
   }
 }
 
 const generateDefaultWeekly = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  // Return zero for all days - real data will populate from API
   return days.map((day) => ({
     day,
-    hours: Math.floor(Math.random() * 10) + 6,
+    hours: 0,
   }))
 }
 
-// Update elapsed time
+// Update elapsed time and remaining time
 const updateElapsedTime = () => {
   if (!isCheckedIn.value) {
     elapsedTime.value = '00:00:00'
+    remainingTime.value = formatTimeHMS(totalShiftMinutes.value * 60)
     timeProgress.value = 0
     return
   }
 
-  // Simulate elapsed time (in real app, calculate from start time)
+  if (!currentShift.value) return
+
+  // Calculate elapsed time from shift start
   const now = new Date()
-  const hours = now.getHours()
-  const minutes = now.getMinutes()
-  const seconds = now.getSeconds()
-
-  const total = hours * 3600 + minutes * 60 + seconds - 9 * 3600 // Assuming 9 AM start
-  const elapsed = Math.max(0, total)
-
-  const displayHours = Math.floor(elapsed / 3600)
-  const displayMinutes = Math.floor((elapsed % 3600) / 60)
-  const displaySeconds = Math.floor(elapsed % 60)
-
-  elapsedTime.value = `${String(displayHours).padStart(2, '0')}:${String(displayMinutes).padStart(2, '0')}:${String(displaySeconds).padStart(2, '0')}`
-  timeProgress.value = Math.min(elapsed / (shiftDuration.value * 3600), 1)
+  const [startH, startM] = currentShift.value.Shift_Start_Time.split(':').map(Number)
+  const shiftStartMinutes = startH * 60 + startM
+  const nowMinutes = now.getHours() * 60 + now.getMinutes()
+  
+  let elapsedMinutes = nowMinutes - shiftStartMinutes
+  if (elapsedMinutes < 0) elapsedMinutes += 24 * 60 // Handle overnight
+  
+  // Calculate remaining time: total shift - elapsed + breaks + lunch (they get these back)
+  let remainingMinutes = totalShiftMinutes.value - elapsedMinutes + totalBreakMinutes.value
+  if (lunchTaken.value) {
+    remainingMinutes += lunchDurationMinutes.value
+  }
+  remainingMinutes = Math.max(0, remainingMinutes)
+  
+  const elapsedSeconds = elapsedMinutes * 60
+  elapsedTime.value = formatTimeHMS(elapsedSeconds)
+  remainingTime.value = formatTimeHMS(remainingMinutes * 60)
+  
+  // Progress: minutes worked / total shift minutes
+  const workMinutes = elapsedMinutes - totalBreakMinutes.value
+  timeProgress.value = Math.min(workMinutes / totalShiftMinutes.value, 1)
+  usedMinutes.value = elapsedMinutes
 }
 
 // Update current time
@@ -550,21 +904,81 @@ const updateCurrentTime = () => {
   currentTime.value = `${hours}:${minutes}`
 }
 
-// Start break
-const startBreak = async () => {
+// Open break selection modal
+const openBreakModal = () => {
+  if (!isCheckedIn.value) {
+    alert('❌ You must be checked in to take a break')
+    return
+  }
+  
+  if (!inRange.value) {
+    alert('⚠️ You must be in the work zone to start a break')
+    return
+  }
+  
+  if (breaksRemaining.value <= 0) {
+    alert('❌ You have reached your break limit of 2 breaks per shift')
+    return
+  }
+  
+  breakReason.value = ''
+  showBreakModal.value = true
+}
+
+// Confirm and start break
+const confirmStartBreak = async () => {
+  if (!location.value) {
+    alert('⚠️ Unable to get GPS location. Please ensure GPS is enabled.')
+    return
+  }
+  
   breakLoading.value = true
   try {
+    // Record break start
     await api.post('/attendance/break-start', {
       latitude: location.value.latitude,
       longitude: location.value.longitude,
+      breakType: breakType.value,
+      reason: breakReason.value,
+      accuracy: gpsAccuracy.value,
     })
+    
+    // Update local state
     onBreak.value = true
+    breakStartTime.value = new Date()
+    breakStartLocation.value = location.value
+    
+    // Mark lunch as taken if it was lunch break
+    if (breakType.value === 'lunch') {
+      lunchTaken.value = true
+    }
+    
+    // Close modal
+    showBreakModal.value = false
+    
+    // Fetch updated breaks
     await fetchBreaks()
+    
+    // Show success message
+    const breakTypeLabel = breakType.value === 'lunch' ? 'Lunch Break' : breakType.value === 'bathroom' ? 'Bathroom Break' : 'Break'
+    alert(`✅ ${breakTypeLabel} started successfully!`)
   } catch (err) {
     alert(err.response?.data?.error || 'Failed to start break')
   } finally {
     breakLoading.value = false
   }
+}
+
+// Close break modal
+const closeBreakModal = () => {
+  showBreakModal.value = false
+  breakReason.value = ''
+  breakType.value = 'regular'
+}
+
+// Simplified start break (for quick access)
+const startBreak = () => {
+  openBreakModal()
 }
 
 // End break
@@ -575,7 +989,12 @@ const endBreak = async () => {
       latitude: location.value.latitude,
       longitude: location.value.longitude,
     })
+    
+    // Clear local break state
     onBreak.value = false
+    breakStartTime.value = null
+    
+    // Refetch breaks to get updated durations from backend
     await fetchBreaks()
   } catch (err) {
     alert(err.response?.data?.error || 'Failed to end break')
@@ -639,11 +1058,26 @@ const handleSubmit = async () => {
   loading.value = true
   const action = isCheckedIn.value ? 'checkout' : 'checkin'
   try {
-    await api.post(`/attendance/${action}`, {
+    // Prepare checkout payload with break summary if checking out
+    const payload = {
       latitude: location.value.latitude,
       longitude: location.value.longitude,
       accuracy: gpsAccuracy.value,
-    })
+    }
+
+    // If checking out, include break tracking data
+    if (action === 'checkout') {
+      payload.totalBreaks = totalBreaks.value
+      payload.totalBreakMinutes = totalBreakMinutes.value
+      payload.breaks = breaks.value.map(b => ({
+        breakType: b.break_type,
+        startTime: b.start_time,
+        endTime: b.end_time,
+        durationMinutes: b.Duration_Minutes
+      }))
+    }
+
+    await api.post(`/attendance/${action}`, payload)
     await fetchStatus()
     await fetchAnalytics()
     alert(`✅ ${action === 'checkin' ? 'Checked in' : 'Checked out'} successfully!`)
@@ -660,6 +1094,7 @@ onMounted(async () => {
   startGPSMonitoring()
 
   // Fetch data
+  await fetchOrgSettings() // Load org settings including max breaks
   await fetchStatus()
   await fetchSchedule()
   await fetchBreaks()
@@ -668,6 +1103,7 @@ onMounted(async () => {
   // Request real-time metrics (will update via WebSocket)
   if (metricsConnected.value) {
     requestEmployeeMetrics()
+    requestAnalyticsMetrics()
   }
 
   const res = await api.get('/org/geofences')
@@ -676,6 +1112,18 @@ onMounted(async () => {
   // Watch for employee metrics changes and sync
   const metricsWatcher = setInterval(() => {
     syncEmployeeMetrics()
+  }, 1000)
+
+  // Watch for analytics metrics changes from composable
+  const analyticsMetricsWatcher = setInterval(() => {
+    if (analyticsMetrics.value && analyticsMetrics.value.weeklyActivity) {
+      avgHoursPerDay.value = (analyticsMetrics.value.avgHoursPerDay || avgHoursPerDay.value).toFixed(1)
+      checkInRate.value = analyticsMetrics.value.checkInRate || checkInRate.value
+      totalMonthHours.value = analyticsMetrics.value.totalMonthHours || totalMonthHours.value
+      onTimeRate.value = analyticsMetrics.value.onTimeRate || onTimeRate.value
+      weeklyActivity.value = analyticsMetrics.value.weeklyActivity
+      targetMonthHours.value = analyticsMetrics.value.targetMonthHours || targetMonthHours.value
+    }
   }, 1000)
 
   // Real-time updates listener
@@ -691,14 +1139,6 @@ onMounted(async () => {
     }
   }, 500)
 
-  const analyticsUpdateWatcher = setInterval(() => {
-    if (analyticsUpdate.value) {
-      avgHoursPerDay.value = (analyticsUpdate.value.avgHoursPerDay || avgHoursPerDay.value).toFixed(1)
-      checkInRate.value = analyticsUpdate.value.checkInRate || checkInRate.value
-      onTimeRate.value = analyticsUpdate.value.onTimeRate || onTimeRate.value
-    }
-  }, 500)
-
   // Start timers
   updateCurrentTime()
   updateElapsedTime()
@@ -707,21 +1147,26 @@ onMounted(async () => {
 
   // Update break time every second
   const breakTimer = setInterval(() => {
-    if (onBreak.value) {
-      const now = new Date()
-      const minutes = Math.floor(Math.random() * 30)
-      currentBreakTime.value = `00:${String(minutes).padStart(2, '0')}`
+    if (onBreak.value && breakStartTime.value) {
+      const elapsed = Math.floor((new Date() - breakStartTime.value) / 1000) // seconds
+      const hours = Math.floor(elapsed / 3600)
+      const minutes = Math.floor((elapsed % 3600) / 60)
+      const seconds = Math.floor(elapsed % 60)
+      currentBreakTime.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+    } else if (!onBreak.value) {
+      currentBreakTime.value = '00:00:00'
     }
   }, 1000)
 
-  // Refresh data every 5 minutes
+  // Refresh data every 1 minute for live updates
   const refreshInterval = setInterval(() => {
     fetchStatus()
     fetchAnalytics()
     if (metricsConnected.value) {
       requestEmployeeMetrics()
+      requestAnalyticsMetrics()
     }
-  }, 5 * 60 * 1000)
+  }, 60 * 1000) // 1 minute = 60 seconds
 
   onBeforeUnmount(() => {
     // Clean up
@@ -734,7 +1179,8 @@ onMounted(async () => {
     clearInterval(refreshInterval)
     clearInterval(statusUpdateWatcher)
     clearInterval(scheduleUpdateWatcher)
-    clearInterval(analyticsUpdateWatcher)
+    clearInterval(analyticsMetricsWatcher)
+    clearInterval(metricsWatcher)
   })
 })
 </script>

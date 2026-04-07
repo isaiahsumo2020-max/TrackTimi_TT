@@ -39,7 +39,7 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  icon: Object,
+  icon: null, // Accept any component (function, object, etc.)
   label: String,
   value: [String, Number],
   color: String,

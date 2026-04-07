@@ -42,6 +42,17 @@ export function useDashboardMetrics(options = {}) {
     updatedAt: null
   })
 
+  // Analytics Metrics (Real-time)
+  const analyticsMetrics = ref({
+    avgHoursPerDay: 8,
+    totalMonthHours: 0,
+    checkInRate: 95,
+    onTimeRate: 98,
+    weeklyActivity: [],
+    targetMonthHours: 160,
+    updatedAt: null
+  })
+
   // SuperAdmin Dashboard Metrics
   const superadminMetrics = ref({
     totalOrganizations: 0,
@@ -145,6 +156,15 @@ export function useDashboardMetrics(options = {}) {
         employeeMetrics.value.weeklyHours = data.weeklyHours
         employeeMetrics.value.monthlyHours = data.monthlyHours
         queueMetricUpdate('hoursTracking', data)
+      })
+
+      socket.value.on('dashboard:analyticsUpdate', (data) => {
+        analyticsMetrics.value = {
+          ...analyticsMetrics.value,
+          ...data,
+          updatedAt: new Date().toISOString()
+        }
+        queueMetricUpdate('analyticsUpdate', data)
       })
 
       socket.value.on('dashboard:checkinStatus', (data) => {
@@ -262,6 +282,10 @@ export function useDashboardMetrics(options = {}) {
     requestMetricsRefresh('systemMetrics')
   }
 
+  const requestAnalyticsMetrics = () => {
+    requestMetricsRefresh('analyticsMetrics')
+  }
+
   /**
    * Disconnect from socket
    */
@@ -321,6 +345,7 @@ export function useDashboardMetrics(options = {}) {
     isConnected,
     orgMetrics,
     employeeMetrics,
+    analyticsMetrics,
     superadminMetrics,
     metricUpdates,
     alerts,
@@ -332,6 +357,7 @@ export function useDashboardMetrics(options = {}) {
     requestMetricsRefresh,
     requestOrgMetrics,
     requestEmployeeMetrics,
+    requestAnalyticsMetrics,
     requestSystemMetrics,
     emit,
     getLatestUpdate,

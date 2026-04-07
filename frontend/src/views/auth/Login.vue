@@ -1,6 +1,18 @@
 <template>
   <div class="min-h-screen bg-slate-50 flex items-center justify-center p-6 relative overflow-hidden font-sans">
     
+    <!-- Save Notification Toast -->
+    <Transition name="slide-down">
+      <div v-if="showSaveNotification" class="fixed top-8 right-8 z-50 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl p-6 shadow-2xl animate-in slide-in-from-top-4 flex items-center gap-4 max-w-md">
+        <div class="text-2xl">✅</div>
+        <div>
+          <p class="font-black text-sm mb-1">Platform Saved!</p>
+          <p class="text-xs opacity-90"><strong>{{ email }}</strong> saved to this device.</p>
+          <p class="text-[10px] opacity-75 mt-1">Login faster next time!</p>
+        </div>
+      </div>
+    </Transition>
+
     <!-- 1. BACK TO LANDING LINK -->
     <router-link 
       to="/" 
@@ -66,6 +78,18 @@
           </div>
         </div>
 
+        <!-- Save to Platform Checkbox -->
+        <label class="flex items-center gap-3 px-4 py-3 bg-blue-50 rounded-lg cursor-pointer group hover:bg-blue-100 transition-colors">
+          <input 
+            v-model="saveToplatform" 
+            type="checkbox"
+            class="w-5 h-5 accent-blue-600 cursor-pointer"
+          >
+          <span class="text-[11px] font-black text-blue-700 uppercase tracking-widest">
+            💾 Save Email to Platform
+          </span>
+        </label>
+
         <!-- Submit Button -->
         <button 
           type="submit" 
@@ -96,7 +120,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import { ZapIcon, MailIcon, LockIcon, Loader2Icon, ArrowLeftIcon } from 'lucide-vue-next'
@@ -107,6 +131,22 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
+const saveToplatform = ref(false)
+const showSaveNotification = ref(false)
+
+// Load saved email from localStorage on mount
+function loadSavedEmail() {
+  const savedEmail = localStorage.getItem('tracktimi_saved_email')
+  if (savedEmail) {
+    email.value = savedEmail
+    saveToplatform.value = true
+  }
+}
+
+// Call on component load
+onMounted(() => {
+  loadSavedEmail()
+})
 
 async function login() {
   loading.value = true
@@ -124,11 +164,25 @@ async function login() {
         throw new Error('Workspace identifier not found')
       }
 
-      if (role === 'Staff') {
-        router.push(`/${orgSlug}/user-dashboard`)
+      // Save email to platform if checkbox is checked
+      if (saveToplatform.value) {
+        localStorage.setItem('tracktimi_saved_email', email.value)
+        localStorage.setItem('tracktimi_platform_saved_at', new Date().toISOString())
+        showSaveNotification.value = true
+        console.log('✅ Email saved to platform:', email.value)
       } else {
-        router.push(`/${orgSlug}/dashboard`)
+        localStorage.removeItem('tracktimi_saved_email')
+        localStorage.removeItem('tracktimi_platform_saved_at')
       }
+
+      // Show success notification for 2 seconds before redirecting
+      setTimeout(() => {
+        if (role === 'Staff') {
+          router.push(`/${orgSlug}/user-dashboard`)
+        } else {
+          router.push(`/${orgSlug}/dashboard`)
+        }
+      }, saveToplatform.value ? 2000 : 0)
     } else if (result.requiresVerification) {
       // Email not verified - redirect to verification page
       localStorage.setItem('pendingVerificationEmail', result.email)
@@ -155,5 +209,32 @@ async function login() {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+.slide-down-enter-active, .slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-from-top-4 {
+  animation: slideInFromTop 0.3s ease-out;
 }
 </style>

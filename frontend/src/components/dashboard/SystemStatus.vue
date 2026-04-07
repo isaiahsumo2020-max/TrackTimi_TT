@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gradient-to-br from-[#1B8B3C] to-[#0F5124] rounded-2xl shadow-2xl text-white relative overflow-hidden flex flex-col justify-between p-10">
+  <div class="bg-gradient-to-br from-[#4338CA] to-[#3730A3] rounded-2xl shadow-2xl text-white relative overflow-hidden flex flex-col justify-between p-10">
     <!-- Decorative Background Element -->
     <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-[#FF6B35]/10 rounded-full blur-[80px]"></div>
 
@@ -31,7 +31,7 @@
           </div>
           <div class="h-2 w-full bg-white/10 rounded-full overflow-hidden shadow-inner">
             <div 
-              class="h-full bg-gradient-to-r from-[#4ADE80] to-[#86EFB3] rounded-full transition-all duration-1000 shadow-lg shadow-[#4ADE80]/50"
+              class="h-full bg-gradient-to-r from-[#818CF8] to-[#A5B4FC] rounded-full transition-all duration-1000 shadow-lg shadow-[#818CF8]/50"
               :style="{ width: serverStatus + '%' }"
             ></div>
           </div>

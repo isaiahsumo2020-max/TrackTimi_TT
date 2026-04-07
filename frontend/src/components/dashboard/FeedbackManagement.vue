@@ -25,9 +25,9 @@
         <p class="text-sm text-gray-600 mb-1">Responded</p>
         <p class="text-2xl font-bold text-purple-600">{{ stats.status.responded }}</p>
       </div>
-      <div class="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
+      <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
         <p class="text-sm text-gray-600 mb-1">Avg Rating</p>
-        <p class="text-2xl font-bold text-green-600">{{ stats.rating.average }}/5.0</p>
+        <p class="text-2xl font-bold text-blue-600">{{ stats.rating.average }}/5.0</p>
       </div>
     </div>
 

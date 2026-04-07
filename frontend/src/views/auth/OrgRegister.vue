@@ -95,7 +95,7 @@
                   </div>
                   <div class="text-right">
                     <p class="text-[9px] font-black text-slate-500 uppercase">Accuracy</p>
-                    <p class="text-xs font-black text-green-400">{{ accuracy }}</p>
+                    <p class="text-xs font-black text-blue-400">{{ accuracy }}</p>
                   </div>
                 </div>
                 <ZapIcon class="absolute -right-4 -bottom-4 w-16 h-16 text-white/5 rotate-12 group-hover:rotate-0 transition-transform duration-1000" />

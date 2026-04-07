@@ -45,7 +45,7 @@
       <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
           <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Avg Check-in Rate</h4>
-          <TrendingUpIcon class="w-5 h-5 text-green-500" />
+          <TrendingUpIcon class="w-5 h-5 text-blue-500" />
         </div>
         <p class="text-3xl font-black text-primary-600">{{ metrics.avgAttendanceRate }}%</p>
         <p class="text-xs text-slate-500 mt-2">{{ getDaysValue() }}-day average</p>
@@ -180,7 +180,7 @@
                   <div class="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
                     <div 
                       class="h-full rounded-full transition-all"
-                      :class="emp.attendanceRate >= 85 ? 'bg-green-500' : emp.attendanceRate >= 70 ? 'bg-accent-500' : 'bg-red-500'"
+                      :class="emp.attendanceRate >= 85 ? 'bg-blue-500' : emp.attendanceRate >= 70 ? 'bg-accent-500' : 'bg-red-500'"
                       :style="{ width: emp.attendanceRate + '%' }"
                     ></div>
                   </div>

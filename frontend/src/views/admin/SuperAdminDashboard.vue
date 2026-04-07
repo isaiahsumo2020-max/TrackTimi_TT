@@ -190,6 +190,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import io from 'socket.io-client'
 import { getDashboard, getOrganizations, getNotifications, markNotificationAsRead, getUnreadNotificationCount, deleteNotification as deleteNotifApi, markAllNotificationsAsRead } from '@/services/superadminApi'
 import { useDashboardMetrics } from '@/composables/useDashboardMetrics'
 import Sidebar from '@/components/dashboard/Sidebar.vue'
@@ -224,6 +225,7 @@ const unreadCount = ref(0)
 const notifRefreshInterval = ref(null)
 const isRefreshingNotifications = ref(false)
 const lastNotifCheck = ref(0)
+const socket = ref(null)
 
 // Real-time metrics composable (SuperAdmin/System-wide)
 const { 
@@ -399,6 +401,50 @@ onMounted(() => {
   refreshData()
   loadNotifications()
 
+  // Set up real-time Socket.IO connection
+  const token = localStorage.getItem('superAdminToken')
+  socket.value = io(import.meta.env.VITE_API_URL || 'http://localhost:4000', {
+    auth: { token },
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    reconnectionAttempts: 10,
+    transports: ['websocket', 'polling']
+  })
+
+  // Listen for real-time notification events
+  socket.value.on('notification:new', (notifData) => {
+    console.log('📡 Real-time notification received:', notifData)
+    // Add new notification to the list
+    notifications.value.unshift({
+      Notify_ID: notifData.Notify_ID,
+      Title: notifData.title,
+      Message: notifData.message,
+      Type: notifData.type,
+      Category: notifData.category,
+      Is_Read: 0,
+      Created_at: notifData.timestamp,
+      Action_URL: notifData.actionUrl
+    })
+    // Increment unread count
+    unreadCount.value++
+    console.log('✅ Notification added to list, unread count:', unreadCount.value)
+  })
+
+  socket.value.on('connect', () => {
+    console.log('✅ SuperAdmin Dashboard Socket.IO connected')
+    // Tell server that this is a SuperAdmin connection
+    socket.value.emit('userLogin', { userId: 1, role: 'SuperAdmin' })
+  })
+
+  socket.value.on('disconnect', () => {
+    console.log('❌ SuperAdmin Dashboard Socket.IO disconnected')
+  })
+
+  socket.value.on('connect_error', (error) => {
+    console.error('📡 Socket.IO connection error:', error)
+  })
+
   // Refresh notifications every 2 seconds for real-time updates (with debouncing)
   notifRefreshInterval.value = setInterval(() => {
     loadNotifications()
@@ -415,12 +461,19 @@ onMounted(() => {
   const intervals = [notifRefreshInterval.value, metricsRefreshInterval]
   onBeforeUnmount(() => {
     intervals.forEach(interval => clearInterval(interval))
+    // Disconnect socket
+    if (socket.value) {
+      socket.value.disconnect()
+    }
   })
 })
 
 onBeforeUnmount(() => {
   if (notifRefreshInterval.value) {
     clearInterval(notifRefreshInterval.value)
+  }
+  if (socket.value) {
+    socket.value.disconnect()
   }
 })
 </script>

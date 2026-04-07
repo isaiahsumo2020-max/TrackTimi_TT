@@ -237,6 +237,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import { useNotifications } from '@/composables/useNotifications'
 import api from '@/utils/api'
 import { 
   LayoutDashboardIcon, 
@@ -250,7 +251,10 @@ import {
   CalendarIcon,
   ClipboardListIcon,
   BellIcon,
-  MessageSquareIcon
+  MessageSquareIcon,
+  BarChart3Icon,
+  CoffeeIcon,
+  ClockIcon
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -260,21 +264,17 @@ const authStore = useAuthStore()
 const sidebarOpen = ref(false)
 const toggleSidebar = () => { sidebarOpen.value = !sidebarOpen.value }
 
-// Notifications
-const showNotifications = ref(false)
-const recentNotifications = ref([])
-const unreadCount = ref(0)
-let notificationInterval = null
+// Use real-time notifications composable
+const { 
+  notifications, 
+  unreadCount, 
+  fetchNotifications, 
+  initSocket, 
+  cleanup: cleanupNotifications 
+} = useNotifications()
 
-const fetchNotifications = async () => {
-  try {
-    const res = await api.get('/notifications?limit=10')
-    recentNotifications.value = res.data.notifications || []
-    unreadCount.value = res.data.unreadCount || 0
-  } catch (err) {
-    console.error('Failed to fetch notifications:', err)
-  }
-}
+const showNotifications = ref(false)
+const recentNotifications = computed(() => notifications.value)
 
 const formatTime = (timestamp) => {
   if (!timestamp) return ''
@@ -290,30 +290,16 @@ const formatTime = (timestamp) => {
 
 // Refresh functionality
 const isRefreshing = ref(false)
-let handleKeyPress = null  // Store ref for cleanup
+let handleKeyPress = null
 
 const refreshPage = async () => {
   isRefreshing.value = true
   try {
-    // Refresh notifications
     await fetchNotifications()
-    
-    // Refresh current route component
-    if (route.name === 'OrgDashboard') {
-      // Emit custom event for dashboard component to refresh
-      window.dispatchEvent(new Event('page:refresh'))
-    } else if (route.name === 'OrgUsers' || route.name === 'EmployeeManagement') {
-      window.dispatchEvent(new Event('page:refresh'))
-    } else if (route.name === 'OrgDepartments') {
-      window.dispatchEvent(new Event('page:refresh'))
-    } else if (route.name === 'AdminSchedule') {
+    if (route.name === 'OrgDashboard' || route.name === 'OrgUsers' || route.name === 'EmployeeManagement' || route.name === 'OrgDepartments' || route.name === 'AdminSchedule') {
       window.dispatchEvent(new Event('page:refresh'))
     }
-    
-    // Complete refresh animation
-    setTimeout(() => {
-      isRefreshing.value = false
-    }, 600)
+    setTimeout(() => { isRefreshing.value = false }, 600)
   } catch (err) {
     console.error('Refresh error:', err)
     isRefreshing.value = false
@@ -367,6 +353,7 @@ const groupedMenu = computed(() => {
           { name: 'departments', label: 'Departments', path: `${basePath}/departments`, icon: BriefcaseIcon },
           { name: 'admin-schedule', label: 'Schedule', path: `${basePath}/admin-schedule`, icon: CalendarIcon },
           { name: 'checkin', label: 'Activity Logs', path: `${basePath}/checkin`, icon: MapPinIcon },
+          { name: 'time-tracking', label: 'Time Tracking Report', path: `${basePath}/time-tracking`, icon: ClockIcon },
         ]
       },
       {
@@ -385,8 +372,8 @@ const groupedMenu = computed(() => {
       items: [
         { name: 'user-dashboard', label: 'My Stats', path: `${basePath}/user-dashboard`, icon: LayoutDashboardIcon },
         { name: 'schedule', label: 'My Schedule', path: `${basePath}/schedule`, icon: CalendarIcon },
+        { name: 'time-management', label: 'Time Management', path: `${basePath}/time-management`, icon: BarChart3Icon },
         { name: 'checkins', label: 'My History', path: `${basePath}/checkins`, icon: ClipboardListIcon },
-        { name: 'feedback', label: 'Send Feedback', path: `${basePath}/feedback`, icon: MessageSquareIcon },
       ]
     }
   ]
@@ -397,10 +384,15 @@ const logout = () => {
   router.push('/login')
 }
 
-// Fetch notifications on mount and set up polling
-onMounted(() => {
-  fetchNotifications()
-  notificationInterval = setInterval(fetchNotifications, 15000) // Poll every 15 seconds
+// Initialize Socket.IO and fetch notifications on mount
+onMounted(async () => {
+  console.log('🚀 TenantLayout mounted - Initializing real-time notifications')
+  
+  // Fetch initial notifications
+  await fetchNotifications()
+  
+  // Initialize Socket.IO for real-time updates
+  await initSocket()
   
   // Add keyboard shortcut for refresh (Ctrl+R or Cmd+R)
   handleKeyPress = (e) => {
@@ -412,10 +404,13 @@ onMounted(() => {
   window.addEventListener('keydown', handleKeyPress)
 })
 
+// Clean up on unmount
 onUnmounted(() => {
-  if (notificationInterval) {
-    clearInterval(notificationInterval)
-  }
+  console.log('🧹 TenantLayout unmounted - Cleaning up notifications')
+  
+  // Clean up Socket.IO and polling
+  cleanupNotifications()
+  
   // Remove keyboard shortcut listener
   if (handleKeyPress) {
     window.removeEventListener('keydown', handleKeyPress)

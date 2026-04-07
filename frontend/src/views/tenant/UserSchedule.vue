@@ -1,6 +1,38 @@
 <template>
   <div class="p-6 lg:p-10 space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
     
+    <!-- Toast Notifications -->
+    <div class="fixed top-6 right-6 z-[100] space-y-3 pointer-events-none">
+      <transition-group name="toast">
+        <div v-for="toast in toasts" :key="toast.id"
+             class="flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border-2 pointer-events-auto animate-in slide-in-from-top-4 duration-300"
+             :class="{
+               'bg-green-50 border-green-300': toast.type === 'success',
+               'bg-red-50 border-red-300': toast.type === 'error',
+               'bg-blue-50 border-blue-300': toast.type === 'info',
+               'bg-amber-50 border-amber-300': toast.type === 'warning'
+             }">
+          <span class="text-2xl">
+            {{ toast.type === 'success' ? '✓' : toast.type === 'error' ? '✕' : toast.type === 'info' ? 'ℹ' : '⚠' }}
+          </span>
+          <div>
+            <p class="font-black text-sm" :class="{
+              'text-green-900': toast.type === 'success',
+              'text-red-900': toast.type === 'error',
+              'text-blue-900': toast.type === 'info',
+              'text-amber-900': toast.type === 'warning'
+            }">{{ toast.message }}</p>
+            <p v-if="toast.description" class="text-xs opacity-70 mt-1" :class="{
+              'text-green-700': toast.type === 'success',
+              'text-red-700': toast.type === 'error',
+              'text-blue-700': toast.type === 'info',
+              'text-amber-700': toast.type === 'warning'
+            }">{{ toast.description }}</p>
+          </div>
+        </div>
+      </transition-group>
+    </div>
+    
     <!-- 1. Premium Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
@@ -10,24 +42,28 @@
         </h1>
       </div>
       
-      <div class="flex items-center space-x-4">
-        <div class="bg-white px-6 py-3 rounded-2xl border border-slate-100 shadow-sm text-center">
-          <p class="text-[9px] font-black text-slate-400 uppercase">Work Hours (MTD)</p>
-          <p class="text-sm font-black text-slate-900">{{ totalMonthlyHours }}h</p>
+      <div class="flex items-center space-x-3">
+        <!-- Monthly Hours Card -->
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 px-6 py-3 rounded-2xl border border-blue-200 shadow-sm text-center">
+          <p class="text-[9px] font-black text-blue-600 uppercase">Work Hours (MTD)</p>
+          <p class="text-2xl font-black text-blue-900">{{ loading ? '--' : totalMonthlyHours.toFixed(1) }}h</p>
         </div>
-        <!-- Quick Action Button -->
-        <router-link :to="`/checkin`" 
-          class="px-6 py-3 bg-primary-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary-100 hover:bg-primary-700 transition-all active:scale-95">
-          Clock Center 📍
-        </router-link>
+        
+        <!-- Weekly Hours Card -->
+        <div class="bg-gradient-to-br from-green-50 to-green-100 px-6 py-3 rounded-2xl border border-green-200 shadow-sm text-center">
+          <p class="text-[9px] font-black text-green-600 uppercase">This Week</p>
+          <p class="text-2xl font-black text-green-900">{{ loading ? '--' : currentWeeklyHours.toFixed(1) }}h</p>
+        </div>
+        
+        <!-- Quick Action Button - Hidden -->
       </div>
     </div>
 
     <!-- 2. Status & Shift Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
       <!-- Current Status Card -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+      <div class="bg-white p-8 rounded-[3rem] border-2 border-slate-200 shadow-md flex flex-col justify-between relative overflow-hidden group">
         <div class="relative z-10">
           <div class="flex justify-between items-start mb-6">
             <div :class="statusColor" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:rotate-12">
@@ -45,27 +81,70 @@
         <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-slate-50 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
       </div>
 
-      <!-- Upcoming Shift -->
-      <div class="lg:col-span-2 bg-slate-900 p-8 rounded-[3rem] shadow-2xl text-white relative overflow-hidden">
-        <div class="relative z-10 flex flex-col h-full">
+      <!-- Upcoming Schedule - Full Month View -->
+      <div class="lg:col-span-2 bg-slate-900 p-8 rounded-[3rem] border-2 border-slate-700 shadow-2xl text-white relative overflow-hidden">
+        <div class="relative z-10 space-y-6">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xs font-black uppercase tracking-[0.2em] opacity-50 text-primary-400">Next Scheduled Shift</h3>
-            <CalendarIcon class="w-4 h-4 opacity-50" />
-          </div>
-          
-          <div v-if="nextShift" class="flex-1 flex flex-col justify-center">
-            <div class="flex items-center space-x-4 mb-4">
-              <span class="px-3 py-1 bg-primary-500/20 text-primary-300 rounded-lg text-[10px] font-black uppercase border border-primary-500/30">
-                {{ nextShift.Depart_Name || 'General' }}
-              </span>
-              <span class="text-xs font-bold opacity-60">{{ formatDate(nextShift.Shift_Date) }}</span>
+            <div>
+              <h3 class="text-xs font-black uppercase tracking-[0.2em] opacity-50 text-primary-400">Scheduled Shifts</h3>
+              <p class="text-[10px] font-bold text-white/40 uppercase tracking-wider mt-1">{{ schedulePeriod }}</p>
             </div>
-            <h2 class="text-3xl font-black tracking-tight">{{ nextShift.Shift_Start_Time }} — {{ nextShift.Shift_End_Time }}</h2>
-            <p class="text-sm opacity-50 mt-2 font-medium">{{ nextShift.Shift_Title || 'Standard Operational Duty' }}</p>
+            <div class="flex gap-2">
+              <span v-if="currentMonthSchedule.length > 0" class="px-3 py-1 bg-primary-500/20 text-primary-300 rounded-lg text-[10px] font-black uppercase border border-primary-500/30">
+                {{ currentMonthSchedule.length }} This Month
+              </span>
+              <span v-if="nextMonthSchedule.length > 0" class="px-3 py-1 bg-slate-500/20 text-slate-300 rounded-lg text-[10px] font-black uppercase border border-slate-500/30">
+                {{ nextMonthSchedule.length }} Next Month
+              </span>
+            </div>
           </div>
-          
-          <div v-else class="flex-1 flex items-center justify-center">
-            <p class="text-xs font-black uppercase opacity-30 tracking-[0.3em]">No Upcoming Shifts Found</p>
+
+          <!-- Main Schedule Display -->
+          <div class="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+            <!-- Current Month Shifts -->
+            <div v-if="currentMonthSchedule.length > 0" class="space-y-3">
+              <p class="text-[10px] font-black text-primary-400 uppercase tracking-widest opacity-50 mb-2">This Month ({{ new Date().toLocaleDateString('en-US', { month: 'long' }) }})</p>
+              <div v-for="shift in currentMonthSchedule" :key="shift.Schedule_ID" 
+                   class="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-primary-500/30 transition-all group cursor-pointer">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="text-lg font-black tracking-tight">{{ shift.Start_Time }} — {{ shift.End_Time }}</p>
+                    <p class="text-[10px] text-white/60 font-bold uppercase mt-1">{{ formatDate(shift.Start_Date) }}</p>
+                    <p class="text-sm text-white/70 font-semibold mt-2">{{ shift.Depart_Name || 'General Duty' }}</p>
+                  </div>
+                  <div class="text-right">
+                    <span class="px-3 py-1 bg-primary-500/30 text-primary-200 rounded-lg text-[9px] font-black uppercase border border-primary-500/50 group-hover:bg-primary-500/50 transition-all">
+                      Scheduled
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Next Month Shifts -->
+            <div v-if="nextMonthSchedule.length > 0" class="space-y-3">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-50 mt-6 mb-2">Next Month ({{ new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString('en-US', { month: 'long' }) }})</p>
+              <div v-for="shift in nextMonthSchedule" :key="shift.Schedule_ID" 
+                   class="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-slate-500/30 transition-all group cursor-pointer opacity-75 hover:opacity-100">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="text-lg font-black tracking-tight">{{ shift.Start_Time }} — {{ shift.End_Time }}</p>
+                    <p class="text-[10px] text-white/60 font-bold uppercase mt-1">{{ formatDate(shift.Start_Date) }}</p>
+                    <p class="text-sm text-white/70 font-semibold mt-2">{{ shift.Depart_Name || 'General Duty' }}</p>
+                  </div>
+                  <div class="text-right">
+                    <span class="px-3 py-1 bg-slate-500/30 text-slate-200 rounded-lg text-[9px] font-black uppercase border border-slate-500/50">
+                      Upcoming
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- No Schedule -->
+            <div v-if="currentMonthSchedule.length === 0 && nextMonthSchedule.length === 0" class="flex-1 flex items-center justify-center py-20">
+              <p class="text-xs font-black uppercase opacity-30 tracking-[0.3em]">No Scheduled Shifts</p>
+            </div>
           </div>
         </div>
         <div class="absolute top-0 right-0 w-64 h-64 bg-primary-600/10 blur-[80px] rounded-full"></div>
@@ -73,10 +152,10 @@
     </div>
 
     <!-- 3. Performance & Recent Logs -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
       <!-- Recent Check-ins List -->
-      <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+      <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] border-2 border-slate-200 shadow-md">
         <div class="flex justify-between items-center mb-8">
           <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center">
             <HistoryIcon class="w-4 h-4 mr-2 text-primary-500" /> Recent Pulse History
@@ -108,40 +187,56 @@
       </div>
 
       <!-- Weekly Progress (Cool Feature) -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm text-center space-y-6">
-        <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Weekly Commitment</h3>
+      <div class="bg-white p-8 rounded-[3rem] border-2 border-slate-200 shadow-md text-center space-y-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Weekly Commitment</h3>
+          <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold">
+            <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+            Live
+          </span>
+        </div>
         
         <div class="relative w-40 h-40 mx-auto flex items-center justify-center">
           <!-- Simple SVG Circle Progress -->
           <svg class="w-full h-full transform -rotate-90">
             <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" class="text-slate-50" />
             <circle cx="80" cy="80" r="70" stroke="currentColor" stroke-width="12" fill="transparent" 
-              class="text-primary-600 transition-all duration-1000"
+              :class="weeklyProgress >= 100 ? 'text-green-600' : 'text-primary-600'"
+              class="transition-all duration-1000"
               :stroke-dasharray="440"
-              :stroke-dashoffset="440 - (440 * weeklyProgress / 100)"
+              :stroke-dashoffset="440 - (440 * Math.min(100, weeklyProgress) / 100)"
               stroke-linecap="round" />
           </svg>
           <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <p class="text-3xl font-black text-slate-900">{{ weeklyProgress }}%</p>
-            <p class="text-[8px] font-black text-slate-400 uppercase">Target: 40h</p>
+            <p class="text-3xl font-black" :class="weeklyProgress >= 100 ? 'text-green-600' : 'text-slate-900'">{{ Math.min(weeklyProgress, 100) }}%</p>
+            <p class="text-[8px] font-black text-slate-400 uppercase">of {{ weeklyTarget }}h</p>
           </div>
         </div>
         
-        <div class="pt-4 space-y-2">
-          <p class="text-xs font-bold text-slate-600">You've completed <span class="text-primary-600">{{ currentWeeklyHours }}h</span> this week.</p>
-          <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Keep it up! 🚀</p>
+        <div class="pt-4 space-y-3">
+          <div class="flex justify-between items-center">
+            <p class="text-xs font-bold text-slate-600">Completed This Week</p>
+            <p class="text-sm font-black text-primary-600">{{ currentWeeklyHours.toFixed(1) }}h</p>
+          </div>
+          <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div :class="weeklyProgress >= 100 ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-primary-500 to-primary-600'"
+                 class="h-full transition-all duration-700"
+                 :style="{ width: Math.min(100, weeklyProgress) + '%' }"></div>
+          </div>
+          <div class="flex justify-between">
+            <p class="text-[9px] font-bold text-slate-400 uppercase">
+              Target: {{ weeklyTarget }}h <span class="text-slate-300">({{ shiftsThisWeek }} shifts × {{ shiftsThisWeek > 0 ? (weeklyTarget / shiftsThisWeek).toFixed(1) : '0' }}h)</span>
+            </p>
+            <p :class="hoursRemaining > 0 ? 'text-amber-600' : 'text-green-600'" class="text-[9px] font-bold uppercase font-semibold">
+              {{ hoursRemaining > 0 ? hoursRemaining.toFixed(1) + 'h to go' : '✓ Complete!' }}
+            </p>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Add New Shift Button -->
-    <div class="flex justify-end">
-      <button @click="showAddShiftModal = true"
-              class="px-6 py-3 bg-primary-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary-100 hover:bg-primary-700 transition-all active:scale-95">
-        + Add New Shift
-      </button>
-    </div>
+    <!-- Add New Shift Button - Hidden -->
   </div>
 
   <!-- Add Shift Modal -->
@@ -201,7 +296,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import api from '@/utils/api'
 import { useRoute } from 'vue-router'
@@ -215,14 +310,18 @@ const user = computed(() => authStore.user)
 // Data State
 const todayStatus = ref('Away')
 const todayTime = ref('--:--')
-const shifts = ref([])
+const schedule = ref([]) // Full monthly schedule
 const checkins = ref([])
 const employees = ref([])
 const totalMonthlyHours = ref(0)
 const currentWeeklyHours = ref(0)
 const weeklyProgress = ref(0)
+const weeklyTarget = ref(40)
+const hoursRemaining = ref(40)
 const showAddShiftModal = ref(false)
 const formSubmitted = ref(false)
+const loading = ref(true)
+const toasts = ref([])
 
 const shiftForm = ref({
   userId: '',
@@ -236,10 +335,76 @@ const statusColor = computed(() => todayStatus.value === 'Checked In' ? 'bg-gree
 const statusBadge = computed(() => todayStatus.value === 'Checked In' ? 'bg-green-50 text-green-600' : 'bg-slate-50 text-slate-500')
 const statusMessage = computed(() => todayStatus.value === 'Checked In' ? 'Your shift is currently being recorded.' : 'Not currently clocked into a work zone.')
 
-const nextShift = computed(() => shifts.value[0] || null)
+const nextShift = computed(() => schedule.value[0] || null)
+
+const currentMonthSchedule = computed(() => {
+  const today = new Date()
+  const currentMonth = today.getMonth()
+  const currentYear = today.getFullYear()
+  
+  return schedule.value.filter(shift => {
+    const shiftDate = new Date(shift.Start_Date)
+    return shiftDate.getMonth() === currentMonth && shiftDate.getFullYear() === currentYear
+  })
+})
+
+const nextMonthSchedule = computed(() => {
+  const today = new Date()
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+  const nextMonthNum = nextMonth.getMonth()
+  const nextYear = nextMonth.getFullYear()
+  
+  return schedule.value.filter(shift => {
+    const shiftDate = new Date(shift.Start_Date)
+    return shiftDate.getMonth() === nextMonthNum && shiftDate.getFullYear() === nextYear
+  })
+})
+
+const schedulePeriod = computed(() => {
+  if (schedule.value.length === 0) return 'No schedules'
+  
+  // Find earliest start date and latest end date from all schedules
+  let earliestStart = null
+  let latestEnd = null
+  
+  schedule.value.forEach(shift => {
+    const startDate = new Date(shift.Start_Date)
+    const endDate = new Date(shift.End_Date)
+    
+    if (!earliestStart || startDate < earliestStart) {
+      earliestStart = startDate
+    }
+    if (!latestEnd || endDate > latestEnd) {
+      latestEnd = endDate
+    }
+  })
+  
+  if (!earliestStart || !latestEnd) return 'No period'
+  
+  const startFormatted = earliestStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const endFormatted = latestEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  
+  return `${startFormatted} to ${endFormatted}`
+})
+
+const shiftsThisWeek = computed(() => {
+  const today = new Date()
+  const dayOfWeek = today.getDay()
+  const weekStart = new Date(today)
+  weekStart.setDate(today.getDate() - dayOfWeek)
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekStart.getDate() + 6)
+  
+  return schedule.value.filter(shift => {
+    const shiftDate = new Date(shift.Start_Date)
+    return shiftDate >= weekStart && shiftDate <= weekEnd
+  }).length
+})
 
 const loadUserData = async () => {
   try {
+    loading.value = true
+    
     // 1. Fetch current clock status
     const statusRes = await api.get('/attendance/status')
     if (statusRes.data.checkedIn) {
@@ -251,11 +416,70 @@ const loadUserData = async () => {
     const historyRes = await api.get('/attendance/my-history')
     checkins.value = historyRes.data.slice(0, 8) // Get last 8 entries
 
-    // 3. Fetch Shifts - get current user's shifts
-    const shiftsRes = await api.get(`/shifts/user/${user.value.userId}`)
-    shifts.value = shiftsRes.data
+    // 3. Fetch Schedules - get full upcoming schedules from Schedule table
+    try {
+      const scheduleRes = await api.get(`/org/my-schedule`)
+      schedule.value = scheduleRes.data || []
+    } catch (scheduleErr) {
+      console.warn('Schedule fetch failed:', scheduleErr)
+      schedule.value = []
+    }
 
-    // 4. Fetch Employees (requires admin role)
+    // 4. Calculate weekly target based on ACTUAL shifts THIS WEEK
+    const today = new Date()
+    const dayOfWeek = today.getDay() // 0 = Sunday, 1 = Monday, etc.
+    const weekStart = new Date(today)
+    weekStart.setDate(today.getDate() - dayOfWeek) // Start of current week (Sunday)
+    const weekEnd = new Date(weekStart)
+    weekEnd.setDate(weekStart.getDate() + 6) // End of current week (Saturday)
+    
+    let weeklyTargetHours = 0
+    
+    // Sum up all shifts that fall within THIS WEEK
+    schedule.value.forEach(shift => {
+      const shiftDate = new Date(shift.Start_Date)
+      if (shiftDate >= weekStart && shiftDate <= weekEnd) {
+        // Calculate shift duration from Start_Time and End_Time
+        const [startH, startM] = shift.Start_Time.split(':').map(Number)
+        const [endH, endM] = shift.End_Time.split(':').map(Number)
+        
+        let durationMinutes = (endH * 60 + endM) - (startH * 60 + startM)
+        
+        // Handle overnight shifts
+        if (durationMinutes < 0) {
+          durationMinutes += 24 * 60
+        }
+        
+        weeklyTargetHours += durationMinutes / 60
+      }
+    })
+    
+    weeklyTarget.value = Math.round(weeklyTargetHours * 10) / 10 || 0
+
+    // 5. Fetch Real Analytics Data
+    try {
+      const analyticsRes = await api.get('/attendance/analytics')
+      if (analyticsRes.data) {
+        // Calculate weekly hours from weekly activity
+        if (analyticsRes.data.weeklyActivity && Array.isArray(analyticsRes.data.weeklyActivity)) {
+          currentWeeklyHours.value = analyticsRes.data.weeklyActivity.reduce((sum, day) => sum + (day.hours || 0), 0)
+        }
+        // Get monthly hours
+        if (analyticsRes.data.totalMonthHours) {
+          totalMonthlyHours.value = analyticsRes.data.totalMonthHours
+        }
+      }
+    } catch (analyticsErr) {
+      console.warn('Analytics fetch failed, using fallback:', analyticsErr)
+      currentWeeklyHours.value = 0
+      totalMonthlyHours.value = 0
+    }
+
+    // Calculate progress percentage and remaining hours based on dynamic target
+    weeklyProgress.value = Math.round((currentWeeklyHours.value / weeklyTarget.value) * 100)
+    hoursRemaining.value = Math.max(0, weeklyTarget.value - currentWeeklyHours.value)
+
+    // 6. Fetch Employees (requires admin role)
     try {
       const employeesRes = await api.get(`/org/users`)
       employees.value = employeesRes.data || []
@@ -263,23 +487,32 @@ const loadUserData = async () => {
       if (error.response?.status === 403) {
         console.warn('Admin role required to view employees list')
         employees.value = []
-      } else {
-        throw error
       }
     }
 
-    // 5. Calculate Mock Metrics (Replace with real backend sums if available)
-    totalMonthlyHours.value = 142 // Example
-    currentWeeklyHours.value = 28.5 // Example
-    weeklyProgress.value = Math.round((28.5 / 40) * 100)
-
   } catch (error) {
-    console.error('User Dashboard data sync failed:', error)
+    console.error('User Schedule data sync failed:', error)
+  } finally {
+    loading.value = false
   }
 }
 
 const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 const formatDateTime = (dateStr) => new Date(dateStr).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+
+const showToast = (message, type = 'info', description = '', duration = 4000) => {
+  const id = Date.now()
+  const toast = { id, message, type, description }
+  toasts.value.push(toast)
+  
+  if (duration > 0) {
+    setTimeout(() => {
+      toasts.value = toasts.value.filter(t => t.id !== id)
+    }, duration)
+  }
+  
+  return id
+}
 
 const closeAddShiftModal = () => {
   showAddShiftModal.value = false
@@ -307,9 +540,9 @@ const createShift = async () => {
       shiftEndTime: shiftForm.value.shiftEndTime
     })
 
-    // Reload shifts for current user
-    const shiftsRes = await api.get(`/shifts/user/${user.value.userId}`)
-    shifts.value = shiftsRes.data
+    // Reload schedule
+    const scheduleRes = await api.get(`/org/my-schedule`)
+    schedule.value = scheduleRes.data || []
 
     closeAddShiftModal()
   } catch (error) {
@@ -318,8 +551,19 @@ const createShift = async () => {
   }
 }
 
+let refreshInterval
+
 onMounted(() => {
   loadUserData()
+  
+  // Auto-refresh every 2 minutes for live data
+  refreshInterval = setInterval(() => {
+    loadUserData()
+  }, 2 * 60 * 1000)
+})
+
+onBeforeUnmount(() => {
+  if (refreshInterval) clearInterval(refreshInterval)
 })
 </script>
 
@@ -330,4 +574,9 @@ onMounted(() => {
 
 .list-enter-active, .list-leave-active { transition: all 0.5s ease; }
 .list-enter-from, .list-leave-to { opacity: 0; transform: translateX(-20px); }
+
+.toast-enter-active { transition: all 0.3s ease-out; }
+.toast-leave-active { transition: all 0.3s ease-in; }
+.toast-enter-from { opacity: 0; transform: translateY(-20px) translateX(20px); }
+.toast-leave-to { opacity: 0; transform: translateY(-40px) translateX(20px); }
 </style>

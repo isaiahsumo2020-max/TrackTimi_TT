@@ -32,13 +32,15 @@ const routes = [
       { path: 'user-dashboard', name: 'UserDashboard', component: () => import('@/views/tenant/UserDashboard.vue') },
       { path: 'users', name: 'OrgUsers', component: () => import('@/views/tenant/Users.vue') },
       { path: 'employees', name: 'EmployeeManagement', component: () => import('@/views/admin/EmployeeManagement.vue') },
+      { path: 'time-tracking', name: 'TimeTracking', component: () => import('@/views/admin/TimeTracking.vue') },
       { path: 'departments', name: 'OrgDepartments', component: () => import('@/views/tenant/Departments.vue') },
       { path: 'checkin', name: 'OrgCheckin', component: () => import('@/views/tenant/Checkin.vue') },
       { path: 'schedule', name: 'UserSchedule', component: () => import('@/views/tenant/UserSchedule.vue') },
       { path: 'admin-schedule', name: 'AdminSchedule', component: () => import('@/views/admin/AdminSchedule.vue') },
       { path: 'settings', name: 'OrgSettings', component: () => import('@/views/tenant/Settings.vue') },
       { path: 'checkins', name: 'UserCheckins', component: () => import('@/views/tenant/UserCheckins.vue') },
-      { path: 'feedback', name: 'OrgFeedback', component: () => import('@/views/tenant/Feedback.vue') }
+      { path: 'feedback', name: 'OrgFeedback', component: () => import('@/views/tenant/Feedback.vue') },
+      { path: 'time-management', name: 'TimeManagement', component: () => import('@/views/tenant/TimeManagement.vue') }
     ]
   },
 

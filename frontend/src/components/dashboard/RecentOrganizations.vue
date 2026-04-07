@@ -5,7 +5,7 @@
       <h3 class="text-sm font-black text-[#000000] uppercase tracking-widest">Recent Organizations</h3>
       <router-link 
         to="/superadmin/organizations"
-        class="text-[10px] font-black text-[#1B8B3C] uppercase tracking-widest hover:text-[#FF6B35] transition-all border-b-2 border-[#1B8B3C] hover:border-[#FF6B35]"
+        class="text-[10px] font-black text-[#0284C7] uppercase tracking-widest hover:text-[#FF6B35] transition-all border-b-2 border-[#0284C7] hover:border-[#FF6B35]"
       >
         View All →
       </router-link>
@@ -35,7 +35,7 @@
                 <div v-if="org.Logo_Path" class="w-14 h-14 rounded-lg overflow-hidden border-2 border-slate-200 bg-white shadow-md flex-shrink-0">
                   <img :src="formatLogoPath(org.Logo_Path)" :alt="org.Org_Name" class="w-full h-full object-cover" @error="handleImageError" />
                 </div>
-                <div v-else class="w-14 h-14 bg-[#1B8B3C] text-white rounded-lg flex items-center justify-center font-black text-lg shadow-md flex-shrink-0">
+                <div v-else class="w-14 h-14 bg-[#0284C7] text-white rounded-lg flex items-center justify-center font-black text-lg shadow-md flex-shrink-0">
                   {{ org.Org_Name[0] }}
                 </div>
                 <div>
@@ -46,7 +46,7 @@
             </td>
 
             <!-- Domain -->
-            <td class="px-10 py-6 font-mono text-[10px] font-bold text-[#1B8B3C] tracking-tight">
+            <td class="px-10 py-6 font-mono text-[10px] font-bold text-[#0284C7] tracking-tight">
               {{ org.Org_Domain }}.tracktimi.com
             </td>
 
@@ -57,9 +57,9 @@
 
             <!-- Status Badge -->
             <td class="px-10 py-6 text-right">
-              <div v-if="org.Is_Active" class="inline-flex items-center space-x-2 px-4 py-2 bg-[#1B8B3C]/10 rounded-lg border border-[#1B8B3C]/20">
-                <div class="w-2 h-2 bg-[#1B8B3C] rounded-full animate-pulse"></div>
-                <span class="text-[8px] font-black text-[#1B8B3C] uppercase tracking-widest">Active</span>
+              <div v-if="org.Is_Active" class="inline-flex items-center space-x-2 px-4 py-2 bg-[#0284C7]/10 rounded-lg border border-[#0284C7]/20">
+                <div class="w-2 h-2 bg-[#0284C7] rounded-full animate-pulse"></div>
+                <span class="text-[8px] font-black text-[#0284C7] uppercase tracking-widest">Active</span>
               </div>
               <div v-else class="inline-flex items-center px-4 py-2 bg-red-50 rounded-lg border border-red-100">
                 <span class="text-[8px] font-black text-red-600 uppercase tracking-widest">Inactive</span>

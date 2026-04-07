@@ -10,7 +10,7 @@
     <div v-if="liveNotifications.length > 0" class="fixed bottom-6 right-6 space-y-3 z-50">
       <div v-for="(notif, idx) in liveNotifications" :key="idx" 
            :class="{
-             'bg-green-500': notif.type === 'success',
+             'bg-blue-500': notif.type === 'success',
              'bg-red-500': notif.type === 'error',
              'bg-blue-500': notif.type === 'info',
              'bg-yellow-500': notif.type === 'warning'

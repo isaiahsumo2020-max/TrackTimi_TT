@@ -138,6 +138,77 @@
             </p>
           </div>
 
+          <!-- Break Management Section -->
+          <div v-if="activeSection === 'breaks'" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <h2 class="text-2xl font-black text-slate-900 mb-6 uppercase">Break Management</h2>
+            
+            <!-- Max Breaks Per Shift Setting -->
+            <div class="mb-8 pb-8 border-b border-slate-200">
+              <label class="block text-sm font-black text-slate-900 mb-3 uppercase">
+                Maximum Breaks Per Shift
+              </label>
+              <p class="text-xs text-slate-600 mb-4">
+                Set the maximum number of breaks employees are allowed to take during a single shift.
+              </p>
+              <div class="flex items-center gap-4">
+                <input
+                  v-model.number="formData.maxBreaksPerShift"
+                  type="number"
+                  min="1"
+                  max="10"
+                  class="flex-1 px-4 py-3 border border-slate-300 rounded-lg font-bold text-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 max-w-xs"
+                />
+                <span class="text-2xl font-black text-slate-900">breaks</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-3">
+                Current Setting: <span class="font-bold">{{ formData.maxBreaksPerShift }} breaks per shift</span>
+                <br>
+                Valid Range: 1 to 10 breaks
+              </p>
+            </div>
+
+            <!-- Break Types Info -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h4 class="font-bold text-blue-900 mb-3">ℹ️ Break Types Supported</h4>
+              <ul class="text-sm text-blue-800 space-y-2">
+                <li class="flex items-start gap-2">
+                  <span class="font-bold">🍽️ Lunch Break:</span> Primary meal break (typically 1 per shift)
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="font-bold">☕ Regular Break:</span> Short break for rest (typically 5-15 min)
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="font-bold">🚻 Restroom Break:</span> Quick restroom visit (typically 5 min)
+                </li>
+              </ul>
+            </div>
+
+            <!-- Preview -->
+            <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+              <p class="text-xs font-bold text-primary-900 uppercase mb-2">☕ Break Policy Preview</p>
+              <div class="text-sm text-primary-800 space-y-1">
+                <p>✓ Employees can take up to <span class="font-black">{{ formData.maxBreaksPerShift }} breaks</span> per shift</p>
+                <p>✓ Break types: Lunch, Regular, Restroom</p>
+                <p>✓ GPS location tracking enabled for validation</p>
+                <p>✓ Break duration automatically calculated and tracked</p>
+                <p>✓ Admin can view all break activities and analytics</p>
+              </div>
+            </div>
+
+            <!-- Save Button -->
+            <button
+              @click="saveSettings"
+              :disabled="savingSettings || !formChanged"
+              class="w-full py-4 bg-primary-600 text-white font-black rounded-lg uppercase hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            >
+              {{ savingSettings ? 'Saving...' : 'Save Settings' }}
+            </button>
+            
+            <p v-if="settingsSaved" class="text-xs text-green-600 font-bold mt-3">
+              ✓ Settings saved successfully - Employees will be notified about the policy change
+            </p>
+          </div>
+
           <!-- Geofence Settings Section -->
           <div v-if="activeSection === 'geofence'" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
             <h2 class="text-2xl font-black text-slate-900 mb-6 uppercase">Work Locations (Geofences)</h2>
@@ -289,6 +360,7 @@ const showNotificationsPanel = ref(false)
 
 const settingsSections = [
   { id: 'attendance', label: '⏰ Attendance Policies' },
+  { id: 'breaks', label: '☕ Break Management' },
   { id: 'geofence', label: '📍 Work Locations' },
   { id: 'notifications', label: '🔔 Notifications' },
   { id: 'dashboard-info', label: 'ℹ️ Dashboard Info' }
@@ -297,6 +369,7 @@ const settingsSections = [
 const formData = ref({
   clockInWindow: 30,
   clockOutAlert: 15,
+  maxBreaksPerShift: 2,
   notifyClockIn: true,
   notifyClockOut: true,
   notifyLateClock: true,
@@ -324,6 +397,7 @@ const loadSettings = async () => {
       formData.value = {
         clockInWindow: res.data.Clock_In_Window_Minutes || 30,
         clockOutAlert: res.data.Clock_Out_Alert_Minutes || 15,
+        maxBreaksPerShift: res.data.Max_Breaks_Per_Shift || 2,
         notifyClockIn: true,
         notifyClockOut: true,
         notifyLateClock: true,
@@ -354,7 +428,8 @@ const saveSettings = async () => {
     
     await api.put('/org/settings', {
       Clock_In_Window_Minutes: formData.value.clockInWindow,
-      Clock_Out_Alert_Minutes: formData.value.clockOutAlert
+      Clock_Out_Alert_Minutes: formData.value.clockOutAlert,
+      maxBreaksPerShift: formData.value.maxBreaksPerShift
     })
     
     initialFormData.value = {...formData.value}
