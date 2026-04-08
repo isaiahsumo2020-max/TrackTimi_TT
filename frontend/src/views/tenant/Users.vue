@@ -5,25 +5,25 @@
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div class="space-y-4">
         <div class="space-y-1">
-          <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em]">Personnel Management</p>
-          <h1 class="text-4xl font-black text-slate-900 tracking-tight">Workforce Directory</h1>
+          <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.3em]">Team Management</p>
+          <h1 class="text-4xl font-black text-slate-900 tracking-tight">Employee Directory</h1>
         </div>
         
         <!-- Mini Stats Strip -->
         <div class="flex items-center space-x-6">
           <div class="flex items-center space-x-2">
             <span class="text-xl font-black text-slate-900">{{ users.length }}</span>
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Staff</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Employees</span>
           </div>
           <div class="w-px h-4 bg-slate-200"></div>
           <div class="flex items-center space-x-2">
             <span class="text-xl font-black text-green-600">{{ activeCount }}</span>
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Currently Active</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Now</span>
           </div>
         </div>
       </div>
 
-      <button @click="showCreateModal = true" class="px-8 py-4 bg-slate-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:bg-primary-600 transition-all shadow-xl shadow-primary-100 active:scale-95 flex items-center">
+      <button @click="showCreateModal = true" class="px-8 py-4 bg-primary-600 text-white rounded-lg font-black text-xs uppercase tracking-widest hover:bg-primary-700 transition-all shadow-xl shadow-primary-100 active:scale-95 flex items-center">
         <PlusIcon class="w-4 h-4 mr-2" />
         Invite Member
       </button>
@@ -37,10 +37,10 @@
           v-model="searchQuery"
           type="text" 
           placeholder="Search by name, email, or employee ID..." 
-          class="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary-50 outline-none transition-all shadow-sm"
+          class="w-full pl-12 pr-6 py-4 bg-primary-50 border border-primary-200 rounded-lg text-sm font-medium focus:ring-4 focus:ring-primary-100 outline-none transition-all shadow-sm"
         />
       </div>
-      <select v-model="filterStatus" class="px-6 py-4 bg-white border border-slate-100 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-500 outline-none shadow-sm">
+      <select v-model="filterStatus" class="px-6 py-4 bg-primary-50 border border-primary-200 rounded-lg text-xs font-black uppercase tracking-widest text-slate-500 outline-none shadow-sm">
         <option value="all">All Status</option>
         <option value="active">Active Only</option>
         <option value="inactive">Inactive</option>
@@ -50,21 +50,21 @@
     <!-- 3. Live Grid / Loading State -->
     <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <!-- Skeleton Loader -->
-      <div v-for="i in 6" :key="i" class="bg-slate-50 h-64 rounded-[2.5rem] animate-pulse"></div>
+      <div v-for="i in 6" :key="i" class="bg-primary-50 h-64 rounded-2xl animate-pulse"></div>
     </div>
 
-    <div v-else class="space-y-0 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+    <div v-else class="space-y-0 bg-primary-50 rounded-2xl border border-primary-200 shadow-sm overflow-hidden">
       <!-- Empty State -->
       <div v-if="filteredUsers.length === 0" class="py-32 text-center space-y-4">
-        <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto">
-          <UsersIcon class="w-8 h-8 text-slate-200" />
+        <div class="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mx-auto">
+          <UsersIcon class="w-8 h-8 text-primary-300" />
         </div>
-        <p class="text-sm font-black text-slate-400 uppercase tracking-widest">No matching personnel found</p>
+        <p class="text-sm font-black text-slate-400 uppercase tracking-widest">No employees found</p>
       </div>
 
       <!-- List Header -->
-      <div v-if="filteredUsers.length > 0" class="grid grid-cols-12 gap-4 px-8 py-5 bg-slate-50 border-b border-slate-100 sticky top-0">
-        <div class="col-span-4 text-xs font-black text-slate-400 uppercase tracking-widest">Personnel</div>
+      <div v-if="filteredUsers.length > 0" class="grid grid-cols-12 gap-4 px-8 py-5 bg-primary-100 border-b border-primary-200 sticky top-0">
+        <div class="col-span-4 text-xs font-black text-slate-400 uppercase tracking-widest">Employee</div>
         <div class="col-span-3 text-xs font-black text-slate-400 uppercase tracking-widest">Email</div>
         <div class="col-span-2 text-xs font-black text-slate-400 uppercase tracking-widest">Department</div>
         <div class="col-span-2 text-xs font-black text-slate-400 uppercase tracking-widest text-center">Status</div>
@@ -73,7 +73,7 @@
 
       <!-- User List Items -->
       <div v-for="(user, idx) in filteredUsers" :key="user.User_ID" 
-        class="grid grid-cols-12 gap-4 px-8 py-6 border-b border-slate-50 hover:bg-slate-50 transition-colors items-center"
+        class="grid grid-cols-12 gap-4 px-8 py-6 border-b border-primary-100 hover:bg-primary-100/50 transition-colors items-center"
         :class="idx === filteredUsers.length - 1 ? 'border-b-0' : ''">
         
         <!-- Name & Avatar -->
@@ -97,7 +97,7 @@
 
         <!-- Department -->
         <div class="col-span-2">
-          <p class="text-xs font-black text-primary-600 uppercase tracking-tight">{{ user.jobTitle || 'Staff' }}</p>
+          <p class="text-xs font-black text-primary-600 uppercase tracking-tight">{{ user.jobTitle || 'Team Member' }}</p>
         </div>
 
         <!-- Status -->
@@ -117,12 +117,12 @@
             <!-- Dropdown Menu -->
             <div v-if="activeUserMenu === user.User_ID" 
               @click.stop="e => e.stopPropagation()"
-              class="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 z-50 pointer-events-auto">
-              <button @click.stop="viewUserProfile(user)" class="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50 transition-colors cursor-pointer pointer-events-auto">
+              class="absolute right-0 top-full mt-2 w-48 bg-primary-50 rounded-xl shadow-lg border border-primary-200 z-50 pointer-events-auto">
+              <button @click.stop="viewUserProfile(user)" class="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-100 flex items-center gap-2 border-b border-primary-100 transition-colors cursor-pointer pointer-events-auto">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 View Profile
               </button>
-              <button @click.stop="editUserProfile(user)" class="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50 transition-colors cursor-pointer pointer-events-auto">
+              <button @click.stop="editUserProfile(user)" class="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-primary-100 flex items-center gap-2 border-b border-primary-100 transition-colors cursor-pointer pointer-events-auto">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 Edit
               </button>
@@ -140,13 +140,13 @@
     <Transition name="modal">
       <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-6">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="showCreateModal = false"></div>
-        <div class="bg-white rounded-[3.5rem] p-12 max-w-xl w-full shadow-2xl relative z-10 animate-in zoom-in duration-300">
+        <div class="bg-primary-50 rounded-2xl p-12 max-w-xl w-full shadow-2xl relative z-10 animate-in zoom-in duration-300">
            <div class="flex justify-between items-start mb-10">
              <div class="space-y-1">
                <h2 class="text-3xl font-black text-slate-900 tracking-tight">Invite Member</h2>
                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Send invitation email to new team member</p>
              </div>
-             <button @click="showCreateModal = false" class="p-2 hover:bg-slate-50 rounded-xl transition-colors">
+             <button @click="showCreateModal = false" class="p-2 hover:bg-primary-100 rounded-xl transition-colors">
                <XIcon class="w-6 h-6 text-slate-400" />
              </button>
            </div>
@@ -159,19 +159,19 @@
     <Transition name="modal">
       <div v-if="showProfileModal" class="fixed inset-0 z-50 flex items-center justify-center p-6">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="closeProfileModal"></div>
-        <div class="bg-white rounded-[3.5rem] p-12 max-w-2xl w-full shadow-2xl relative z-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+        <div class="bg-primary-50 rounded-2xl p-12 max-w-2xl w-full shadow-2xl relative z-10 animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-start mb-10">
             <div class="space-y-2">
               <h2 class="text-3xl font-black text-slate-900 tracking-tight">{{ selectedUser?.firstName }} {{ selectedUser?.surName }}</h2>
               <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{ selectedUser?.email }}</p>
             </div>
-            <button @click="closeProfileModal" class="p-2 hover:bg-slate-50 rounded-xl transition-colors">
+            <button @click="closeProfileModal" class="p-2 hover:bg-primary-100 rounded-xl transition-colors">
               <XIcon class="w-6 h-6 text-slate-400" />
             </button>
           </div>
 
           <!-- Tabs -->
-          <div class="mb-6 flex border-b border-slate-200">
+          <div class="mb-6 flex border-b border-primary-200">
             <button @click="profileTab = 'view'"
                     :class="profileTab === 'view' ? 'border-b-2 border-primary-600 text-primary-600' : 'text-slate-600'"
                     class="px-4 py-2 font-medium text-sm">
@@ -202,29 +202,29 @@
           <!-- View Profile Tab -->
           <div v-if="profileTab === 'view'" class="space-y-6">
             <div class="grid grid-cols-2 gap-4">
-              <div class="bg-slate-50 p-4 rounded-xl">
+              <div class="bg-primary-100 p-4 rounded-xl">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">First Name</p>
                 <p class="text-sm font-black text-slate-900">{{ selectedUser?.firstName }}</p>
               </div>
-              <div class="bg-slate-50 p-4 rounded-xl">
+              <div class="bg-primary-100 p-4 rounded-xl">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Last Name</p>
                 <p class="text-sm font-black text-slate-900">{{ selectedUser?.surName }}</p>
               </div>
             </div>
-            <div class="bg-slate-50 p-4 rounded-xl">
+            <div class="bg-primary-100 p-4 rounded-xl">
               <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Email</p>
               <p class="text-sm font-black text-slate-900">{{ selectedUser?.email }}</p>
             </div>
-            <div class="bg-slate-50 p-4 rounded-xl">
+            <div class="bg-primary-100 p-4 rounded-xl">
               <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Job Title</p>
               <p class="text-sm font-black text-slate-900">{{ selectedUser?.jobTitle || 'N/A' }}</p>
             </div>
-            <div class="bg-slate-50 p-4 rounded-xl">
+            <div class="bg-primary-100 p-4 rounded-xl">
               <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Employee ID</p>
               <p class="text-sm font-black text-slate-900">{{ selectedUser?.employeeId || 'PENDING' }}</p>
             </div>
             <div class="flex gap-3 pt-4">
-              <button @click="closeProfileModal" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition">
+              <button @click="closeProfileModal" class="flex-1 py-3 bg-primary-200 text-primary-800 rounded-xl font-bold hover:bg-primary-300 transition">
                 Close
               </button>
             </div>
@@ -234,10 +234,10 @@
           <div v-if="profileTab === 'avatar'" class="space-y-6">
             <!-- Current Avatar -->
             <div class="flex flex-col items-center mb-6">
-              <div v-if="selectedUser?.avatar" class="w-32 h-32 rounded-2xl overflow-hidden shadow-lg mb-4">
+              <div v-if="selectedUser?.avatar" class="w-32 h-32 rounded-lg overflow-hidden shadow-lg mb-4">
                 <img :src="`data:${selectedUser.avatarMimeType};base64,${selectedUser.avatar}`" :alt="`${selectedUser.firstName} ${selectedUser.surName}`" class="w-full h-full object-cover" />
               </div>
-              <div v-else class="w-32 h-32 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-5xl shadow-lg mb-4">
+              <div v-else class="w-32 h-32 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-5xl shadow-lg mb-4">
                 {{ selectedUser?.firstName?.[0] }}{{ selectedUser?.surName?.[0] }}
               </div>
               <p class="text-sm text-slate-600 text-center">Current Avatar</p>
@@ -245,7 +245,7 @@
 
             <!-- Preview Mode -->
             <div v-if="!avatarPreview" class="space-y-4">
-              <div class="bg-slate-50 p-8 rounded-xl border-2 border-dashed border-slate-300 text-center cursor-pointer hover:border-primary-600 hover:bg-primary-50 transition"
+              <div class="bg-primary-100 p-8 rounded-xl border-2 border-dashed border-primary-300 text-center cursor-pointer hover:border-primary-600 hover:bg-primary-50 transition"
                    @click="$refs.avatarInput.click()">
                 <svg class="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -265,7 +265,7 @@
             <!-- Resize/Crop Mode -->
             <div v-if="avatarPreview" class="space-y-4">
               <!-- Image Display with Crop Area -->
-              <div class="bg-slate-100 rounded-xl overflow-hidden relative cursor-crosshair">
+              <div class="bg-primary-100 rounded-xl overflow-hidden relative cursor-crosshair">
                 <img 
                   :src="avatarPreview"
                   :style="{
@@ -282,12 +282,12 @@
               </div>
 
               <!-- Crop Info -->
-              <div class="bg-blue-50 p-3 rounded-xl border border-blue-200">
+              <div class="bg-blue-50 p-3 rounded-xl border border-primary-200">
                 <p class="text-xs text-blue-700 font-bold">Drag on the image to select the area you want to use as your avatar</p>
               </div>
 
               <!-- Preview Size Info -->
-              <div v-if="avatarFileSize" class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <div v-if="avatarFileSize" class="bg-primary-100 p-3 rounded-xl border border-primary-200">
                 <p class="text-xs text-slate-700 font-bold">Original: {{ (avatarFileSize / 1024).toFixed(2) }} KB</p>
               </div>
 
@@ -298,10 +298,10 @@
                 height="256"
                 class="hidden"
               />
-              <div class="w-full h-32 bg-gradient-to-br from-slate-100 to-slate-50 rounded-xl border-2 border-slate-200 overflow-hidden flex items-center justify-center">
+              <div class="w-full h-32 bg-gradient-to-br from-primary-100 to-primary-50 rounded-xl border-2 border-primary-200 overflow-hidden flex items-center justify-center">
                 <div class="text-center">
                   <p class="text-xs font-bold text-slate-600 mb-2">Preview (256x256)</p>
-                  <div id="previewBox" class="w-24 h-24 bg-white rounded-lg shadow-md border-2 border-primary-300 overflow-hidden"></div>
+                  <div id="previewBox" class="w-24 h-24 bg-primary-50 rounded-lg shadow-md border-2 border-primary-300 overflow-hidden"></div>
                 </div>
               </div>
 
@@ -312,7 +312,7 @@
 
               <!-- Action Buttons -->
               <div class="flex gap-3 pt-4">
-                <button @click="cancelAvatarUpload" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition">
+                <button @click="cancelAvatarUpload" class="flex-1 py-3 bg-primary-200 text-primary-800 rounded-xl font-bold hover:bg-primary-300 transition">
                   Cancel
                 </button>
                 <button @click="saveAvatarUpload" :disabled="loading" class="flex-1 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition disabled:opacity-50">
@@ -323,7 +323,7 @@
 
             <!-- Default Buttons -->
             <div v-if="!avatarPreview" class="flex gap-3 pt-4">
-              <button @click="profileTab = 'view'" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition">
+              <button @click="profileTab = 'view'" class="flex-1 py-3 bg-primary-200 text-primary-800 rounded-xl font-bold hover:bg-primary-300 transition">
                 Back
               </button>
             </div>
@@ -334,23 +334,23 @@
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">First Name</label>
-                <input v-model="editFormData.firstName" type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
+                <input v-model="editFormData.firstName" type="text" class="w-full px-4 py-3 bg-primary-50 border border-primary-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
               </div>
               <div>
                 <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Last Name</label>
-                <input v-model="editFormData.surName" type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
+                <input v-model="editFormData.surName" type="text" class="w-full px-4 py-3 bg-primary-50 border border-primary-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
               </div>
             </div>
             <div>
               <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Email</label>
-              <input v-model="editFormData.email" type="email" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
+              <input v-model="editFormData.email" type="email" class="w-full px-4 py-3 bg-primary-50 border border-primary-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
             </div>
             <div>
               <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Job Title</label>
-              <input v-model="editFormData.jobTitle" type="text" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
+              <input v-model="editFormData.jobTitle" type="text" class="w-full px-4 py-3 bg-primary-50 border border-primary-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
             </div>
             <div class="flex gap-3 pt-4">
-              <button type="button" @click="profileTab = 'view'" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition">
+              <button type="button" @click="profileTab = 'view'" class="flex-1 py-3 bg-primary-200 text-primary-800 rounded-xl font-bold hover:bg-primary-300 transition">
                 Cancel
               </button>
               <button type="submit" class="flex-1 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition">
@@ -361,22 +361,22 @@
 
           <!-- Change Password Tab -->
           <form v-if="profileTab === 'password'" @submit.prevent="changePassword" class="space-y-4">
-            <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+            <div class="bg-blue-50 p-4 rounded-xl border border-primary-200">
               <p class="text-sm text-blue-900 font-bold">Changing password for {{ selectedUser?.firstName }} {{ selectedUser?.surName }}</p>
             </div>
             <div>
               <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">New Password</label>
-              <input v-model="passwordData.newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
+              <input v-model="passwordData.newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 bg-primary-50 border border-primary-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
             </div>
             <div>
               <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Confirm Password</label>
-              <input v-model="passwordData.confirmPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
+              <input v-model="passwordData.confirmPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 bg-primary-50 border border-primary-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" />
             </div>
             <div v-if="passwordError" class="bg-red-50 p-3 rounded-xl border border-red-200">
               <p class="text-sm text-red-700 font-bold">{{ passwordError }}</p>
             </div>
             <div class="flex gap-3 pt-4">
-              <button type="button" @click="profileTab = 'view'" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition">
+              <button type="button" @click="profileTab = 'view'" class="flex-1 py-3 bg-primary-200 text-primary-800 rounded-xl font-bold hover:bg-primary-300 transition">
                 Cancel
               </button>
               <button type="submit" :disabled="passwordLoading" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition disabled:opacity-50">
@@ -391,45 +391,45 @@
             <div v-if="userShift" class="bg-gradient-to-br from-primary-50 to-blue-50 p-6 rounded-xl border border-primary-200 space-y-4">
               <p class="text-xs font-bold text-primary-600 uppercase tracking-widest mb-2">✅ Schedule Assigned</p>
               <div class="space-y-3">
-                <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                <div class="flex justify-between items-center p-3 bg-primary-50 rounded-lg">
                   <span class="text-sm font-medium text-slate-600">Shift Date:</span>
                   <span class="text-sm font-black text-slate-900">{{ userShift.Shift_Date }}</span>
                 </div>
-                <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                <div class="flex justify-between items-center p-3 bg-primary-50 rounded-lg">
                   <span class="text-sm font-medium text-slate-600">Start Time:</span>
                   <span class="text-sm font-black text-primary-600">{{ userShift.Shift_Start_Time }}</span>
                 </div>
-                <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                <div class="flex justify-between items-center p-3 bg-primary-50 rounded-lg">
                   <span class="text-sm font-medium text-slate-600">End Time:</span>
                   <span class="text-sm font-black text-primary-600">{{ userShift.Shift_End_Time }}</span>
                 </div>
               </div>
             </div>
 
-            <div v-else class="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300 text-center">
-              <p class="text-sm text-slate-500 font-medium">No schedule assigned to this user</p>
+            <div v-else class="bg-primary-100 p-6 rounded-xl border border-dashed border-primary-300 text-center">
+              <p class="text-sm text-primary-600 font-medium">No schedule assigned to this user</p>
               <p class="text-xs text-slate-400 mt-1">Assign a schedule from the admin panel to enable scheduling</p>
             </div>
 
             <!-- Update/Remove Buttons (Only if schedule exists) -->
             <div v-if="userShift" class="space-y-4">
               <!-- Edit Schedule Form -->
-              <form @submit.prevent="saveShift" class="space-y-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <form @submit.prevent="saveShift" class="space-y-4 p-4 bg-primary-100 rounded-xl border border-primary-200">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Edit Schedule Details</p>
                 
                 <div>
                   <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Shift Date</label>
-                  <input v-model="shiftForm.shiftDate" type="date" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" required />
+                  <input v-model="shiftForm.shiftDate" type="date" class="w-full px-4 py-3 bg-primary-50 border border-primary-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" required />
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Start Time</label>
-                    <input v-model="shiftForm.shiftStartTime" type="time" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" required />
+                    <input v-model="shiftForm.shiftStartTime" type="time" class="w-full px-4 py-3 bg-primary-50 border border-primary-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" required />
                   </div>
                   <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">End Time</label>
-                    <input v-model="shiftForm.shiftEndTime" type="time" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" required />
+                    <input v-model="shiftForm.shiftEndTime" type="time" class="w-full px-4 py-3 bg-primary-50 border border-primary-200 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none" required />
                   </div>
                 </div>
 
@@ -438,7 +438,7 @@
                 </div>
 
                 <div class="flex gap-3 pt-4">
-                  <button type="button" @click="profileTab = 'view'" class="flex-1 py-3 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300 transition">
+                  <button type="button" @click="profileTab = 'view'" class="flex-1 py-3 bg-primary-200 text-primary-800 rounded-xl font-bold hover:bg-primary-300 transition">
                     Cancel
                   </button>
                   <button type="submit" :disabled="shiftLoading" class="flex-1 py-3 bg-primary-600 text-white rounded-xl font-bold hover:bg-primary-700 transition disabled:opacity-50">
@@ -454,7 +454,7 @@
             </div>
 
             <!-- Info Message when no shift -->
-            <div v-else class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+            <div v-else class="bg-blue-50 p-4 rounded-xl border border-primary-200">
               <p class="text-sm text-blue-700 font-medium">
                 💡 <span class="font-bold">Tip:</span> Once a schedule is assigned from the administrative panel, it will appear here for management and updates.
               </p>
@@ -468,7 +468,7 @@
     <Transition name="modal">
       <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-6">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="closeDeleteModal"></div>
-        <div class="bg-white rounded-[3.5rem] p-12 max-w-md w-full shadow-2xl relative z-10 animate-in zoom-in duration-300">
+        <div class="bg-primary-50 rounded-2xl p-12 max-w-md w-full shadow-2xl relative z-10 animate-in zoom-in duration-300">
           <div class="flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mx-auto mb-4">
             <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0v2M6 12h12"/>
@@ -479,7 +479,7 @@
             Are you sure you want to delete <strong>{{ deletingUser?.firstName }} {{ deletingUser?.surName }}</strong>? This action cannot be undone.
           </p>
           <div class="flex gap-3 pt-6">
-            <button @click="closeDeleteModal" class="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition">
+            <button @click="closeDeleteModal" class="flex-1 py-3 bg-primary-200 text-primary-800 rounded-xl font-bold hover:bg-primary-300 transition">
               Cancel
             </button>
             <button @click="confirmDeleteUser" :disabled="loading" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition disabled:opacity-50">

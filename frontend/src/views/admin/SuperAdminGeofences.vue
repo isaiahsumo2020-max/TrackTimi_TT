@@ -15,9 +15,9 @@
 
       <nav class="flex-1 py-8 px-4 space-y-2">
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase transition-all"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase transition-all"
           :class="[$route.path === item.path ? 'text-white shadow-xl' : 'text-slate-400 hover:bg-slate-900']"
-          :style="$route.path === item.path ? { backgroundColor: '#D97A2B' } : {}"
+          :style="$route.path === item.path ? { backgroundColor: '#0284c7' } : {}"
         >
           <component :is="item.icon" class="w-5 h-5" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -25,7 +25,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <button @click="handleLogout" class="w-full p-3 rounded-xl text-xs font-bold uppercase text-white" style="background-color: #D97A2B;">
+        <button @click="handleLogout" class="w-full p-3 rounded-xl text-xs font-bold uppercase text-white" style="background-color: #0284c7;">
           Logout
         </button>
       </div>
@@ -35,7 +35,7 @@
     <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
       <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-10 sticky top-0 z-10">
         <h1 class="text-xl font-black uppercase" style="color: #000000;">Geofence Zones</h1>
-        <button @click="loadGeofences" class="p-3 bg-slate-50 rounded-xl hover:bg-slate-100" style="color: #D97A2B;">
+        <button @click="loadGeofences" class="p-3 bg-slate-50 rounded-xl hover:bg-slate-100" style="color: #0284c7;">
           <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
         </button>
       </header>
@@ -43,22 +43,22 @@
       <div class="flex-1 overflow-y-auto p-10 space-y-8">
         <!-- Summary Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="bg-white p-6 rounded-2xl border border-slate-100">
+          <div class="bg-white p-6 rounded-lg border border-slate-100">
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Total Zones</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #D97A2B;">{{ geofences.length }}</h3>
+            <h3 class="text-3xl font-black mt-2" style="color: #0284c7;">{{ geofences.length }}</h3>
           </div>
-          <div class="bg-white p-6 rounded-2xl border border-slate-100">
+          <div class="bg-white p-6 rounded-lg border border-slate-100">
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Active Zones</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #6FAF4F;">{{ activeGeofences }}</h3>
+            <h3 class="text-3xl font-black mt-2" style="color: #ea580c;">{{ activeGeofences }}</h3>
           </div>
-          <div class="bg-white p-6 rounded-2xl border border-slate-100">
+          <div class="bg-white p-6 rounded-lg border border-slate-100">
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Check-ins (24h)</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #F2D479;">{{ totalCheckins24h }}</h3>
+            <h3 class="text-3xl font-black mt-2" style="color: #ea580c;">{{ totalCheckins24h }}</h3>
           </div>
         </div>
 
         <!-- Geofences List -->
-        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="bg-white rounded-lg border border-slate-100 overflow-hidden">
           <div class="p-8 border-b border-slate-100">
             <h2 class="text-sm font-black uppercase" style="color: #000000;">All Zones</h2>
           </div>
@@ -82,18 +82,18 @@
                     <p class="text-xs font-bold" style="color: #000000;">{{ geo.Location_Name }}</p>
                   </td>
                   <td class="px-6 py-4 text-xs" style="color: #000000;">{{ geo.Org_Name }}</td>
-                  <td class="px-6 py-4 text-xs font-mono" style="color: #D97A2B;">
+                  <td class="px-6 py-4 text-xs font-mono" style="color: #0284c7;">
                     {{ geo.Latitude?.toFixed(4) }}, {{ geo.Longitude?.toFixed(4) }}
                   </td>
-                  <td class="px-6 py-4 text-xs font-bold" style="color: #D97A2B;">{{ geo.Radius }}m</td>
+                  <td class="px-6 py-4 text-xs font-bold" style="color: #0284c7;">{{ geo.Radius }}m</td>
                   <td class="px-6 py-4">
-                    <span :style="geo.Is_Active ? { backgroundColor: '#6FAF4F', color: 'white' } : { backgroundColor: '#FFE5E5', color: '#D97A2B' }" class="px-3 py-1 rounded-full text-[9px] font-black uppercase">
+                    <span :style="geo.Is_Active ? { backgroundColor: '#0284c7', color: 'white' } : { backgroundColor: '#FFE5E5', color: '#ef4444' }" class="px-3 py-1 rounded-full text-[9px] font-black uppercase">
                       {{ geo.Is_Active ? 'Active' : 'Inactive' }}
                     </span>
                   </td>
                   <td class="px-6 py-4 text-xs font-bold" style="color: #000000;">{{ geo.checkins_24h || 0 }}</td>
                   <td class="px-6 py-4">
-                    <button @click="loadViolations(geo)" class="text-[10px] font-bold uppercase" style="color: #D97A2B;">
+                    <button @click="loadViolations(geo)" class="text-[10px] font-bold uppercase" style="color: #0284c7;">
                       View Violations
                     </button>
                   </td>
@@ -107,10 +107,10 @@
         </div>
 
         <!-- Violations Modal -->
-        <div v-if="selectedGeofence && violations.length > 0" class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div v-if="selectedGeofence && violations.length > 0" class="bg-white rounded-lg border border-slate-100 overflow-hidden">
           <div class="p-8 border-b border-slate-100 flex justify-between items-center">
             <h2 class="text-sm font-black text-slate-900 uppercase">Violations: {{ selectedGeofence.Location_Name }}</h2>
-            <button @click="selectedGeofence = null" class="text-slate-400 hover:text-slate-600">✕</button>
+            <button @click="selectedGeofence = null" class="text-slate-400 hover:text-slate-600"><XIcon class="w-5 h-5" /></button>
           </div>
 
           <div class="divide-y divide-slate-100">
@@ -141,7 +141,7 @@ import { getGeofences, getGeofenceViolations } from '@/services/superadminApi'
 import {
   ZapIcon, MenuIcon, ChevronLeftIcon, RefreshCwIcon, LayoutDashboardIcon,
   BuildingIcon, UsersIcon, TrendingUpIcon, MapPinIcon, BriefcaseIcon,
-  ClockIcon, ActivityIcon, FileTextIcon, AlertCircleIcon, ShieldAlertIcon, SettingsIcon
+  ClockIcon, ActivityIcon, FileTextIcon, AlertCircleIcon, ShieldAlertIcon, SettingsIcon, XIcon
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -219,3 +219,4 @@ onMounted(loadGeofences)
   to { transform: rotate(360deg); }
 }
 </style>
+

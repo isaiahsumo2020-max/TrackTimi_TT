@@ -1,18 +1,6 @@
 <template>
   <div class="min-h-screen bg-slate-50 flex items-center justify-center p-6 relative overflow-hidden font-sans">
     
-    <!-- Save Notification Toast -->
-    <Transition name="slide-down">
-      <div v-if="showSaveNotification" class="fixed top-8 right-8 z-50 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl p-6 shadow-2xl animate-in slide-in-from-top-4 flex items-center gap-4 max-w-md">
-        <div class="text-2xl">✅</div>
-        <div>
-          <p class="font-black text-sm mb-1">Platform Saved!</p>
-          <p class="text-xs opacity-90"><strong>{{ email }}</strong> saved to this device.</p>
-          <p class="text-[10px] opacity-75 mt-1">Login faster next time!</p>
-        </div>
-      </div>
-    </Transition>
-
     <!-- 1. BACK TO LANDING LINK -->
     <router-link 
       to="/" 
@@ -26,7 +14,7 @@
     <div class="absolute -top-24 -left-24 w-96 h-96 bg-primary-100/50 rounded-full blur-[100px]"></div>
     <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-slate-100 rounded-full blur-[100px]"></div>
 
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-2xl shadow-primary-100/50 p-10 md:p-14 max-w-md w-full relative z-10 animate-in fade-in zoom-in duration-700">
+    <div class="bg-white rounded-lg border border-slate-100 shadow-2xl shadow-primary-100/50 p-10 md:p-14 max-w-md w-full relative z-10 animate-in fade-in zoom-in duration-700">
       
       <!-- Brand Identity (Clickable to Home) -->
       <router-link to="/" class="block text-center mb-10 space-y-3 group">
@@ -39,8 +27,8 @@
 
       <!-- Error Feedback -->
       <Transition name="slide-up">
-        <div v-if="errorMsg" class="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-[11px] font-black uppercase tracking-widest rounded-lg text-center">
-          ⚠️ {{ errorMsg }}
+        <div v-if="errorMsg" class="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-[11px] font-black uppercase tracking-widest rounded-lg text-center flex items-center justify-center gap-2">
+          <AlertTriangleIcon class="w-4 h-4" /> {{ errorMsg }}
         </div>
       </Transition>
 
@@ -64,7 +52,7 @@
         <div class="space-y-1.5">
           <div class="flex justify-between items-center px-4">
             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
-            <a href="#" class="text-[9px] font-black text-primary-500 uppercase tracking-tighter hover:text-primary-700">Forgot?</a>
+            <button type="button" @click="showResetModal = true" class="text-[9px] font-black text-primary-500 uppercase tracking-tighter hover:text-primary-700">Forgot?</button>
           </div>
           <div class="relative group">
             <LockIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-primary-500 transition-colors" />
@@ -77,18 +65,6 @@
             >
           </div>
         </div>
-
-        <!-- Save to Platform Checkbox -->
-        <label class="flex items-center gap-3 px-4 py-3 bg-blue-50 rounded-lg cursor-pointer group hover:bg-blue-100 transition-colors">
-          <input 
-            v-model="saveToplatform" 
-            type="checkbox"
-            class="w-5 h-5 accent-blue-600 cursor-pointer"
-          >
-          <span class="text-[11px] font-black text-blue-700 uppercase tracking-widest">
-            💾 Save Email to Platform
-          </span>
-        </label>
 
         <!-- Submit Button -->
         <button 
@@ -112,6 +88,50 @@
       </div>
     </div>
 
+    <!-- Password Reset Modal -->
+    <Transition name="fade">
+      <div v-if="showResetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl border border-primary-200 p-10 w-full max-w-md shadow-2xl animate-in fade-in slide-in-from-bottom-4">
+          <h2 class="text-2xl font-black text-slate-900 mb-2">Reset Password</h2>
+          <p class="text-sm text-slate-500 mb-6">Enter your email to receive a password reset link</p>
+          
+          <div class="space-y-4">
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-widest">Email Address</label>
+              <input 
+                v-model="resetEmail" 
+                type="email" 
+                placeholder="your@email.com" 
+                required
+                class="w-full px-6 py-4 rounded-lg bg-white border border-primary-200 focus:border-primary-600 focus:ring-2 focus:ring-primary-500 text-sm font-bold" />
+            </div>
+
+            <div v-if="resetMessage" class="p-4 bg-green-50 border border-green-200 text-green-600 text-[11px] font-bold rounded-lg text-center">
+              {{ resetMessage }}
+            </div>
+
+            <div v-if="resetError" class="p-4 bg-red-50 border border-red-200 text-red-600 text-[11px] font-bold rounded-lg text-center">
+              {{ resetError }}
+            </div>
+          </div>
+          
+          <div class="flex gap-3 mt-6">
+            <button 
+              @click="showResetModal = false" 
+              class="flex-1 py-3 font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+              Cancel
+            </button>
+            <button 
+              @click="sendPasswordReset"
+              :disabled="resetLoading || !resetEmail"
+              class="flex-1 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-all disabled:opacity-50">
+              {{ resetLoading ? 'Sending...' : 'Send Reset Link' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Small Footer Branding -->
     <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
       TrackTimi Enterprise v1.0
@@ -123,7 +143,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
-import { ZapIcon, MailIcon, LockIcon, Loader2Icon, ArrowLeftIcon } from 'lucide-vue-next'
+import { ZapIcon, MailIcon, LockIcon, Loader2Icon, ArrowLeftIcon, AlertTriangleIcon } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -131,21 +151,15 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMsg = ref('')
-const saveToplatform = ref(false)
-const showSaveNotification = ref(false)
-
-// Load saved email from localStorage on mount
-function loadSavedEmail() {
-  const savedEmail = localStorage.getItem('tracktimi_saved_email')
-  if (savedEmail) {
-    email.value = savedEmail
-    saveToplatform.value = true
-  }
-}
+const showResetModal = ref(false)
+const resetEmail = ref('')
+const resetLoading = ref(false)
+const resetMessage = ref('')
+const resetError = ref('')
 
 // Call on component load
 onMounted(() => {
-  loadSavedEmail()
+  // Initialize component
 })
 
 async function login() {
@@ -164,25 +178,12 @@ async function login() {
         throw new Error('Workspace identifier not found')
       }
 
-      // Save email to platform if checkbox is checked
-      if (saveToplatform.value) {
-        localStorage.setItem('tracktimi_saved_email', email.value)
-        localStorage.setItem('tracktimi_platform_saved_at', new Date().toISOString())
-        showSaveNotification.value = true
-        console.log('✅ Email saved to platform:', email.value)
+      // Redirect immediately to dashboard
+      if (role === 'Staff') {
+        router.push(`/${orgSlug}/user-dashboard`)
       } else {
-        localStorage.removeItem('tracktimi_saved_email')
-        localStorage.removeItem('tracktimi_platform_saved_at')
+        router.push(`/${orgSlug}/dashboard`)
       }
-
-      // Show success notification for 2 seconds before redirecting
-      setTimeout(() => {
-        if (role === 'Staff') {
-          router.push(`/${orgSlug}/user-dashboard`)
-        } else {
-          router.push(`/${orgSlug}/dashboard`)
-        }
-      }, saveToplatform.value ? 2000 : 0)
     } else if (result.requiresVerification) {
       // Email not verified - redirect to verification page
       localStorage.setItem('pendingVerificationEmail', result.email)
@@ -194,6 +195,42 @@ async function login() {
     errorMsg.value = error.response?.data?.error || error.message || 'Connection Interrupted'
   } finally {
     loading.value = false
+  }
+}
+
+// Send password reset request
+async function sendPasswordReset() {
+  if (!resetEmail.value) return
+  
+  resetLoading.value = true
+  resetMessage.value = ''
+  resetError.value = ''
+  
+  try {
+    const response = await fetch('http://localhost:4000/api/auth/request-password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: resetEmail.value })
+    })
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      resetMessage.value = 'Password reset link sent! Check your email. You have 30 minutes to reset your password.'
+      setTimeout(() => {
+        showResetModal.value = false
+        resetEmail.value = ''
+        resetMessage.value = ''
+        resetError.value = ''
+      }, 3000)
+    } else {
+      resetError.value = result.error || result.message || 'Failed to send reset link'
+    }
+  } catch (error) {
+    resetError.value = 'Error sending reset link. Please try again.'
+    console.error('Reset password error:', error)
+  } finally {
+    resetLoading.value = false
   }
 }
 </script>

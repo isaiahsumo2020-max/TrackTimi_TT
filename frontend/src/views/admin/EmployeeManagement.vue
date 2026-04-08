@@ -16,12 +16,12 @@
              'bg-yellow-500': notif.type === 'warning'
            }"
            class="text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 animate-slideIn min-w-80">
-        <span v-if="notif.type === 'success'">✅</span>
-        <span v-else-if="notif.type === 'error'">❌</span>
-        <span v-else-if="notif.type === 'warning'">⚠️</span>
-        <span v-else>ℹ️</span>
+        <CheckCircle2 v-if="notif.type === 'success'" class="w-5 h-5" />
+        <XCircle v-else-if="notif.type === 'error'" class="w-5 h-5" />
+        <AlertTriangleIcon v-else-if="notif.type === 'warning'" class="w-5 h-5" />
+        <Info v-else class="w-5 h-5" />
         <span class="flex-1">{{ notif.message }}</span>
-        <button @click="removeLiveNotification(idx)" class="text-white opacity-70 hover:opacity-100">✕</button>
+        <button @click="removeLiveNotification(idx)" class="text-white opacity-70 hover:opacity-100"><XIcon class="w-4 h-4" /></button>
       </div>
     </div>
 
@@ -140,36 +140,36 @@
           </button>
           <button @click="activeTab = 'attendance'"
                   :class="activeTab === 'attendance' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-            📊 Attendance
+                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+            <BarChart3 class="w-4 h-4" /> Attendance
           </button>
           <button @click="activeTab = 'schedules'"
                   :class="activeTab === 'schedules' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-            📅 Schedules
+                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+            <Calendar class="w-4 h-4" /> Schedules
           </button>
           <button @click="activeTab = 'invitations'"
                   :class="activeTab === 'invitations' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-            ✉️ Invitations
+                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+            <Mail class="w-4 h-4" /> Invitations
           </button>
           <button @click="activeTab = 'activity'"
                   :class="activeTab === 'activity' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-            📋 Activity Logs
+                  class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+            <ClipboardList class="w-4 h-4" /> Activity Logs
           </button>
         </nav>
       </div>
 
       <!-- Live Feedback & Activity Panel -->
-      <div class="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+      <div class="mt-6 bg-gradient-to-r from-primary-50 to-primary-100 border border-primary-200 rounded-lg p-4 shadow-sm">
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-2">
             <span class="flex h-3 w-3 relative">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
             </span>
-            <h3 class="text-sm font-semibold text-gray-900">🔴 Live Activity Feed</h3>
+            <h3 class="text-sm font-semibold text-gray-900 flex items-center gap-2"><div class="flex h-3 w-3 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span></div> Live Activity Feed</h3>
           </div>
           <button @click="showActivityPanel = !showActivityPanel" class="text-xs bg-white px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">
             {{ showActivityPanel ? 'Hide' : 'Show' }}
@@ -595,7 +595,7 @@
                   Cancel
                 </button>
                 <button type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
                   Save Changes
                 </button>
               </div>
@@ -607,7 +607,7 @@
                 Close
               </button>
               <button @click="isEditingProfile = true"
-                      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                      class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
                 Edit Profile
               </button>
             </div>
@@ -620,6 +620,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { Eye, Calendar, MessageCircle, Settings, BarChart3, Mail, ClipboardList, AlertCircle, CheckCircle2, AlertTriangleIcon, Info, XCircle, XIcon } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.js'
 import api from '@/utils/api.js'
 import { getNotifications, markNotificationAsRead, getUnreadNotificationCount, deleteNotification as deleteNotifApi, markAllNotificationsAsRead } from '@/services/orgApi'

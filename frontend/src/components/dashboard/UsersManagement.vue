@@ -14,18 +14,21 @@
         v-model="searchText" 
         type="text" 
         placeholder="Search by name, email, or organization..." 
-        class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#1B8B3C] focus:border-transparent"
+        class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
       />
     </div>
 
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1B8B3C]"></div>
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-      <p class="font-semibold">⚠️ Error Loading Admins</p>
+      <p class="font-semibold flex items-center gap-2">
+        <AlertTriangleIcon class="w-4 h-4" />
+        Error Loading Admins
+      </p>
       <p class="text-sm">{{ error }}</p>
       <button @click="fetchAdmins" class="mt-2 text-sm underline hover:no-underline">Try Again</button>
     </div>
@@ -70,7 +73,7 @@
             <td class="px-6 py-4">
               <span :class="{
                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium': true,
-                'bg-green-100 text-green-800': admin.Is_Active,
+                'bg-primary-100 text-primary-800': admin.Is_Active,
                 'bg-gray-100 text-gray-800': !admin.Is_Active
               }">
                 {{ admin.Is_Active ? '✓ Active' : '○ Inactive' }}
@@ -83,28 +86,31 @@
                 <!-- View Button -->
                 <button 
                   @click="viewAdmin(admin)" 
-                  class="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition" 
+                  class="px-3 py-1.5 text-sm text-primary-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition flex items-center gap-2" 
                   title="View admin details"
                 >
-                  👁️ View
+                  <EyeIcon class="w-4 h-4" />
+                  View
                 </button>
 
                 <!-- Edit Button -->
                 <button 
                   @click="editAdmin(admin)" 
-                  class="px-3 py-1.5 text-sm text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition" 
+                  class="px-3 py-1.5 text-sm text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition flex items-center gap-2" 
                   title="Edit admin"
                 >
-                  ✏️ Edit
+                  <PencilIcon class="w-4 h-4" />
+                  Edit
                 </button>
 
                 <!-- Monitor Button -->
                 <button 
                   @click="monitorAdmin(admin)" 
-                  class="px-3 py-1.5 text-sm text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition" 
+                  class="px-3 py-1.5 text-sm text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition flex items-center gap-2" 
                   title="Monitor admin activity"
                 >
-                  📊 Monitor
+                  <BarChart3 class="w-4 h-4" />
+                  Monitor
                 </button>
               </div>
             </td>
@@ -155,7 +161,7 @@
             <label class="text-xs font-semibold text-slate-500 uppercase">Status</label>
             <p :class="{
               'font-semibold': true,
-              'text-green-600': selectedAdmin.Is_Active,
+              'text-primary-600': selectedAdmin.Is_Active,
               'text-gray-600': !selectedAdmin.Is_Active
             }">
               {{ selectedAdmin.Is_Active ? '✓ Active' : '○ Inactive' }}
@@ -186,19 +192,19 @@
         <form @submit.prevent="saveAdmin" class="p-6 space-y-4">
           <div>
             <label class="text-xs font-semibold text-slate-500 uppercase">First Name</label>
-            <input v-model="editForm.firstName" type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#1B8B3C]" />
+            <input v-model="editForm.firstName" type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label class="text-xs font-semibold text-slate-500 uppercase">Last Name</label>
-            <input v-model="editForm.surName" type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#1B8B3C]" />
+            <input v-model="editForm.surName" type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label class="text-xs font-semibold text-slate-500 uppercase">Job Title</label>
-            <input v-model="editForm.jobTitle" type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#1B8B3C]" />
+            <input v-model="editForm.jobTitle" type="text" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500" />
           </div>
           <div>
             <label class="text-xs font-semibold text-slate-500 uppercase">Status</label>
-            <select v-model="editForm.isActive" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#1B8B3C]">
+            <select v-model="editForm.isActive" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500">
               <option :value="true">Active</option>
               <option :value="false">Inactive</option>
             </select>
@@ -213,7 +219,7 @@
           </button>
           <button 
             @click="saveAdmin" 
-            class="flex-1 px-4 py-2 bg-[#1B8B3C] text-white rounded-lg hover:bg-[#157032] transition"
+            class="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
           >
             Save Changes
           </button>
@@ -232,11 +238,11 @@
           <!-- Activity Stats -->
           <div class="grid grid-cols-3 gap-4">
             <div class="bg-blue-50 rounded-lg p-4">
-              <p class="text-xs text-blue-600 font-semibold uppercase">Last Login</p>
+              <p class="text-xs text-primary-600 font-semibold uppercase">Last Login</p>
               <p class="text-lg font-bold text-slate-900 mt-1">Today</p>
             </div>
-            <div class="bg-green-50 rounded-lg p-4">
-              <p class="text-xs text-green-600 font-semibold uppercase">Users Created</p>
+            <div class="bg-primary-50 rounded-lg p-4">
+              <p class="text-xs text-primary-600 font-semibold uppercase">Users Created</p>
               <p class="text-lg font-bold text-slate-900 mt-1">{{ Math.floor(Math.random() * 50) }}</p>
             </div>
             <div class="bg-amber-50 rounded-lg p-4">
@@ -299,6 +305,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useApi } from '@/composables/useApi'
+import { AlertTriangleIcon, EyeIcon, PencilIcon, BarChart3 } from 'lucide-vue-next'
 
 const { getAdmins } = useApi()
 
@@ -383,3 +390,4 @@ const monitorAdmin = (admin) => {
   showMonitorModal.value = true
 }
 </script>
+

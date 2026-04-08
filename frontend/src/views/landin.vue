@@ -187,7 +187,7 @@
             >
               <div class="flex items-center mb-3 space-x-3">
                 <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-lg">
-                  {{ card.icon }}
+                  <component :is="card.icon" class="w-5 h-5 text-white" />
                 </div>
                 <h3 class="text-sm sm:text-base font-bold">{{ card.title }}</h3>
               </div>
@@ -297,6 +297,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
+import { Clock, BarChart3, TrendingUp, Shield, Globe, Settings } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 
@@ -315,37 +316,37 @@ const formatDate = (d) =>
 
 const featureCards = [
   {
-    icon: '⏱',
+    icon: Clock,
     title: 'Smart Check‑ins',
     description:
       'GPS‑aware, one‑tap check‑ins from any device with full audit trails for each employee and location.'
   },
   {
-    icon: '📊',
+    icon: BarChart3,
     title: 'Role‑Based Dashboards',
     description:
       'Give managers, HR, and executives the exact insights they need without exposing sensitive data.'
   },
   {
-    icon: '📈',
+    icon: TrendingUp,
     title: 'Powerful Analytics',
     description:
       'Spot absentee trends, overtime spikes, and late check‑ins before they become compliance issues.'
   },
   {
-    icon: '🛡',
+    icon: Shield,
     title: 'Enterprise‑grade Security',
     description:
       'Single sign‑on ready with device‑level security, encrypted tokens, and fine‑grained access control.'
   },
   {
-    icon: '🌐',
+    icon: Globe,
     title: 'Flexible Multi‑Tenant',
     description:
       'Separate data per organization with centralized control for partners, franchises, or campuses.'
   },
   {
-    icon: '⚙️',
+    icon: Settings,
     title: 'Automation‑Ready',
     description:
       'Connect attendance data to payroll, HRIS, and alerts with webhooks and API integration.'

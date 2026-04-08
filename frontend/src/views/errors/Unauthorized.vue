@@ -3,7 +3,7 @@
     <div class="max-w-md w-full text-center">
       <!-- Unauthorized Illustration -->
       <div class="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-rose-400 to-rose-500 rounded-3xl flex items-center justify-center shadow-2xl text-white">
-        <span class="text-4xl">🚫</span>
+        <ShieldAlertIcon class="w-16 h-16 text-white" />
       </div>
       
       <h1 class="text-4xl font-bold text-slate-900 mb-4">Unauthorized</h1>
@@ -31,5 +31,6 @@
 </template>
 
 <script setup>
-// Unauthorized page - no logic needed
+import { ShieldAlertIcon } from 'lucide-vue-next'
+// Unauthorized page
 </script>

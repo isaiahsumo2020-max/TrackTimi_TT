@@ -40,7 +40,7 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Navigation Sidebar -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 h-fit">
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 h-fit">
           <h3 class="font-black text-slate-900 uppercase text-sm mb-4">Settings</h3>
           <div class="space-y-2">
             <button
@@ -61,7 +61,7 @@
         <!-- Settings Content -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Attendance Policies Section -->
-          <div v-if="activeSection === 'attendance'" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+          <div v-if="activeSection === 'attendance'" class="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
             <h2 class="text-2xl font-black text-slate-900 mb-6 uppercase">Attendance Policies</h2>
             
             <!-- Clock-in Window Setting -->
@@ -118,9 +118,9 @@
             <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
               <p class="text-xs font-bold text-primary-900 uppercase mb-2">⏰ Policy Preview</p>
               <div class="text-sm text-primary-800 space-y-1">
-                <p>✓ Clock-in available for <span class="font-black">{{ formData.clockInWindow }} minutes</span> after shift starts</p>
-                <p>✓ Clock-out alert sent <span class="font-black">{{ formData.clockOutAlert }} minutes</span> before shift ends</p>
-                <p>✓ Late clock-ins marked and tracked in system</p>
+                <div class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" /><p>Clock-in available for <span class="font-black">{{ formData.clockInWindow }} minutes</span> after shift starts</p></div>
+                <div class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" /><p>Clock-out alert sent <span class="font-black">{{ formData.clockOutAlert }} minutes</span> before shift ends</p></div>
+                <div class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" /><p>Late clock-ins marked and tracked in system</p></div>
               </div>
             </div>
 
@@ -133,13 +133,14 @@
               {{ savingSettings ? 'Saving...' : 'Save Settings' }}
             </button>
             
-            <p v-if="settingsSaved" class="text-xs text-green-600 font-bold mt-3">
-              ✓ Settings saved successfully
+            <p v-if="settingsSaved" class="text-xs text-green-600 font-bold mt-3 flex items-center gap-2">
+              <CheckCircleIcon class="w-4 h-4" />
+              Settings saved successfully
             </p>
           </div>
 
           <!-- Break Management Section -->
-          <div v-if="activeSection === 'breaks'" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+          <div v-if="activeSection === 'breaks'" class="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
             <h2 class="text-2xl font-black text-slate-900 mb-6 uppercase">Break Management</h2>
             
             <!-- Max Breaks Per Shift Setting -->
@@ -168,7 +169,7 @@
             </div>
 
             <!-- Break Types Info -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div class="bg-blue-50 border border-primary-200 rounded-lg p-4 mb-6">
               <h4 class="font-bold text-blue-900 mb-3">ℹ️ Break Types Supported</h4>
               <ul class="text-sm text-blue-800 space-y-2">
                 <li class="flex items-start gap-2">
@@ -187,11 +188,11 @@
             <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
               <p class="text-xs font-bold text-primary-900 uppercase mb-2">☕ Break Policy Preview</p>
               <div class="text-sm text-primary-800 space-y-1">
-                <p>✓ Employees can take up to <span class="font-black">{{ formData.maxBreaksPerShift }} breaks</span> per shift</p>
-                <p>✓ Break types: Lunch, Regular, Restroom</p>
-                <p>✓ GPS location tracking enabled for validation</p>
-                <p>✓ Break duration automatically calculated and tracked</p>
-                <p>✓ Admin can view all break activities and analytics</p>
+                <div class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" /><p>Employees can take up to <span class="font-black">{{ formData.maxBreaksPerShift }} breaks</span> per shift</p></div>
+                <div class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" /><p>Break types: Lunch, Regular, Restroom</p></div>
+                <div class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" /><p>GPS location tracking enabled for validation</p></div>
+                <div class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" /><p>Break duration automatically calculated and tracked</p></div>
+                <div class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" /><p>Admin can view all break activities and analytics</p></div>
               </div>
             </div>
 
@@ -204,13 +205,14 @@
               {{ savingSettings ? 'Saving...' : 'Save Settings' }}
             </button>
             
-            <p v-if="settingsSaved" class="text-xs text-green-600 font-bold mt-3">
-              ✓ Settings saved successfully - Employees will be notified about the policy change
-            </p>
+            <div v-if="settingsSaved" class="text-xs text-green-600 font-bold mt-3 flex items-center gap-2">
+              <CheckCircleIcon class="w-4 h-4" />
+              Settings saved successfully - Employees will be notified about the policy change
+            </div>
           </div>
 
           <!-- Geofence Settings Section -->
-          <div v-if="activeSection === 'geofence'" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+          <div v-if="activeSection === 'geofence'" class="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
             <h2 class="text-2xl font-black text-slate-900 mb-6 uppercase">Work Locations (Geofences)</h2>
             
             <div v-if="geofences.length > 0" class="space-y-4 mb-6">
@@ -231,7 +233,7 @@
           </div>
 
           <!-- Notifications Section -->
-          <div v-if="activeSection === 'notifications'" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+          <div v-if="activeSection === 'notifications'" class="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
             <h2 class="text-2xl font-black text-slate-900 mb-6 uppercase">Notification Settings</h2>
             
             <div class="space-y-6">
@@ -298,11 +300,11 @@
           </div>
 
           <!-- Dashboard Info Section -->
-          <div v-if="activeSection === 'dashboard-info'" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+          <div v-if="activeSection === 'dashboard-info'" class="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
             <h2 class="text-2xl font-black text-slate-900 mb-6 uppercase">Dashboard Information</h2>
             
             <div class="space-y-6">
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="bg-blue-50 border border-primary-200 rounded-lg p-4">
                 <h4 class="font-bold text-blue-900 mb-2">👤 User Dashboard Features</h4>
                 <ul class="text-sm text-blue-800 space-y-1 list-disc list-inside">
                   <li>View today's schedule and upcoming shifts</li>
@@ -314,9 +316,9 @@
                 </ul>
               </div>
 
-              <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <h4 class="font-bold text-purple-900 mb-2">🔒 Access Control</h4>
-                <ul class="text-sm text-purple-800 space-y-1 list-disc list-inside">
+              <div class="bg-accent-50 border border-accent-200 rounded-lg p-4">
+                <h4 class="font-bold text-accent-900 mb-2">🔒 Access Control</h4>
+                <ul class="text-sm text-accent-800 space-y-1 list-disc list-inside">
                   <li>Users cannot edit their own profile, schedule, or attendance</li>
                   <li>All changes require administrator approval</li>
                   <li>Read-only view of contracts and policies</li>
@@ -327,10 +329,10 @@
               <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                 <h4 class="font-bold text-green-900 mb-2">⏰ Clock-in/out Settings</h4>
                 <ul class="text-sm text-green-800 space-y-2">
-                  <li>✓ Clock-in Window: Employees can clock in up to <span class="font-black">{{ formData.clockInWindow }} minutes</span> after shift start</li>
-                  <li>✓ Clock-out Alert: System sends reminder <span class="font-black">{{ formData.clockOutAlert }} minutes</span> before shift end</li>
-                  <li>✓ Location Validation: GPS must be within configured work zone</li>
-                  <li>✓ Late Tracking: Late clock-ins are automatically flagged</li>
+                  <li class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" />Clock-in Window: Employees can clock in up to <span class="font-black">{{ formData.clockInWindow }} minutes</span> after shift start</li>
+                  <li class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" />Clock-out Alert: System sends reminder <span class="font-black">{{ formData.clockOutAlert }} minutes</span> before shift end</li>
+                  <li class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" />Location Validation: GPS must be within configured work zone</li>
+                  <li class="flex items-center gap-2"><CheckCircleIcon class="w-4 h-4 text-green-600" />Late Tracking: Late clock-ins are automatically flagged</li>
                 </ul>
               </div>
             </div>
@@ -344,6 +346,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/utils/api'
+import { CheckCircleIcon } from 'lucide-vue-next'
 import { getNotifications, markNotificationAsRead, getUnreadNotificationCount, deleteNotification as deleteNotifApi, markAllNotificationsAsRead } from '@/services/orgApi'
 import RealtimeNotifications from '@/components/dashboard/RealtimeNotifications.vue'
 import NotificationPanel from '@/components/dashboard/NotificationPanel.vue'
@@ -515,3 +518,4 @@ onBeforeUnmount(() => {
 <style scoped>
 /* Animations */
 </style>
+

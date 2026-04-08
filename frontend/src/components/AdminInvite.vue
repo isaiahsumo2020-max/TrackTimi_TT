@@ -16,7 +16,7 @@
 
       <div class="flex justify-end space-x-2">
         <button type="button" @click="$emit('close')" class="px-4 py-2 border rounded">Cancel</button>
-        <button :disabled="sending" class="px-4 py-2 bg-blue-600 text-white rounded">Invite</button>
+        <button :disabled="sending" class="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700">Invite</button>
       </div>
 
       <div v-if="message" class="mt-3 text-sm text-blue-700">{{ message }}</div>

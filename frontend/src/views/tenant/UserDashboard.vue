@@ -10,24 +10,24 @@
       
       <!-- Header with quick stats -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-4 md:p-6 rounded-lg border border-slate-100 shadow-sm">
           <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Status</p>
           <p class="text-lg md:text-2xl font-black" :class="isCheckedIn ? 'text-green-600' : 'text-slate-600'">
             {{ isCheckedIn ? 'WORKING' : 'OFF-DUTY' }}
           </p>
         </div>
-        <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-4 md:p-6 rounded-lg border border-slate-100 shadow-sm">
           <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">GPS Signal</p>
           <div class="flex items-center gap-2">
             <div class="w-3 h-3 rounded-full animate-pulse" :class="gpsSignalStrength > 70 ? 'bg-green-500' : gpsSignalStrength > 40 ? 'bg-yellow-500' : 'bg-red-500'"></div>
             <p class="text-lg md:text-2xl font-black">{{ gpsSignalStrength }}%</p>
           </div>
         </div>
-        <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-4 md:p-6 rounded-lg border border-slate-100 shadow-sm">
           <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Distance</p>
           <p class="text-lg md:text-2xl font-black text-primary-600">{{ distance }}m</p>
         </div>
-        <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <div class="bg-white p-4 md:p-6 rounded-lg border border-slate-100 shadow-sm">
           <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Time</p>
           <p class="text-lg md:text-xl font-black">{{ currentTime }}</p>
         </div>
@@ -37,7 +37,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         
         <!-- Enhanced GPS Check-in Card -->
-        <div class="lg:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 p-8 md:p-12 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden">
+        <div class="lg:col-span-2 bg-gradient-to-br from-primary-600 to-primary-700 p-8 md:p-12 rounded-xl shadow-xl text-white relative overflow-hidden">
           <div class="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
           
           <div class="relative z-10 space-y-8">
@@ -55,7 +55,7 @@
             <div class="space-y-4">
               <div class="grid grid-cols-2 gap-3 md:gap-4">
                 <!-- GPS Lock -->
-                <div :class="location ? 'bg-green-400/20 border-green-300' : 'bg-orange-400/20 border-orange-300'" class="p-4 md:p-5 rounded-2xl border-2 text-center transition-all backdrop-blur-sm">
+                <div :class="location ? 'bg-green-400/20 border-green-300' : 'bg-orange-400/20 border-orange-300'" class="p-4 md:p-5 rounded-lg border-2 text-center transition-all backdrop-blur-sm">
                   <p class="text-[9px] font-black text-white/80 uppercase mb-2">GPS Lock</p>
                   <div class="flex items-center justify-center gap-2">
                     <div class="w-3 h-3 rounded-full animate-pulse" :class="location ? 'bg-green-300' : 'bg-orange-300'"></div>
@@ -64,7 +64,7 @@
                 </div>
                 
                 <!-- Work Zone -->
-                <div :class="inRange ? 'bg-green-400/20 border-green-300' : 'bg-red-400/20 border-red-300'" class="p-4 md:p-5 rounded-2xl border-2 text-center transition-all backdrop-blur-sm">
+                <div :class="inRange ? 'bg-green-400/20 border-green-300' : 'bg-red-400/20 border-red-300'" class="p-4 md:p-5 rounded-lg border-2 text-center transition-all backdrop-blur-sm">
                   <p class="text-[9px] font-black text-white/80 uppercase mb-2">Work Zone</p>
                   <div class="flex items-center justify-center gap-2">
                     <div class="w-3 h-3 rounded-full animate-pulse" :class="inRange ? 'bg-green-300' : 'bg-red-300'"></div>
@@ -74,7 +74,7 @@
               </div>
 
               <!-- Accuracy Indicator -->
-              <div v-if="location" class="bg-white/10 p-4 md:p-5 rounded-2xl border border-white/20 backdrop-blur-sm">
+              <div v-if="location" class="bg-white/10 p-4 md:p-5 rounded-lg border border-white/20 backdrop-blur-sm">
                 <div class="flex justify-between items-center mb-3">
                   <p class="text-xs font-bold text-white/70 uppercase">Accuracy</p>
                   <span class="text-xs font-bold text-white/70">{{ gpsAccuracy }}m</span>
@@ -87,7 +87,7 @@
             </div>
 
             <!-- Distance Readout -->
-            <div v-if="location" class="text-center py-6 md:py-8 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm">
+            <div v-if="location" class="text-center py-6 md:py-8 bg-white/10 rounded-lg border border-white/20 backdrop-blur-sm">
               <div class="text-5xl md:text-6xl font-black tracking-tight">{{ distance }}<span class="text-2xl md:text-3xl">m</span></div>
               <p class="text-xs font-bold text-white/70 uppercase mt-2">Distance to work zone</p>
             </div>
@@ -98,7 +98,7 @@
             <button 
               @click="handleSubmit" 
               :disabled="!inRange || loading || !location"
-              class="w-full py-6 md:py-8 rounded-2xl font-black text-lg md:text-2xl shadow-2xl transition-all active:scale-95 uppercase tracking-wider"
+              class="w-full py-6 md:py-8 rounded-lg font-black text-lg md:text-2xl shadow-2xl transition-all active:scale-95 uppercase tracking-wider"
               :class="inRange && location ? 'bg-white text-primary-600 shadow-white/30 hover:shadow-white/40' : 'bg-white/20 text-white/50 cursor-not-allowed backdrop-blur-sm'"
             >
               <span v-if="loading" class="flex items-center justify-center gap-2">
@@ -116,7 +116,7 @@
         </div>
 
         <!-- Time Tracking Widget -->
-        <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-6 md:p-8 flex flex-col">
+        <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-6 md:p-8 flex flex-col">
           <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-6">Time Tracking</h3>
           
           <div class="flex-1 flex flex-col justify-center items-center space-y-6">
@@ -170,7 +170,7 @@
       </div>
 
       <!-- Break Management Section -->
-      <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-6 md:p-8">
+      <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-6 md:p-8">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <h3 class="text-lg md:text-xl font-black text-slate-900 uppercase">Break Management</h3>
           <button
@@ -238,7 +238,7 @@
       <!-- Schedule Section with Calendar -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         <!-- Current/Next Shift -->
-        <div class="lg:col-span-2 bg-gradient-to-br from-primary-600 to-purple-600 p-6 md:p-8 rounded-[2.5rem] shadow-lg text-white relative overflow-hidden">
+        <div class="lg:col-span-2 bg-gradient-to-br from-primary-600 to-accent-600 p-6 md:p-8 rounded-xl shadow-lg text-white relative overflow-hidden">
           <div class="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
           
           <div class="relative z-10">
@@ -271,7 +271,7 @@
         </div>
 
         <!-- Upcoming Schedule Summary -->
-        <div class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div class="bg-white p-6 md:p-8 rounded-xl border border-slate-100 shadow-sm">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-3">
             <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">This Week</h3>
             <router-link :to="`/schedule`" class="text-[9px] font-black text-primary-600 hover:text-primary-700 uppercase border-b-2 border-primary-100">View All</router-link>
@@ -295,52 +295,52 @@
       </div>
 
       <!-- Employee Analytics Section -->
-      <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-6 md:p-8">
+      <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-6 md:p-8">
         <h3 class="text-lg md:text-xl font-black text-slate-900 uppercase mb-8">Work Analytics</h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <!-- 7-Day Average -->
-          <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200">
-            <p class="text-[10px] font-black text-blue-700 uppercase tracking-wider mb-2">7-Day Average</p>
-            <p class="text-3xl md:text-4xl font-black text-blue-900">{{ avgHoursPerDay }}h</p>
+          <div class="bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-lg border border-primary-200">
+            <p class="text-[10px] font-black text-primary-700 uppercase tracking-wider mb-2">7-Day Average</p>
+            <p class="text-3xl md:text-4xl font-black text-primary-900">{{ avgHoursPerDay }}h</p>
             <svg class="w-full h-12 mt-4 opacity-30" viewBox="0 0 100 40" preserveAspectRatio="none">
               <polyline points="0,30 20,15 40,20 60,10 80,18 100,12" stroke="currentColor" stroke-width="2" fill="none" vector-effect="non-scaling-stroke"/>
             </svg>
           </div>
 
           <!-- Check-in Rate -->
-          <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200">
-            <p class="text-[10px] font-black text-green-700 uppercase tracking-wider mb-2">Check-in Rate</p>
-            <p class="text-3xl md:text-4xl font-black text-green-900">{{ checkInRate }}%</p>
-            <div class="w-full h-2 bg-green-300 rounded-full mt-4">
-              <div class="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full" :style="{ width: checkInRate + '%' }"></div>
+          <div class="bg-gradient-to-br from-accent-50 to-accent-100 p-6 rounded-lg border border-accent-200">
+            <p class="text-[10px] font-black text-accent-700 uppercase tracking-wider mb-2">Check-in Rate</p>
+            <p class="text-3xl md:text-4xl font-black text-accent-900">{{ checkInRate }}%</p>
+            <div class="w-full h-2 bg-accent-300 rounded-full mt-4">
+              <div class="h-full bg-gradient-to-r from-accent-500 to-accent-400 rounded-full" :style="{ width: checkInRate + '%' }"></div>
             </div>
           </div>
 
           <!-- Total Hours This Month -->
-          <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl border border-purple-200">
-            <p class="text-[10px] font-black text-purple-700 uppercase tracking-wider mb-2">Hours This Month</p>
-            <p class="text-3xl md:text-4xl font-black text-purple-900">{{ totalMonthHours }}h</p>
-            <p class="text-xs text-purple-600 font-bold mt-2">Target: {{ targetMonthHours }}h</p>
+          <div class="bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-lg border border-primary-200">
+            <p class="text-[10px] font-black text-primary-700 uppercase tracking-wider mb-2">Hours This Month</p>
+            <p class="text-3xl md:text-4xl font-black text-primary-900">{{ totalMonthHours }}h</p>
+            <p class="text-xs text-primary-600 font-bold mt-2">Target: {{ targetMonthHours }}h</p>
           </div>
 
           <!-- On-time Rate -->
-          <div class="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-2xl border border-amber-200">
-            <p class="text-[10px] font-black text-amber-700 uppercase tracking-wider mb-2">On-time Rate</p>
-            <p class="text-3xl md:text-4xl font-black text-amber-900">{{ onTimeRate }}%</p>
+          <div class="bg-gradient-to-br from-accent-50 to-accent-100 p-6 rounded-lg border border-accent-200">
+            <p class="text-[10px] font-black text-accent-700 uppercase tracking-wider mb-2">On-time Rate</p>
+            <p class="text-3xl md:text-4xl font-black text-accent-900">{{ onTimeRate }}%</p>
             <div class="flex items-center gap-2 mt-2">
-              <div class="w-2 h-2 rounded-full" :class="onTimeRate >= 95 ? 'bg-green-500' : onTimeRate >= 80 ? 'bg-yellow-500' : 'bg-red-500'"></div>
-              <span class="text-[10px] font-bold text-amber-700">{{ onTimeRate >= 95 ? 'Excellent' : onTimeRate >= 80 ? 'Good' : 'Needs Improvement' }}</span>
+              <div class="w-2 h-2 rounded-full" :class="onTimeRate >= 95 ? 'bg-primary-500' : onTimeRate >= 80 ? 'bg-accent-500' : 'bg-red-500'"></div>
+              <span class="text-[10px] font-bold text-accent-700">{{ onTimeRate >= 95 ? 'Excellent' : onTimeRate >= 80 ? 'Good' : 'Needs Improvement' }}</span>
             </div>
           </div>
         </div>
 
         <!-- Weekly Activity Chart -->
-        <div class="mt-8 bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-2xl border border-slate-200">
+        <div class="mt-8 bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-lg border border-primary-200">
           <div class="flex justify-between items-center mb-4">
-            <p class="text-xs font-black text-slate-700 uppercase">Weekly Activity (Live)</p>
-            <span class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-bold">
-              <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <p class="text-xs font-black text-primary-700 uppercase">Weekly Activity (Live)</p>
+            <span class="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-[10px] font-bold">
+              <span class="w-2 h-2 bg-accent-500 rounded-full animate-pulse"></span>
               Live
             </span>
           </div>
@@ -404,7 +404,7 @@
 
     <!-- Break Type Selection Modal -->
     <div v-if="showBreakModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8">
+      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 md:p-8">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-xl md:text-2xl font-black text-slate-900">Select Break Type</h3>
@@ -431,7 +431,7 @@
             />
             <div class="ml-3 flex-1">
               <p class="font-bold text-slate-900">Lunch Break</p>
-              <p class="text-xs text-slate-500">{{ lunchTaken ? '✓ Already taken' : 'Once per shift' }}</p>
+              <p class="text-xs text-slate-500"><span v-if="lunchTaken" class="inline-flex items-center gap-1"><CheckCircleIcon class="w-4 h-4 text-green-600" /> Already taken</span><span v-else>Once per shift</span></p>
             </div>
             <span class="text-2xl">🍽️</span>
           </label>
@@ -514,7 +514,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/utils/api'
-import { MapPinIcon } from 'lucide-vue-next'
+import { MapPinIcon, CheckCircleIcon } from 'lucide-vue-next'
 import { useRealtimeUpdates } from '@/composables/useRealtimeUpdates'
 import { useDashboardMetrics } from '@/composables/useDashboardMetrics'
 import RealtimeNotifications from '@/components/dashboard/RealtimeNotifications.vue'

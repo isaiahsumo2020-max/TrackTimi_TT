@@ -13,21 +13,21 @@
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-4 gap-4 mb-6">
-      <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+      <div class="bg-primary-50 rounded-lg p-4 border-l-4 border-primary-500">
         <p class="text-sm text-gray-600 mb-1">Total Feedback</p>
-        <p class="text-2xl font-bold text-blue-600">{{ stats.totalFeedback }}</p>
+        <p class="text-2xl font-bold text-primary-600">{{ stats.totalFeedback }}</p>
       </div>
-      <div class="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-500">
+      <div class="bg-accent-50 rounded-lg p-4 border-l-4 border-accent-500">
         <p class="text-sm text-gray-600 mb-1">Open</p>
-        <p class="text-2xl font-bold text-yellow-600">{{ stats.status.open }}</p>
+        <p class="text-2xl font-bold text-accent-600">{{ stats.status.open }}</p>
       </div>
-      <div class="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-500">
+      <div class="bg-primary-50 rounded-lg p-4 border-l-4 border-primary-500">
         <p class="text-sm text-gray-600 mb-1">Responded</p>
-        <p class="text-2xl font-bold text-purple-600">{{ stats.status.responded }}</p>
+        <p class="text-2xl font-bold text-primary-600">{{ stats.status.responded }}</p>
       </div>
-      <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+      <div class="bg-primary-50 rounded-lg p-4 border-l-4 border-primary-500">
         <p class="text-sm text-gray-600 mb-1">Avg Rating</p>
-        <p class="text-2xl font-bold text-blue-600">{{ stats.rating.average }}/5.0</p>
+        <p class="text-2xl font-bold text-primary-600">{{ stats.rating.average }}/5.0</p>
       </div>
     </div>
 
@@ -36,7 +36,7 @@
       <select
         v-model="selectedStatus"
         @change="loadFeedback()"
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
       >
         <option value="">All Statuses</option>
         <option value="open">Open</option>
@@ -47,7 +47,7 @@
       <select
         v-model="selectedCategory"
         @change="loadFeedback()"
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
       >
         <option value="">All Categories</option>
         <option value="suggestion">Suggestion</option>
@@ -59,7 +59,7 @@
       <select
         v-model="selectedOrg"
         @change="loadFeedback()"
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
       >
         <option value="">All Organizations</option>
         <option v-for="org in organizations" :key="org.Org_ID" :value="org.Org_ID">
@@ -69,7 +69,7 @@
 
       <button
         @click="loadFeedback()"
-        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2"
+        class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition flex items-center gap-2"
       >
         <RefreshCw class="w-4 h-4" />
         Refresh
@@ -79,7 +79,7 @@
     <!-- Loading State -->
     <div v-if="isLoading" class="text-center py-12">
       <div class="inline-block">
-        <div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+        <div class="w-8 h-8 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
       </div>
       <p class="text-gray-500 mt-4">Loading feedback...</p>
     </div>
@@ -110,8 +110,8 @@
             <span
               :class="{
                 'bg-yellow-100 text-yellow-800': item.Status === 'open',
-                'bg-purple-100 text-purple-800': item.Status === 'responded',
-                'bg-green-100 text-green-800': item.Status === 'closed'
+                'bg-primary-100 text-primary-800': item.Status === 'responded',
+                'bg-primary-100 text-primary-800': item.Status === 'closed'
               }"
               class="px-2 py-1 rounded text-xs font-medium"
             >
@@ -151,7 +151,7 @@
           <button
             v-if="item.Status === 'open'"
             @click="openResponseModal(item)"
-            class="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 transition flex items-center gap-1"
+            class="px-3 py-1 bg-primary-600 text-white text-sm rounded hover:bg-primary-700 transition flex items-center gap-1"
           >
             <Send class="w-3 h-3" />
             Respond
@@ -160,7 +160,7 @@
           <select
             v-model="item.Status"
             @change="handleUpdateFeedbackStatus(item.Feedback_ID, item.Status)"
-            class="px-3 py-1 text-sm border border-gray-300 rounded hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            class="px-3 py-1 text-sm border border-gray-300 rounded hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="open">Mark Open</option>
             <option value="responded">Mark Responded</option>
@@ -206,7 +206,7 @@
               v-model="responseText"
               placeholder="Write your response here..."
               rows="6"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             ></textarea>
             <p class="text-xs text-gray-500 mt-2">{{ responseText.length }}/500 characters</p>
           </div>
@@ -222,7 +222,7 @@
           <button
             @click="submitResponse()"
             :disabled="!responseText.trim() || isSubmittingResponse"
-            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Send class="w-4 h-4" />
             Send Response
@@ -404,3 +404,4 @@ onMounted(async () => {
   }
 }
 </style>
+

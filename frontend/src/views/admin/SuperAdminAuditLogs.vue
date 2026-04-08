@@ -25,7 +25,7 @@
         <p v-if="sidebarOpen" class="text-[10px] font-black text-slate-500 uppercase px-4 mb-4 tracking-[0.2em]">Platform Control</p>
         
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase tracking-widest transition-all group relative"
           :class="[$route.path === item.path ? 'bg-primary-600 text-white shadow-xl shadow-primary-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']">
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
@@ -34,7 +34,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-2xl border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
+        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-lg border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
           <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-red-500">
             <LogOutIcon class="w-5 h-5" />
           </div>
@@ -60,7 +60,7 @@
         </div>
 
         <div class="flex items-center space-x-4">
-          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100">
              <button @click="loadAuditLogs" :disabled="loading" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-primary-600 active:scale-90">
                <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
              </button>
@@ -97,7 +97,7 @@
               v-model="searchQuery"
               type="text" 
               placeholder="Search by User, Organization, Action or IP Address..." 
-              class="w-full pl-12 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary-50 outline-none transition-all"
+              class="w-full pl-12 pr-6 py-4 bg-slate-50 border-none rounded-lg text-xs font-bold focus:ring-4 focus:ring-primary-50 outline-none transition-all"
             />
           </div>
 
@@ -213,7 +213,7 @@
                 </div>
 
                 <div class="pt-6 flex justify-end">
-                   <button @click="activeInspector = null" class="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">Close Inspector</button>
+                   <button @click="activeInspector = null" class="px-8 py-3 bg-slate-900 text-white rounded-lg font-black text-[10px] uppercase tracking-widest">Close Inspector</button>
                 </div>
              </div>
           </div>
@@ -269,7 +269,7 @@ const auditStats = computed(() => {
     { label: 'Total Pulses', value: logs.value.length, icon: ActivityIcon, color: 'text-primary-600' },
     { label: 'Provision Events', value: logs.value.filter(l => l.Action === 'CREATE_USER').length, icon: UserPlusIcon, color: 'text-green-600' },
     { label: 'Security Locks', value: logs.value.filter(l => l.Action.includes('SUSPEND')).length, icon: LockIcon, color: 'text-red-600' },
-    { label: 'Auth Success', value: logs.value.filter(l => l.Action === 'LOGIN').length, icon: ShieldCheckIcon, color: 'text-blue-600' },
+    { label: 'Auth Success', value: logs.value.filter(l => l.Action === 'LOGIN').length, icon: ShieldCheckIcon, color: 'text-primary-600' },
   ]
 })
 

@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
-        <h3 class="text-2xl font-black text-[#1B8B3C] mb-2">Organizations</h3>
+        <h3 class="text-2xl font-black text-primary-600 mb-2">Organizations</h3>
         <p class="text-sm text-slate-500">View and manage all organizations in the system</p>
       </div>
     </div>
@@ -54,16 +54,17 @@
                 @error="handleImageError"
               />
             </div>
-            <div v-else class="w-20 h-20 bg-gradient-to-br from-[#1B8B3C] to-[#0F5124] text-white rounded-lg flex items-center justify-center font-black text-3xl shadow-md">
+            <div v-else class="w-20 h-20 bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-lg flex items-center justify-center font-black text-3xl shadow-md">
               {{ org.Org_Name[0] }}
             </div>
             <!-- Status Badge in Corner -->
             <span
-              :class="org.Is_Active ? 'bg-[#1B8B3C]' : 'bg-red-600'"
-              class="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest text-white shadow-lg border border-white"
+              :class="org.Is_Active ? 'bg-primary-600' : 'bg-red-600'"
+              class="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-widest text-white shadow-lg border border-white flex items-center gap-0.5"
               :title="org.Is_Active ? 'Active' : 'Inactive'"
             >
-              {{ org.Is_Active ? '✓' : '✕' }}
+              <component :is="org.Is_Active ? CheckIcon : XIcon" class="w-3 h-3" />
+              {{ org.Is_Active ? 'Active' : 'Inactive' }}
             </span>
           </div>
 
@@ -78,15 +79,15 @@
         <div v-if="org.Address || org.Phone_Num || org.Email" class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
           <div class="space-y-2 text-xs">
             <div v-if="org.Address" class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">📍</span>
+              <MapPinIcon class="w-4 h-4 text-blue-600 flex-shrink-0" />
               <span class="text-slate-700 line-clamp-1">{{ org.Address }}</span>
             </div>
             <div v-if="org.Phone_Num" class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">📞</span>
+              <PhoneIcon class="w-4 h-4 text-blue-600 flex-shrink-0" />
               <span class="text-slate-700">{{ org.Phone_Num }}</span>
             </div>
             <div v-if="org.Email" class="flex items-start gap-2">
-              <span class="text-blue-600 font-bold">✉️</span>
+              <MailIcon class="w-4 h-4 text-blue-600 flex-shrink-0" />
               <span class="text-slate-700 truncate">{{ org.Email }}</span>
             </div>
           </div>
@@ -212,7 +213,7 @@
     <div v-if="showDetailsModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl shadow-2xl max-h-[95vh] w-full max-w-4xl overflow-hidden flex flex-col">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-[#1B8B3C] to-[#0F5124] text-white px-8 py-6 flex items-center justify-between shrink-0">
+        <div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-8 py-6 flex items-center justify-between shrink-0">
           <div>
             <h3 class="text-2xl font-black mb-1">Organization Details</h3>
             <p class="text-white/80 text-sm">Complete registration & settings information</p>
@@ -254,7 +255,7 @@
                   class="w-7 h-7 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-md"
                   title="Delete logo"
                 >
-                  ✕
+                  <XIcon class="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -265,12 +266,12 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <p class="text-xs font-black text-slate-500 uppercase tracking-wider mb-1">Status</p>
-                  <span :class="selectedOrgDetails.info?.Is_Active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="inline-block px-3 py-1 rounded-full text-xs font-black">
-                    {{ selectedOrgDetails.info?.Is_Active ? '✓ ACTIVE' : '✗ INACTIVE' }}
+                  <span :class="selectedOrgDetails.info?.Is_Active ? 'bg-primary-100 text-primary-700' : 'bg-red-100 text-red-700'" class="inline-block px-3 py-1 rounded-full text-xs font-black">
+                    {{ selectedOrgDetails.info?.Is_Active ? 'ACTIVE' : 'INACTIVE' }}
                   </span>
                 </div>
                 <div>
-                  <p class="text-xs font-black text-slate-500 uppercase tracking-wider mb-1">💼 Workspace Capacity</p>
+                  <p class="text-xs font-black text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1"><BriefcaseIcon class="w-4 h-4" /> Workspace Capacity</p>
                   <p class="text-sm font-black text-slate-900">{{ selectedOrgDetails.info?.Workspace_Capacity || 'Not Set' }}</p>
                 </div>
               </div>
@@ -286,7 +287,7 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
               <!-- Master Credentials (Admin User) -->
               <div class="bg-white rounded-lg p-4 border border-blue-100">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">🔐 Master Credentials</p>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1"><LockIcon class="w-4 h-4" /> Master Credentials</p>
                 <div class="space-y-1">
                   <p class="text-sm font-black text-blue-600">{{ selectedOrgDetails.info?.Master_Credentials?.name || '—' }}</p>
                   <p class="text-xs text-slate-600">{{ selectedOrgDetails.info?.Master_Credentials?.email || '—' }}</p>
@@ -294,15 +295,15 @@
                 </div>
               </div>
               <div class="bg-white rounded-lg p-4 border border-blue-100">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">🏢 Organization Type</p>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1"><BuildingIcon class="w-4 h-4" /> Organization Type</p>
                 <p class="text-sm font-bold text-slate-900">{{ selectedOrgDetails.info?.Org_Type_Name || 'Not Set' }}</p>
               </div>
               <div class="bg-white rounded-lg p-4 border border-blue-100">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">📍 Region</p>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1"><MapPinIcon class="w-4 h-4" /> Region</p>
                 <p class="text-sm font-bold text-slate-900">{{ selectedOrgDetails.info?.Region_Name || 'Not Set' }}</p>
               </div>
               <div class="md:col-span-2 bg-white rounded-lg p-4 border border-blue-100">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">🎨 Theme Color</p>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1"><PaletteIcon class="w-4 h-4" /> Theme Color</p>
                 <div class="flex items-center gap-3">
                   <div class="w-12 h-12 rounded-lg border-2 border-blue-200 shadow-sm" :style="{ backgroundColor: selectedOrgDetails.info?.Theme_Color || '#1B8B3C' }"></div>
                   <p class="text-sm font-mono text-slate-900 font-bold">{{ selectedOrgDetails.info?.Theme_Color || '#1B8B3C' }}</p>
@@ -319,74 +320,76 @@
             </h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2 bg-white rounded-lg p-4 border border-amber-200">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">📍 Address</p>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1"><MapPinIcon class="w-4 h-4" /> Address</p>
                 <p class="text-sm font-bold text-slate-900 leading-relaxed">{{ selectedOrgDetails.info?.Address || 'Not provided' }}</p>
               </div>
               <div class="bg-white rounded-lg p-4 border border-amber-200">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">📞 Phone</p>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1"><PhoneIcon class="w-4 h-4" /> Phone</p>
                 <p class="text-sm font-mono text-slate-900 font-bold">{{ selectedOrgDetails.info?.Phone_Num || '—' }}</p>
               </div>
               <div class="bg-white rounded-lg p-4 border border-amber-200">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">✉️ Email</p>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1"><MailIcon class="w-4 h-4" /> Email</p>
                 <p class="text-sm font-mono text-slate-900 font-bold truncate">{{ selectedOrgDetails.info?.Email || '—' }}</p>
               </div>
             </div>
           </div>
 
           <!-- GEOFENCES Section -->
-          <div class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-6 border-2 border-cyan-300">
-            <h4 class="text-sm font-black text-cyan-900 mb-4 flex items-center uppercase tracking-wider">
-              <span class="w-3 h-3 bg-cyan-600 rounded-full mr-2"></span>
+          <div class="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 border-2 border-primary-300">
+            <h4 class="text-sm font-black text-primary-900 mb-4 flex items-center uppercase tracking-wider">
+              <span class="w-3 h-3 bg-primary-600 rounded-full mr-2"></span>
               Geofences ({{ selectedOrgDetails.geofences?.length || 0 }})
             </h4>
             <div v-if="selectedOrgDetails.geofences && selectedOrgDetails.geofences.length > 0" class="space-y-2 max-h-36 overflow-y-auto">
-              <div v-for="geo in selectedOrgDetails.geofences" :key="geo.Geo_ID" class="bg-white rounded-lg p-3 border border-cyan-200 flex items-center justify-between">
+              <div v-for="geo in selectedOrgDetails.geofences" :key="geo.Geo_ID" class="bg-white rounded-lg p-3 border border-primary-200 flex items-center justify-between">
                 <div class="flex-1">
                   <p class="font-bold text-slate-900 text-sm">{{ geo.Name }}</p>
                   <p class="text-xs text-slate-600 mt-1 font-mono">Lat: {{ geo.Latitude?.toFixed(4) }} | Lng: {{ geo.Longitude?.toFixed(4) }} | R: {{ geo.Radius }}m</p>
                 </div>
-                <span :class="geo.Is_Active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="px-2 py-1 rounded text-xs font-bold whitespace-nowrap ml-2">
-                  {{ geo.Is_Active ? '✓' : '✗' }}
+                <span :class="geo.Is_Active ? 'bg-primary-100 text-primary-700' : 'bg-red-100 text-red-700'" class="px-2 py-1 rounded text-xs font-bold whitespace-nowrap ml-2 flex items-center gap-1">
+                  <component :is="geo.Is_Active ? CheckIcon : XIcon" class="w-3 h-3" />
+                  {{ geo.Is_Active ? 'Active' : 'Inactive' }}
                 </span>
               </div>
             </div>
-            <div v-else class="text-center py-4 text-slate-500 text-sm bg-white rounded-lg border border-dashed border-cyan-300">No geofences</div>
+            <div v-else class="text-center py-4 text-slate-500 text-sm bg-white rounded-lg border border-dashed border-primary-300">No geofences</div>
           </div>
 
           <!-- DEPARTMENTS Section -->
-          <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-300">
-            <h4 class="text-sm font-black text-purple-900 mb-4 flex items-center uppercase tracking-wider">
-              <span class="w-3 h-3 bg-purple-600 rounded-full mr-2"></span>
+          <div class="bg-gradient-to-br from-accent-50 to-accent-100 rounded-xl p-6 border-2 border-accent-300">
+            <h4 class="text-sm font-black text-accent-900 mb-4 flex items-center uppercase tracking-wider">
+              <span class="w-3 h-3 bg-accent-600 rounded-full mr-2"></span>
               Departments ({{ selectedOrgDetails.departments?.length || 0 }})
             </h4>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-28 overflow-y-auto">
-              <div v-for="dept in selectedOrgDetails.departments" :key="dept.Dep_ID" class="bg-white rounded-lg p-3 border border-purple-200 text-center">
+              <div v-for="dept in selectedOrgDetails.departments" :key="dept.Dep_ID" class="bg-white rounded-lg p-3 border border-accent-200 text-center">
                 <p class="font-bold text-slate-900 text-xs truncate">{{ dept.Depart_Name }}</p>
                 <p class="text-xs text-slate-600 mt-1 font-bold">{{ dept.staff_count }} staff</p>
               </div>
-              <div v-if="!selectedOrgDetails.departments || selectedOrgDetails.departments.length === 0" class="col-span-full text-center text-slate-500 text-sm py-3 bg-white rounded-lg border border-dashed border-purple-300">
+              <div v-if="!selectedOrgDetails.departments || selectedOrgDetails.departments.length === 0" class="col-span-full text-center text-slate-500 text-sm py-3 bg-white rounded-lg border border-dashed border-accent-300">
                 No departments
               </div>
             </div>
           </div>
 
           <!-- USERS Section -->
-          <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-300">
-            <h4 class="text-sm font-black text-green-900 mb-4 flex items-center uppercase tracking-wider">
-              <span class="w-3 h-3 bg-green-600 rounded-full mr-2"></span>
+          <div class="bg-gradient-to-br from-primary-50 to-primary-50 rounded-xl p-6 border-2 border-primary-200">
+            <h4 class="text-sm font-black text-primary-900 mb-4 flex items-center uppercase tracking-wider">
+              <span class="w-3 h-3 bg-primary-600 rounded-full mr-2"></span>
               Users ({{ selectedOrgDetails.users?.length || 0 }})
             </h4>
             <div class="space-y-2 max-h-28 overflow-y-auto">
-              <div v-for="user in selectedOrgDetails.users" :key="user.User_ID" class="bg-white rounded-lg p-3 border border-green-200 flex items-center justify-between text-xs">
+              <div v-for="user in selectedOrgDetails.users" :key="user.User_ID" class="bg-white rounded-lg p-3 border border-primary-200 flex items-center justify-between text-xs">
                 <div class="min-w-0 flex-1">
                   <p class="font-bold text-slate-900 truncate">{{ user.First_Name }} {{ user.SurName }}</p>
                   <p class="text-slate-600 truncate text-xs">{{ user.Email }}</p>
                 </div>
-                <span :class="user.Is_Active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'" class="px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap ml-2">
-                  {{ user.Is_Active ? '✓' : '✗' }}
+                <span :class="user.Is_Active ? 'bg-primary-100 text-primary-700' : 'bg-red-100 text-red-600'" class="px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap ml-2 flex items-center gap-1">
+                  <component :is="user.Is_Active ? CheckIcon : XIcon" class="w-3 h-3" />
+                  {{ user.Is_Active ? 'Active' : 'Inactive' }}
                 </span>
               </div>
-              <div v-if="!selectedOrgDetails.users || selectedOrgDetails.users.length === 0" class="text-center text-slate-500 text-sm py-3 bg-white rounded-lg border border-dashed border-green-300">
+              <div v-if="!selectedOrgDetails.users || selectedOrgDetails.users.length === 0" class="text-center text-slate-500 text-sm py-3 bg-white rounded-lg border border-dashed border-primary-300">
                 No users assigned
               </div>
             </div>
@@ -398,9 +401,9 @@
               <p class="text-xs font-black text-slate-600 uppercase tracking-wider">Check-ins Today</p>
               <p class="text-3xl font-black text-[#1B8B3C] mt-2">{{ selectedOrgDetails.stats?.checkinsToday || 0 }}</p>
             </div>
-            <div class="bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg p-4 border-2 border-purple-300 text-center">
+            <div class="bg-gradient-to-br from-accent-100 to-accent-50 rounded-lg p-4 border-2 border-accent-300 text-center">
               <p class="text-xs font-black text-slate-600 uppercase tracking-wider">Departments</p>
-              <p class="text-3xl font-black text-purple-600 mt-2">{{ selectedOrgDetails.departments?.length || 0 }}</p>
+              <p class="text-3xl font-black text-accent-600 mt-2">{{ selectedOrgDetails.departments?.length || 0 }}</p>
             </div>
             <div class="bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg p-4 border-2 border-blue-300 text-center">
               <p class="text-xs font-black text-slate-600 uppercase tracking-wider">Total Users</p>
@@ -412,11 +415,11 @@
           <div class="bg-slate-100 rounded-xl p-4 border-2 border-slate-300 text-xs text-slate-700">
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <p class="font-bold text-slate-800">📅 Created:</p>
+                <p class="font-bold text-slate-800 flex items-center gap-1"><CalendarIcon class="w-4 h-4" /> Created:</p>
                 <p>{{ formatDate(selectedOrgDetails.info?.Created_at) }}</p>
               </div>
               <div>
-                <p class="font-bold text-slate-800">✏️ Last Updated:</p>
+                <p class="font-bold text-slate-800 flex items-center gap-1"><PencilIcon class="w-4 h-4" /> Last Updated:</p>
                 <p>{{ formatDate(selectedOrgDetails.info?.Updated_at) }}</p>
               </div>
             </div>
@@ -429,38 +432,41 @@
           <div class="flex border-b border-slate-200 bg-slate-50 px-8">
             <button
               @click="detailActionMode = 'password'"
-              :class="detailActionMode === 'password' ? 'bg-white border-b-2 border-[#FF6B35] text-[#FF6B35]' : 'text-slate-600 hover:text-slate-900'"
-              class="px-4 py-3 text-xs font-black uppercase tracking-widest transition-all"
+              :class="detailActionMode === 'password' ? 'bg-white border-b-2 border-primary-500 text-primary-600' : 'text-slate-600 hover:text-slate-900'"
+              class="px-4 py-3 text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1"
             >
-              🔐 Reset Admin Password
+              <LockIcon class="w-4 h-4" /> Reset Admin Password
             </button>
             <button
               @click="detailActionMode = 'warning'"
               :class="detailActionMode === 'warning' ? 'bg-white border-b-2 border-yellow-500 text-yellow-600' : 'text-slate-600 hover:text-slate-900'"
-              class="px-4 py-3 text-xs font-black uppercase tracking-widest transition-all"
+              class="px-4 py-3 text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1"
             >
-              ⚠️ Warning
+              <AlertTriangleIcon class="w-4 h-4" />
+              Warning
             </button>
             <button
               @click="detailActionMode = 'suspending'"
-              :class="detailActionMode === 'suspending' ? 'bg-white border-b-2 border-green-500 text-green-600' : 'text-slate-600 hover:text-slate-900'"
-              class="px-4 py-3 text-xs font-black uppercase tracking-widest transition-all"
+              :class="detailActionMode === 'suspending' ? 'bg-white border-b-2 border-primary-500 text-primary-600' : 'text-slate-600 hover:text-slate-900'"
+              class="px-4 py-3 text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1"
             >
-              ⏸️ Suspending
+              <PauseIcon class="w-4 h-4" />
+              Suspending
             </button>
             <button
               @click="detailActionMode = 'delete'"
               :class="detailActionMode === 'delete' ? 'bg-white border-b-2 border-red-500 text-red-600' : 'text-slate-600 hover:text-slate-900'"
-              class="px-4 py-3 text-xs font-black uppercase tracking-widest transition-all"
+              class="px-4 py-3 text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1"
             >
-              🗑️ Delete
+              <TrashIcon class="w-4 h-4" />
+              Delete
             </button>
             <div class="flex-1"></div>
             <button
               @click="showDetailsModal = false"
-              class="px-4 py-3 text-slate-600 hover:text-slate-900 text-xs font-black uppercase tracking-widest transition-all"
+              class="px-4 py-3 text-slate-600 hover:text-slate-900 text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2"
             >
-              ✕ Close
+              <XIcon class="w-4 h-4" /> Close
             </button>
           </div>
 
@@ -469,22 +475,22 @@
             <!-- Message Display -->
             <div v-if="detailsErrorMessage || detailsSuccessMessage">
               <div v-if="detailsErrorMessage" class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
-                <p class="text-sm font-bold text-red-700">❌ {{ detailsErrorMessage }}</p>
+                <p class="text-sm font-bold text-red-700 flex items-center gap-1"><AlertCircleIcon class="w-4 h-4" /> {{ detailsErrorMessage }}</p>
               </div>
-              <div v-if="detailsSuccessMessage" class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
-                <p class="text-sm font-bold text-green-700">✅ {{ detailsSuccessMessage }}</p>
+              <div v-if="detailsSuccessMessage" class="bg-primary-50 border border-primary-200 rounded-lg p-3 mb-3">
+                <p class="text-sm font-bold text-primary-700 flex items-center gap-1"><CheckCircleIcon class="w-4 h-4" /> {{ detailsSuccessMessage }}</p>
               </div>
             </div>
 
             <!-- Reset Admin Password Tab -->
             <div v-if="detailActionMode === 'password'" class="space-y-4">
-              <h4 class="text-lg font-black text-[#FF6B35] flex items-center">🔐 Reset Admin Password</h4>
-              <div class="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
-                <p class="text-sm font-bold text-orange-800 mb-3">Generate a new admin password for this organization's master account.</p>
+              <h4 class="text-lg font-black text-primary-600 flex items-center gap-2"><LockIcon class="w-6 h-6" /> Reset Admin Password</h4>
+              <div class="bg-primary-50 border-2 border-primary-200 rounded-lg p-4">
+                <p class="text-sm font-bold text-primary-800 mb-3">Generate a new admin password for this organization's master account.</p>
                 <button
                   @click="executeAdminPasswordReset"
                   :disabled="detailsActionLoading"
-                  class="w-full px-4 py-3 bg-[#FF6B35] text-white rounded-lg font-bold uppercase tracking-widest hover:bg-[#E55A25] transition-all disabled:opacity-50"
+                  class="w-full px-4 py-3 bg-primary-600 text-white rounded-lg font-bold uppercase tracking-widest hover:bg-primary-700 transition-all disabled:opacity-50"
                 >
                   {{ detailsActionLoading ? 'Generating...' : 'Generate New Password' }}
                 </button>
@@ -493,7 +499,7 @@
 
             <!-- Warning Tab -->
             <div v-if="detailActionMode === 'warning'" class="space-y-4">
-              <h4 class="text-lg font-black text-yellow-700 flex items-center">⚠️ Send Warning</h4>
+              <h4 class="text-lg font-black text-yellow-700 flex items-center gap-2"><AlertTriangleIcon class="w-5 h-5" /> Send Warning</h4>
               <textarea
                 v-model="detailActionData"
                 placeholder="Enter warning message for this organization..."
@@ -511,17 +517,17 @@
 
             <!-- Suspending Tab -->
             <div v-if="detailActionMode === 'suspending'" class="space-y-4">
-              <h4 class="text-lg font-black text-green-700 flex items-center">⏸️ Suspension & Billing</h4>
+              <h4 class="text-lg font-black text-primary-700 flex items-center gap-2"><PauseIcon class="w-5 h-5" /> Suspension & Billing</h4>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-white rounded-lg p-4 border-2 border-green-200">
+                <div class="bg-white rounded-lg p-4 border-2 border-primary-200">
                   <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Monthly Cost</p>
-                  <p class="text-2xl font-black text-green-600">${{ detailSpendingData?.monthlyCost || '0.00' }}</p>
+                  <p class="text-2xl font-black text-primary-600">${{ detailSpendingData?.monthlyCost || '0.00' }}</p>
                 </div>
                 <div class="bg-white rounded-lg p-4 border-2 border-blue-200">
                   <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Total Users</p>
                   <p class="text-2xl font-black text-blue-600">{{ detailSpendingData?.totalUsers || '0' }}</p>
                 </div>
-                <div class="bg-white rounded-lg p-4 border-2 border-purple-200">
+                <div class="bg-white rounded-lg p-4 border-2 border-accent-200">
                   <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Subscription</p>
                   <p class="text-sm font-bold text-slate-900">{{ detailSpendingData?.subscriptionType || 'Basic' }}</p>
                 </div>
@@ -534,10 +540,11 @@
 
             <!-- Delete Tab -->
             <div v-if="detailActionMode === 'delete'" class="space-y-4">
-              <h4 class="text-lg font-black text-red-700 flex items-center">🗑️ Delete Organization</h4>
+              <h4 class="text-lg font-black text-red-700 flex items-center gap-2"><TrashIcon class="w-5 h-5" /> Delete Organization</h4>
               <div class="bg-red-100 border-2 border-red-300 rounded-lg p-4">
-                <p class="text-sm font-bold text-red-800">
-                  ⚠️ This action is <span class="uppercase">PERMANENT</span> and cannot be undone!
+                <p class="text-sm font-bold text-red-800 flex items-start gap-2">
+                  <AlertTriangleIcon class="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span>This action is <span class="uppercase">PERMANENT</span> and cannot be undone!</span>
                 </p>
                 <p class="text-xs text-red-700 mt-2">All organization data, users, and records will be deleted.</p>
               </div>
@@ -566,7 +573,7 @@ table {
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { EyeIcon, KeyIcon, BuildingIcon, XIcon } from 'lucide-vue-next'
+import { EyeIcon, KeyIcon, BuildingIcon, XIcon, MapPinIcon, PhoneIcon, MailIcon, BriefcaseIcon, PencilIcon, AlertCircleIcon, CheckCircleIcon, AlertTriangleIcon, CalendarIcon, PauseIcon, TrashIcon, CheckIcon, LockIcon, PaletteIcon } from 'lucide-vue-next'
 import { superadminApi, uploadOrgLogo, deleteOrgLogo } from '@/services/superadminApi'
 import { showDeleteConfirm, showSuccess, showError } from '@/utils/dialog'
 

@@ -59,13 +59,16 @@
             <div class="flex items-start justify-between">
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="text-lg">{{ getNotificationIcon(notif.Type) }}</span>
+                  <component :is="getNotificationIcon(notif.Type)" class="w-5 h-5 flex-shrink-0" />
                   <h3 class="font-bold text-slate-900">{{ notif.Title }}</h3>
                   <span v-if="!notif.Is_Read" class="w-2 h-2 bg-primary-600 rounded-full"></span>
                 </div>
                 <p class="text-sm text-slate-600 line-clamp-2">{{ notif.Message }}</p>
                 <div class="flex items-center gap-4 mt-2 text-xs text-slate-500">
-                  <span>{{ getCategoryLabel(notif.Category) }}</span>
+                  <span>
+                    <component :is="getCategoryIcon(notif.Category)" class="w-4 h-4 inline mr-1" />
+                    {{ getCategoryLabel(notif.Category) }}
+                  </span>
                   <span>{{ formatTime(notif.Created_at) }}</span>
                 </div>
               </div>
@@ -104,6 +107,11 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import {
+  CheckCircleIcon, AlertCircleIcon, AlertTriangleIcon, InfoIcon,
+  CoffeeIcon, ClockIcon, BarChart3Icon, BuildingIcon, UsersIcon,
+  BriefcaseIcon, MapPinIcon, ActivityIcon, SettingsIcon, ShoppingCartIcon
+} from 'lucide-vue-next'
 
 const props = defineProps({
   isOpen: Boolean,
@@ -168,27 +176,41 @@ const markAllAsRead = () => {
 
 const getNotificationIcon = (type) => {
   const icons = {
-    success: '✅',
-    error: '❌',
-    warning: '⚠️',
-    info: 'ℹ️',
-    break: '☕',
-    shift: '⏰',
-    analytics: '📊'
+    success: CheckCircleIcon,
+    error: AlertCircleIcon,
+    warning: AlertTriangleIcon,
+    info: InfoIcon,
+    break: CoffeeIcon,
+    shift: ClockIcon,
+    analytics: BarChart3Icon
   }
-  return icons[type] || 'ℹ️'
+  return icons[type] || InfoIcon
+}
+
+const getCategoryIcon = (category) => {
+  const icons = {
+    organization: BuildingIcon,
+    user: UsersIcon,
+    department: BriefcaseIcon,
+    location: MapPinIcon,
+    attendance: BarChart3Icon,
+    system: SettingsIcon,
+    billing: ShoppingCartIcon,
+    general: InfoIcon
+  }
+  return icons[category] || InfoIcon
 }
 
 const getCategoryLabel = (category) => {
   const labels = {
-    organization: '🏢 Organization',
-    user: '👤 User',
-    department: '🏢 Department',
-    location: '📍 Location',
-    attendance: '📊 Attendance',
-    system: '⚙️ System',
-    billing: '💳 Billing',
-    general: '📢 General'
+    organization: 'Organization',
+    user: 'User',
+    department: 'Department',
+    location: 'Location',
+    attendance: 'Attendance',
+    system: 'System',
+    billing: 'Billing',
+    general: 'General'
   }
   return labels[category] || category
 }
@@ -196,8 +218,8 @@ const getCategoryLabel = (category) => {
 const getCategoryBorderColor = (category) => {
   const colors = {
     organization: 'border-blue-400',
-    user: 'border-purple-400',
-    department: 'border-green-400',
+    user: 'border-accent-400',
+    department: 'border-primary-400',
     location: 'border-orange-400',
     attendance: 'border-yellow-400',
     system: 'border-red-400',

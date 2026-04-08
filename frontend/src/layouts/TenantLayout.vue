@@ -30,7 +30,7 @@
             class="hidden md:flex items-center space-x-2 px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg text-sm shadow-sm transition-all duration-200 active:scale-95"
           >
             <MapPinIcon class="w-4 h-4" />
-            <span>Check In</span>
+            <span>My Work Zone</span>
           </router-link>
           
           <!-- Notification Bell Icon -->

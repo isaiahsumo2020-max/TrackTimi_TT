@@ -26,8 +26,9 @@
     <!-- Footer: Trend or Change -->
     <div v-if="trend" class="mt-5 pt-5 border-t border-slate-100">
       <div class="flex items-center space-x-2">
-        <div :class="trendUp ? 'text-primary-600' : 'text-red-500'" class="text-xs font-black uppercase tracking-widest">
-          {{ trendUp ? '↑' : '↓' }} {{ Math.abs(trend) }}%
+        <div :class="trendUp ? 'text-primary-600' : 'text-red-500'" class="flex items-center gap-1 text-xs font-black uppercase tracking-widest">
+          <component :is="trendUp ? TrendingUpIcon : TrendingDownIcon" class="w-4 h-4" />
+          {{ Math.abs(trend) }}%
         </div>
         <span class="text-[9px] text-slate-400 font-medium">vs last month</span>
       </div>
@@ -37,6 +38,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { TrendingUpIcon, TrendingDownIcon } from 'lucide-vue-next'
 
 const props = defineProps({
   icon: null, // Accept any component (function, object, etc.)

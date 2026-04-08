@@ -1,9 +1,9 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-orange-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+    <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
       <!-- Organization Header -->
       <div class="text-center mb-6">
-        <div class="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <div class="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
           <span class="text-2xl font-bold text-white">{{ orgInitial }}</span>
         </div>
         <h1 class="text-2xl font-bold text-gray-800">{{ orgName }}</h1>

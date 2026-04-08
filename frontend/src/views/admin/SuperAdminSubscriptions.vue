@@ -25,7 +25,7 @@
         <p v-if="sidebarOpen" class="text-[10px] font-black text-slate-500 uppercase px-4 mb-4 tracking-[0.2em]">Platform Control</p>
         
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase tracking-widest transition-all group relative"
           :class="[$route.path === item.path ? 'bg-primary-600 text-white shadow-xl shadow-primary-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']">
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
@@ -34,7 +34,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-2xl border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
+        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-lg border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
           <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-red-500">
             <LogOutIcon class="w-5 h-5" />
           </div>
@@ -60,7 +60,7 @@
         </div>
 
         <div class="flex items-center space-x-4">
-          <button @click="loadSubscriptionData" :disabled="loading" class="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-all active:scale-90 shadow-sm border border-slate-100">
+          <button @click="loadSubscriptionData" :disabled="loading" class="p-4 bg-slate-50 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-all active:scale-90 shadow-sm border border-slate-100">
              <RefreshCwIcon :class="{'animate-spin': loading}" class="w-5 h-5" />
           </button>
         </div>
@@ -72,9 +72,9 @@
         <!-- ROW 1: TIER DISTRIBUTION KPIS -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div v-for="(count, plan) in subscriptionStats" :key="plan" 
-            class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 relative overflow-hidden">
+            class="bg-primary-50 p-8 rounded-2xl border border-primary-200 shadow-sm group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 relative overflow-hidden">
             <div class="flex justify-between items-start mb-6 relative z-10">
-              <div :class="getPlanColor(plan)" class="w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl">
+              <div :class="getPlanColor(plan)" class="w-14 h-14 rounded-lg flex items-center justify-center text-white shadow-xl">
                 <BoxIcon v-if="plan === 'free'" class="w-7 h-7" />
                 <ZapIcon v-else-if="plan === 'pro'" class="w-7 h-7" />
                 <CrownIcon v-else class="w-7 h-7" />
@@ -157,7 +157,7 @@
                 <tr v-for="org in organizations" :key="org.Org_ID" class="group hover:bg-slate-50 transition-all duration-300">
                   <td class="px-10 py-8">
                     <div class="flex items-center space-x-4">
-                      <div class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-black text-primary-400 shadow-xl group-hover:rotate-6 transition-transform">
+                      <div class="w-12 h-12 bg-slate-900 text-white rounded-lg flex items-center justify-center font-black text-primary-400 shadow-xl group-hover:rotate-6 transition-transform">
                         {{ org.Org_Name[0] }}
                       </div>
                       <div>

@@ -51,9 +51,9 @@
               class="w-full px-4 py-3 border border-slate-300 rounded-lg font-bold text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">All Types</option>
-              <option value="lunch">🍽️ Lunch</option>
-              <option value="regular">☕ Regular</option>
-              <option value="bathroom">🚻 Restroom</option>
+              <option value="lunch">Lunch</option>
+              <option value="regular">Regular</option>
+              <option value="bathroom">Restroom</option>
             </select>
           </div>
         </div>
@@ -78,19 +78,19 @@
 
       <!-- Statistics Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-3">
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-xs font-black text-slate-600 uppercase">Total Breaks</h3>
-            <span class="text-2xl">☕</span>
+            <Coffee class="w-6 h-6 text-slate-600" />
           </div>
           <p class="text-3xl font-black text-slate-900">{{ stats.totalBreaks }}</p>
           <p class="text-xs text-slate-500">All employees today</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-3">
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-xs font-black text-slate-600 uppercase">Total Break Time</h3>
-            <span class="text-2xl">⏱️</span>
+            <Clock class="w-6 h-6 text-slate-600" />
           </div>
           <p class="text-3xl font-black text-slate-900">
             {{ Math.floor(stats.totalBreakMinutes / 60) }}h {{ stats.totalBreakMinutes % 60 }}m
@@ -98,19 +98,19 @@
           <p class="text-xs text-slate-500">Combined duration</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-3">
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-xs font-black text-slate-600 uppercase">Employees w/ Breaks</h3>
-            <span class="text-2xl">👥</span>
+            <Users class="w-6 h-6 text-slate-600" />
           </div>
           <p class="text-3xl font-black text-slate-900">{{ stats.employeesWithBreaks }}</p>
           <p class="text-xs text-slate-500">Took at least 1 break</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-3">
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 space-y-3">
           <div class="flex items-center justify-between">
             <h3 class="text-xs font-black text-slate-600 uppercase">Avg Break Length</h3>
-            <span class="text-2xl">📊</span>
+            <BarChart3 class="w-6 h-6 text-slate-600" />
           </div>
           <p class="text-3xl font-black text-slate-900">{{ stats.averageBreakLength }}m</p>
           <p class="text-xs text-slate-500">Per break average</p>
@@ -118,7 +118,7 @@
       </div>
 
       <!-- Break Activities Table -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <div class="p-6 border-b border-slate-200 flex justify-between items-center">
           <h2 class="text-lg font-black text-slate-900">Employee Break Activities</h2>
           <span class="text-xs font-bold text-slate-500">{{ filteredActivities.length }} records</span>
@@ -167,13 +167,13 @@
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex gap-2">
-                    <span v-if="getBreakTypeCount(activity, 'lunch') > 0" class="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">
-                      🍽️ {{ getBreakTypeCount(activity, 'lunch') }}
+                    <span v-if="getBreakTypeCount(activity, 'lunch') > 0" class="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded flex items-center gap-1">
+                      <UtensilsCrossed class="w-3 h-3" /> {{ getBreakTypeCount(activity, 'lunch') }}
                     </span>
-                    <span v-if="getBreakTypeCount(activity, 'regular') > 0" class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">
-                      ☕ {{ getBreakTypeCount(activity, 'regular') }}
+                    <span v-if="getBreakTypeCount(activity, 'regular') > 0" class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded flex items-center gap-1">
+                      <Coffee class="w-3 h-3" /> {{ getBreakTypeCount(activity, 'regular') }}
                     </span>
-                    <span v-if="getBreakTypeCount(activity, 'bathroom') > 0" class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded">
+                    <span v-if="getBreakTypeCount(activity, 'bathroom') > 0" class="px-2 py-1 bg-accent-100 text-accent-700 text-xs font-bold rounded">
                       🚻 {{ getBreakTypeCount(activity, 'bathroom') }}
                     </span>
                   </div>
@@ -194,11 +194,11 @@
 
       <!-- Detail Modal -->
       <div v-if="showDetailModal && selectedActivity" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <!-- Modal Header -->
           <div class="sticky top-0 bg-slate-50 border-b border-slate-200 p-6 flex justify-between items-center">
             <h2 class="text-2xl font-black text-slate-900">Break Details</h2>
-            <button @click="showDetailModal = false" class="text-slate-500 hover:text-slate-700 text-2xl">✕</button>
+            <button @click="showDetailModal = false" class="text-slate-500 hover:text-slate-700"><XIcon class="w-5 h-5" /></button>
           </div>
 
           <!-- Modal Content -->
@@ -227,19 +227,19 @@
             </div>
 
             <!-- Break Summary -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="bg-blue-50 border border-primary-200 rounded-lg p-4">
               <h3 class="text-sm font-black text-blue-900 uppercase mb-3">Break Summary</h3>
               <div class="grid grid-cols-3 gap-4">
                 <div class="text-center">
-                  <p class="text-2xl font-black text-blue-600">{{ selectedActivity.Total_Breaks }}</p>
+                  <p class="text-2xl font-black text-primary-600">{{ selectedActivity.Total_Breaks }}</p>
                   <p class="text-xs text-blue-700 font-bold">Total Breaks</p>
                 </div>
                 <div class="text-center">
-                  <p class="text-2xl font-black text-blue-600">{{ selectedActivity.Total_Break_Minutes }}m</p>
+                  <p class="text-2xl font-black text-primary-600">{{ selectedActivity.Total_Break_Minutes }}m</p>
                   <p class="text-xs text-blue-700 font-bold">Total Duration</p>
                 </div>
                 <div class="text-center">
-                  <p class="text-2xl font-black text-blue-600">{{ (selectedActivity.Total_Break_Minutes / selectedActivity.Total_Breaks).toFixed(0) }}m</p>
+                  <p class="text-2xl font-black text-primary-600">{{ (selectedActivity.Total_Break_Minutes / selectedActivity.Total_Breaks).toFixed(0) }}m</p>
                   <p class="text-xs text-blue-700 font-bold">Average</p>
                 </div>
               </div>
@@ -252,9 +252,7 @@
                 <div v-for="(breakItem, idx) in getBreaksSummary(selectedActivity)" :key="idx" class="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
                   <div class="flex justify-between items-start mb-3">
                     <div class="flex items-center gap-3">
-                      <span class="text-2xl">
-                        {{ breakItem.type === 'lunch' ? '🍽️' : breakItem.type === 'regular' ? '☕' : '🚻' }}
-                      </span>
+                      <component :is="breakItem.type === 'lunch' ? UtensilsCrossed : breakItem.type === 'regular' ? Coffee : Clock" class="w-5 h-5 text-slate-600" />
                       <div>
                         <p class="font-bold text-slate-900 capitalize">{{ breakItem.type }} Break</p>
                         <p class="text-xs text-slate-500">Break #{{ idx + 1 }}</p>
@@ -299,8 +297,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { Clock, BarChart3, Users, UtensilsCrossed, Coffee, XIcon } from 'lucide-vue-next'
 import api from '@/utils/api'
 import RealtimeNotifications from '@/components/dashboard/RealtimeNotifications.vue'
+import { showError } from '@/utils/dialog'
 
 // State
 const loading = ref(false)
@@ -381,7 +381,7 @@ const loadActivities = async () => {
     activities.value = response.data || []
   } catch (err) {
     console.error('Failed to load activities:', err)
-    alert('Failed to load break activities')
+    showError('Failed to load break activities', 'Error')
   } finally {
     loading.value = false
   }
@@ -455,3 +455,4 @@ onMounted(() => {
 
 <style scoped>
 </style>
+

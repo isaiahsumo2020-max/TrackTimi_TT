@@ -25,7 +25,7 @@
         <p v-if="sidebarOpen" class="text-[10px] font-black text-slate-500 uppercase px-4 mb-4 tracking-[0.2em]">Platform Control</p>
         
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase tracking-widest transition-all group relative"
           :class="[$route.path === item.path ? 'bg-primary-600 text-white shadow-xl shadow-primary-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']">
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
@@ -34,7 +34,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-2xl border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
+        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-lg border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
           <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-red-500">
             <LogOutIcon class="w-5 h-5" />
           </div>
@@ -60,7 +60,7 @@
         </div>
 
         <div class="flex items-center space-x-4">
-          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100">
              <button @click="loadAnalyticsData" :disabled="loading" class="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-400 hover:text-primary-600 active:scale-90">
                <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
              </button>
@@ -187,7 +187,7 @@
            <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm col-span-1">
               <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-8">Node Hotspots</h3>
               <div class="space-y-6">
-                 <div v-for="loc in hotspots" :key="loc.name" class="flex items-center justify-between group cursor-pointer p-2 rounded-2xl hover:bg-slate-50 transition-all">
+                 <div v-for="loc in hotspots" :key="loc.name" class="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-all">
                     <div class="flex items-center space-x-4">
                        <div class="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center group-hover:bg-primary-600 group-hover:text-white transition-colors">
                           <MapPinIcon class="w-4 h-4" />

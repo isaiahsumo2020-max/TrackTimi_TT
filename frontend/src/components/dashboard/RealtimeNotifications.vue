@@ -60,13 +60,13 @@ const progress = ref({})
 const notificationClasses = (type) => {
   const baseClasses = 'bg-white'
   const typeClasses = {
-    success: 'border-green-500 bg-green-50',
+    success: 'border-primary-500 bg-primary-50',
     error: 'border-red-500 bg-red-50',
     warning: 'border-amber-500 bg-amber-50',
     info: 'border-blue-500 bg-blue-50',
     break: 'border-amber-500 bg-amber-50',
     shift: 'border-primary-500 bg-primary-50',
-    analytics: 'border-purple-500 bg-purple-50',
+    analytics: 'border-accent-500 bg-accent-50',
   }
   return typeClasses[type] || 'border-slate-300'
 }
@@ -86,26 +86,26 @@ const notificationIcon = (type) => {
 
 const notificationTextColor = (type) => {
   const colors = {
-    success: 'text-green-700',
+    success: 'text-primary-700',
     error: 'text-red-700',
     warning: 'text-amber-700',
     info: 'text-blue-700',
     break: 'text-amber-700',
     shift: 'text-primary-700',
-    analytics: 'text-purple-700',
+    analytics: 'text-accent-700',
   }
   return colors[type] || 'text-slate-700'
 }
 
 const notificationProgressColor = (type) => {
   const colors = {
-    success: 'bg-green-500',
+    success: 'bg-primary-500',
     error: 'bg-red-500',
     warning: 'bg-amber-500',
     info: 'bg-blue-500',
     break: 'bg-amber-500',
     shift: 'bg-primary-500',
-    analytics: 'bg-purple-500',
+    analytics: 'bg-accent-500',
   }
   return colors[type] || 'bg-slate-300'
 }

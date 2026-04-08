@@ -8,24 +8,24 @@
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6">
         <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Total Logs ({{ dateRange }}d)</p>
         <p class="text-3xl font-black text-slate-900">{{ logs.length }}</p>
       </div>
       
-      <div class="bg-white rounded-2xl border border-blue-200 shadow-sm p-6">
-        <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">Unique Actions</p>
-        <p class="text-3xl font-black text-blue-600">{{ filters.actions.length }}</p>
+      <div class="bg-white rounded-lg border border-primary-200 shadow-sm p-6">
+        <p class="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Unique Actions</p>
+        <p class="text-3xl font-black text-primary-600">{{ filters.actions.length }}</p>
       </div>
 
-      <div class="bg-white rounded-2xl border border-green-200 shadow-sm p-6">
-        <p class="text-xs font-bold text-green-600 uppercase tracking-wider mb-2">Modified Tables</p>
-        <p class="text-3xl font-black text-green-600">{{ filters.tables.length }}</p>
+      <div class="bg-white rounded-lg border border-primary-200 shadow-sm p-6">
+        <p class="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Modified Tables</p>
+        <p class="text-3xl font-black text-primary-600">{{ filters.tables.length }}</p>
       </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+    <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6 space-y-4">
       <h4 class="text-sm font-black text-slate-900 uppercase tracking-wider">Filters & Search</h4>
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -73,14 +73,15 @@
 
       <button
         @click="refreshLogs"
-        class="px-4 py-2 bg-primary-500 text-white rounded-lg font-bold hover:bg-primary-600 transition-all text-sm"
+        class="px-4 py-2 bg-primary-500 text-white rounded-lg font-bold hover:bg-primary-600 transition-all text-sm flex items-center gap-2"
       >
-        🔄 Refresh
+        <RefreshCwIcon class="w-4 h-4" />
+        Refresh
       </button>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+    <div v-if="loading" class="bg-white rounded-lg border border-slate-200 shadow-sm p-8 text-center">
       <div class="flex items-center justify-center space-x-2">
         <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
         <p class="text-sm font-bold text-slate-600">Loading audit logs...</p>
@@ -92,7 +93,7 @@
       <div
         v-for="log in filteredLogs"
         :key="log.Log_ID"
-        class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all overflow-hidden"
+        class="bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-lg transition-all overflow-hidden"
       >
         <!-- Log Header -->
         <div class="p-6">
@@ -102,10 +103,11 @@
               <!-- Action Badge and Timestamp -->
               <div class="flex items-center gap-3 mb-3 flex-wrap">
                 <span
-                  class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest"
+                  class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest flex items-center gap-1"
                   :class="getActionBadgeStyle(log.Action)"
                 >
-                  {{ getActionIcon(log.Action) }} {{ log.Action }}
+                  <component :is="getActionIcon(log.Action)" class="w-3 h-3" />
+                  {{ log.Action }}
                 </span>
                 <span
                   class="px-2 py-1 rounded text-xs font-bold bg-slate-100 text-slate-700"
@@ -141,8 +143,14 @@
 
           <!-- IP Address and Record ID -->
           <div class="flex gap-6 text-xs text-slate-500">
-            <span v-if="log.IP_Address">📍 IP: <span class="font-mono font-bold">{{ log.IP_Address }}</span></span>
-            <span v-if="log.Record_ID">🔑 Record: <span class="font-mono font-bold">{{ log.Record_ID }}</span></span>
+            <span v-if="log.IP_Address" class="flex items-center gap-1">
+              <MapPinIcon class="w-4 h-4" />
+              IP: <span class="font-mono font-bold">{{ log.IP_Address }}</span>
+            </span>
+            <span v-if="log.Record_ID" class="flex items-center gap-1">
+              <KeyIcon class="w-4 h-4" />
+              Record: <span class="font-mono font-bold">{{ log.Record_ID }}</span>
+            </span>
           </div>
         </div>
 
@@ -150,7 +158,10 @@
         <div v-if="expandedLogs.includes(log.Log_ID)" class="bg-slate-50 border-t border-slate-200 p-6 space-y-4">
           <!-- Old Data -->
           <div v-if="log.Old_Data">
-            <h5 class="text-sm font-black text-slate-700 mb-3">📋 Previous Values</h5>
+            <h5 class="text-sm font-black text-slate-700 mb-3 flex items-center gap-2">
+              <FileTextIcon class="w-4 h-4" />
+              Previous Values
+            </h5>
             <div class="bg-white rounded-lg p-4 border border-red-200 max-h-48 overflow-y-auto">
               <pre class="text-xs text-slate-700 font-mono whitespace-pre-wrap break-words">{{ formatJSON(log.Old_Data) }}</pre>
             </div>
@@ -158,26 +169,32 @@
 
           <!-- New Data -->
           <div v-if="log.New_Data">
-            <h5 class="text-sm font-black text-slate-700 mb-3">✏️ New Values</h5>
-            <div class="bg-white rounded-lg p-4 border border-green-200 max-h-48 overflow-y-auto">
+            <h5 class="text-sm font-black text-slate-700 mb-3 flex items-center gap-2">
+              <PencilIcon class="w-4 h-4" />
+              New Values
+            </h5>
+            <div class="bg-white rounded-lg p-4 border border-primary-200 max-h-48 overflow-y-auto">
               <pre class="text-xs text-slate-700 font-mono whitespace-pre-wrap break-words">{{ formatJSON(log.New_Data) }}</pre>
             </div>
           </div>
 
           <!-- Changes Diff -->
           <div v-if="getDifferences(log.Old_Data, log.New_Data).length > 0">
-            <h5 class="text-sm font-black text-slate-700 mb-3">🔄 Changes</h5>
+            <h5 class="text-sm font-black text-slate-700 mb-3 flex items-center gap-2">
+              <RefreshCwIcon class="w-4 h-4" />
+              Changes
+            </h5>
             <div class="space-y-2">
               <div
                 v-for="(change, idx) in getDifferences(log.Old_Data, log.New_Data)"
                 :key="idx"
-                class="flex items-start gap-3 p-3 bg-white rounded-lg border border-blue-200"
+                class="flex items-start gap-3 p-3 bg-white rounded-lg border border-primary-200"
               >
                 <span class="text-sm font-black text-primary-600 flex-shrink-0">{{ change.field }}:</span>
                 <div class="flex-1 text-sm">
                   <span class="line-through text-red-600">{{ change.old }}</span>
                   <span class="text-slate-500 mx-2">→</span>
-                  <span class="text-green-600 font-bold">{{ change.new }}</span>
+                  <span class="text-primary-600 font-bold">{{ change.new }}</span>
                 </div>
               </div>
             </div>
@@ -198,15 +215,15 @@
       </div>
 
       <!-- No Results -->
-      <div v-if="filteredLogs.length === 0" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
-        <div class="text-4xl mb-4">📭</div>
+      <div v-if="filteredLogs.length === 0" class="bg-white rounded-lg border border-slate-200 shadow-sm p-12 text-center">
+        <InboxIcon class="w-12 h-12 text-slate-300 mb-4 mx-auto" />
         <p class="text-slate-600 font-bold text-lg mb-2">No Logs Found</p>
         <p class="text-sm text-slate-500">Adjust your filters to see audit logs</p>
       </div>
     </div>
 
     <!-- Activity Timeline -->
-    <div v-if="!loading && logs.length > 0" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+    <div v-if="!loading && logs.length > 0" class="bg-white rounded-lg border border-slate-200 shadow-sm p-8">
       <h4 class="text-lg font-black text-primary-600 mb-6">Activity Timeline</h4>
       <div class="space-y-4 max-h-96 overflow-y-auto">
         <div
@@ -255,6 +272,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { superadminApi } from '@/services/superadminApi'
+import {
+  SparklesIcon, PencilIcon, TrashIcon, PlusIcon, EyeIcon, WrenchIcon,
+  MapPinIcon, KeyIcon, FileTextIcon, RefreshCwIcon, InboxIcon
+} from 'lucide-vue-next'
 
 // State
 const loading = ref(true)
@@ -325,22 +346,22 @@ const sortedByTime = computed(() => {
 // Get action icon
 const getActionIcon = (action) => {
   const icons = {
-    'CREATE': '✨',
-    'UPDATE': '✏️',
-    'DELETE': '🗑️',
-    'INSERT': '➕',
-    'SELECT': '👁️',
-    'PATCH': '🔧'
+    'CREATE': SparklesIcon,
+    'UPDATE': PencilIcon,
+    'DELETE': TrashIcon,
+    'INSERT': PlusIcon,
+    'SELECT': EyeIcon,
+    'PATCH': WrenchIcon
   }
   for (const [key, icon] of Object.entries(icons)) {
     if (action.includes(key)) return icon
   }
-  return '📋'
+  return FileTextIcon
 }
 
 // Get action badge style
 const getActionBadgeStyle = (action) => {
-  if (action.includes('CREATE') || action.includes('INSERT')) return 'bg-green-100 text-green-700'
+  if (action.includes('CREATE') || action.includes('INSERT')) return 'bg-primary-100 text-primary-700'
   if (action.includes('UPDATE') || action.includes('PATCH')) return 'bg-blue-100 text-blue-700'
   if (action.includes('DELETE')) return 'bg-red-100 text-red-700'
   return 'bg-slate-100 text-slate-700'
@@ -348,7 +369,7 @@ const getActionBadgeStyle = (action) => {
 
 // Get action color for timeline
 const getActionColor = (action) => {
-  if (action.includes('CREATE') || action.includes('INSERT')) return 'bg-green-500'
+  if (action.includes('CREATE') || action.includes('INSERT')) return 'bg-primary-500'
   if (action.includes('UPDATE') || action.includes('PATCH')) return 'bg-blue-500'
   if (action.includes('DELETE')) return 'bg-red-500'
   return 'bg-slate-500'
@@ -411,3 +432,4 @@ onMounted(() => {
   fetchAuditLogs()
 })
 </script>
+

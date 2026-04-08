@@ -26,7 +26,7 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+    <div v-if="loading" class="bg-white rounded-lg border border-slate-200 shadow-sm p-8 text-center">
       <div class="flex items-center justify-center space-x-2">
         <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
         <p class="text-sm font-bold text-slate-600">Loading geofences...</p>
@@ -37,7 +37,7 @@
     <div v-else class="space-y-8">
       <div v-for="org in groupedByOrganization" :key="org.orgId" class="space-y-4">
         <!-- Organization Header Card -->
-        <div class="bg-gradient-to-r from-primary-50 to-accent-50 rounded-2xl border-2 border-primary-200 p-6">
+        <div class="bg-gradient-to-r from-primary-50 to-accent-50 rounded-lg border-2 border-primary-200 p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Organization Name -->
             <div>
@@ -46,17 +46,26 @@
             </div>
             <!-- Address -->
             <div>
-              <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">📍 Address</p>
+              <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <MapPinIcon class="w-4 h-4" />
+                Address
+              </p>
               <p class="text-sm font-bold text-slate-800 line-clamp-2">{{ org.address || '—' }}</p>
             </div>
             <!-- Email -->
             <div>
-              <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">✉️ Email</p>
+              <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <MailIcon class="w-4 h-4" />
+                Email
+              </p>
               <p class="text-sm font-bold text-primary-600 truncate">{{ org.email || '—' }}</p>
             </div>
             <!-- Phone -->
             <div>
-              <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">📞 Contact</p>
+              <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <PhoneIcon class="w-4 h-4" />
+                Contact
+              </p>
               <p class="text-sm font-bold text-slate-800">{{ org.phone || '—' }}</p>
             </div>
           </div>
@@ -67,7 +76,7 @@
           <div
             v-for="geo in org.geofences"
             :key="geo.Fence_ID"
-            class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all p-6"
+            class="bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow-lg transition-all p-6"
           >
             <!-- Geofence Header -->
             <div class="flex items-start justify-between mb-4">
@@ -76,11 +85,8 @@
               </div>
 
               <!-- Status Badge -->
-              <span
-                :class="geo.Is_Active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'"
-                class="px-2 py-1 rounded text-xs font-black whitespace-nowrap"
-              >
-                {{ geo.Is_Active ? '✓ Active' : '✗ Inactive' }}
+              <span :class="geo.Is_Active ? 'bg-primary-100 text-primary-700' : 'bg-red-100 text-red-600'" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                {{ geo.Is_Active ? 'Active' : 'Inactive' }}
               </span>
             </div>
 
@@ -120,7 +126,7 @@
               @click="toggleHistory(geo.Fence_ID)"
               class="w-full mt-4 px-3 py-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-200 transition-all"
             >
-              {{ expandedGeofences.includes(geo.Fence_ID) ? '▼ Hide History' : '▶ Show History' }}
+              {{ expandedGeofences.includes(geo.Fence_ID) ? 'Hide History' : 'Show History' }}
             </button>
 
             <!-- Location History -->
@@ -151,14 +157,14 @@
       </div>
 
       <!-- No Results -->
-      <div v-if="groupedByOrganization.length === 0" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
+      <div v-if="groupedByOrganization.length === 0" class="bg-white rounded-lg border border-slate-200 shadow-sm p-12 text-center">
         <MapPinIcon class="w-12 h-12 text-slate-300 mx-auto mb-4" />
         <p class="text-slate-500 font-bold">No geofences found</p>
       </div>
     </div>
 
     <!-- Summary Table -->
-    <div v-if="!loading && filteredGeofences.length > 0" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+    <div v-if="!loading && filteredGeofences.length > 0" class="bg-white rounded-lg border border-slate-200 shadow-sm p-8">
       <h4 class="text-lg font-black text-primary-600 mb-6">All Geofences Summary</h4>
       
       <div class="overflow-x-auto">
@@ -193,7 +199,7 @@
               </td>
               <td class="px-6 py-4 text-center">
                 <span
-                  :class="geo.Is_Active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'"
+                  :class="geo.Is_Active ? 'bg-primary-100 text-primary-700' : 'bg-red-100 text-red-600'"
                   class="px-3 py-1 rounded-full text-xs font-black"
                 >
                   {{ geo.Is_Active ? 'Active' : 'Inactive' }}
@@ -218,7 +224,7 @@ table {
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { MapPinIcon } from 'lucide-vue-next'
+import { MapPinIcon, MailIcon, PhoneIcon } from 'lucide-vue-next'
 import { superadminApi } from '@/services/superadminApi'
 
 // State
@@ -306,3 +312,4 @@ onMounted(() => {
   fetchGeofences()
 })
 </script>
+

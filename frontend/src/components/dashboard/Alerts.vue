@@ -8,24 +8,24 @@
 
     <!-- Alert Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6">
         <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Total Alerts</p>
         <p class="text-3xl font-black text-slate-900">{{ alerts.length }}</p>
       </div>
       
-      <div class="bg-white rounded-2xl border border-red-200 shadow-sm p-6">
+      <div class="bg-white rounded-lg border border-red-200 shadow-sm p-6">
         <p class="text-xs font-bold text-red-600 uppercase tracking-wider mb-2">Critical</p>
         <p class="text-3xl font-black text-red-600">{{ severityCounts.critical }}</p>
       </div>
 
-      <div class="bg-white rounded-2xl border border-amber-200 shadow-sm p-6">
+      <div class="bg-white rounded-lg border border-amber-200 shadow-sm p-6">
         <p class="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">Warning</p>
         <p class="text-3xl font-black text-amber-600">{{ severityCounts.warning }}</p>
       </div>
 
-      <div class="bg-white rounded-2xl border border-blue-200 shadow-sm p-6">
-        <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">Info</p>
-        <p class="text-3xl font-black text-blue-600">{{ severityCounts.info }}</p>
+      <div class="bg-white rounded-lg border border-primary-200 shadow-sm p-6">
+        <p class="text-xs font-bold text-primary-600 uppercase tracking-wider mb-2">Info</p>
+        <p class="text-3xl font-black text-primary-600">{{ severityCounts.info }}</p>
       </div>
     </div>
 
@@ -36,9 +36,9 @@
         class="px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary-500"
       >
         <option value="">All Severity Levels</option>
-        <option value="critical">🔴 Critical</option>
-        <option value="warning">🟠 Warning</option>
-        <option value="info">🔵 Info</option>
+        <option value="critical">Critical</option>
+        <option value="warning">Warning</option>
+        <option value="info">Info</option>
       </select>
 
       <select
@@ -61,14 +61,15 @@
 
       <button
         @click="refreshAlerts"
-        class="px-4 py-2 bg-primary-500 text-white rounded-lg font-bold hover:bg-primary-600 transition-all text-sm"
+        class="px-4 py-2 bg-primary-500 text-white rounded-lg font-bold hover:bg-primary-600 transition-all text-sm flex items-center gap-2"
       >
-        🔄 Refresh
+        <RefreshCwIcon class="w-4 h-4" />
+        Refresh
       </button>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+    <div v-if="loading" class="bg-white rounded-lg border border-slate-200 shadow-sm p-8 text-center">
       <div class="flex items-center justify-center space-x-2">
         <div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
         <p class="text-sm font-bold text-slate-600">Loading alerts...</p>
@@ -80,7 +81,7 @@
       <div
         v-for="(alert, idx) in filteredAlerts"
         :key="alert.id"
-        class="bg-white rounded-2xl border shadow-sm hover:shadow-lg transition-all overflow-hidden"
+        class="bg-white rounded-lg border shadow-sm hover:shadow-lg transition-all overflow-hidden"
         :class="severityStyles[alert.severity]"
       >
         <!-- Alert Header -->
@@ -108,8 +109,9 @@
 
               <!-- Count Badge -->
               <div v-if="alert.count" class="mt-3 inline-block">
-                <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-black">
-                  📊 {{ alert.count }} item{{ alert.count > 1 ? 's' : '' }}
+                <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-black flex items-center gap-1">
+                  <BarChart3Icon class="w-3 h-3" />
+                  {{ alert.count }} item{{ alert.count > 1 ? 's' : '' }}
                 </span>
               </div>
             </div>
@@ -120,7 +122,7 @@
               @click="toggleDetails(alert.id)"
               class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all whitespace-nowrap"
             >
-              {{ expandedAlerts.includes(alert.id) ? '△ Hide' : '▽ Details' }}
+              {{ expandedAlerts.includes(alert.id) ? 'Hide' : 'Show' }} Details
             </button>
 
             <!-- Close Button -->
@@ -129,7 +131,7 @@
               class="text-slate-400 hover:text-slate-600 transition-all"
               title="Dismiss alert"
             >
-              ✕
+              <XIcon class="w-5 h-5" />
             </button>
           </div>
 
@@ -137,7 +139,8 @@
           <div class="mt-4 flex items-center justify-between">
             <p class="text-xs text-slate-500">{{ formatTime(alert.timestamp) }}</p>
             <p v-if="alert.actionRequired" class="text-xs font-bold text-red-600 flex items-center gap-1">
-              ⚠️ Action Required
+              <AlertTriangleIcon class="w-3 h-3" />
+              Action Required
             </p>
           </div>
         </div>
@@ -202,15 +205,15 @@
       </div>
 
       <!-- No Alerts -->
-      <div v-if="filteredAlerts.length === 0" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
-        <div class="text-4xl mb-4">✅</div>
+      <div v-if="filteredAlerts.length === 0" class="bg-white rounded-lg border border-slate-200 shadow-sm p-12 text-center">
+        <CheckCircleIcon class="w-12 h-12 text-primary-600 mx-auto mb-4" />
         <p class="text-slate-600 font-bold text-lg mb-2">All Systems Operational</p>
         <p class="text-sm text-slate-500">No alerts matching your filters</p>
       </div>
     </div>
 
     <!-- Alert Timeline -->
-    <div v-if="!loading && alerts.length > 0" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+    <div v-if="!loading && alerts.length > 0" class="bg-white rounded-lg border border-slate-200 shadow-sm p-8">
       <h4 class="text-lg font-black text-primary-600 mb-6">Alert Timeline</h4>
       <div class="space-y-4">
         <div
@@ -262,6 +265,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { superadminApi } from '@/services/superadminApi'
+import { CheckCircleIcon, RefreshCwIcon, BarChart3Icon, AlertTriangleIcon, InfoIcon, XIcon } from 'lucide-vue-next'
 
 // State
 const loading = ref(true)
@@ -285,8 +289,8 @@ const severityBadges = {
 }
 
 const typeStyles = {
-  organizations: 'bg-purple-100 text-purple-700',
-  attendance: 'bg-green-100 text-green-700',
+  organizations: 'bg-accent-100 text-accent-700',
+  attendance: 'bg-primary-50 text-primary-700',
   billing: 'bg-indigo-100 text-indigo-700',
   system: 'bg-slate-100 text-slate-700'
 }
@@ -354,10 +358,10 @@ const severityCounts = computed(() => {
 // Format alert type
 const formatAlertType = (type) => {
   const typeMap = {
-    organizations: '🏢 Organizations',
-    attendance: '📍 Attendance',
-    billing: '💳 Billing',
-    system: '⚙️ System'
+    organizations: 'Organizations',
+    attendance: 'Attendance',
+    billing: 'Billing',
+    system: 'System'
   }
   return typeMap[type] || type
 }

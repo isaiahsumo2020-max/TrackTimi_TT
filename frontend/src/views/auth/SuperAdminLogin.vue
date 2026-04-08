@@ -25,7 +25,7 @@
               type="email"
               required
               placeholder="superadmin@tracktimi.com"
-              class="w-full pl-12 pr-4 py-4 bg-white border border-gray-300 rounded-2xl text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+              class="w-full pl-12 pr-4 py-4 bg-white border border-gray-300 rounded-lg text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
             />
           </div>
         </div>
@@ -43,7 +43,7 @@
               :type="showPassword ? 'text' : 'password'"
               required
               placeholder="Enter password"
-              class="w-full pl-12 pr-14 py-4 bg-white border border-gray-300 rounded-2xl text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+              class="w-full pl-12 pr-14 py-4 bg-white border border-gray-300 rounded-lg text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
             />
             <button
               type="button"
@@ -68,14 +68,14 @@
         <button
           type="submit"
           :disabled="loading"
-          class="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg shadow-md hover:shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+          class="w-full py-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg shadow-md hover:shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
         >
           <span v-if="loading">Signing in...</span>
           <span v-else>Login as Super Admin</span>
         </button>
       </form>
 
-      <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
+      <div class="mt-6 p-4 bg-blue-50 border border-primary-200 rounded-lg text-xs text-blue-700">
         <p class="font-semibold mb-2">Demo Credentials:</p>
         <p class="font-mono">Email: superadmin@tracktimi.com</p>
         <p class="font-mono">Password: superpass123</p>
@@ -163,3 +163,4 @@ input:-webkit-autofill {
   -webkit-text-fill-color: #1f2937;
 }
 </style>
+

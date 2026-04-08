@@ -8,9 +8,10 @@
       </div>
       <button 
         @click="showAddDeptModal = true" 
-        class="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-black shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all active:scale-95"
+        class="px-8 py-4 bg-primary-600 text-white rounded-lg font-black shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all active:scale-95 flex items-center gap-2"
       >
-        ✨ New Department
+        <SparklesIcon class="w-5 h-5" />
+        New Department
       </button>
     </div>
 
@@ -23,13 +24,15 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="departments.length === 0" class="text-center py-20 bg-slate-50 rounded-3xl border border-slate-100">
-      <div class="text-6xl mb-4">🏢</div>
+    <div v-else-if="departments.length === 0" class="text-center py-20 bg-primary-50 rounded-2xl border border-primary-200">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-lg mb-4">
+        <BuildingIcon class="w-8 h-8 text-primary-600" />
+      </div>
       <p class="text-slate-600 font-bold text-lg mb-2">No departments yet</p>
       <p class="text-slate-400 text-sm mb-6">Create your first department to get started</p>
       <button 
         @click="showAddDeptModal = true"
-        class="px-6 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors"
+        class="px-6 py-3 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition-colors"
       >
         Create Department
       </button>
@@ -37,17 +40,17 @@
 
     <!-- Department Cards -->
     <div v-else class="grid grid-cols-1 gap-6">
-      <div v-for="dept in departments" :key="dept.id" class="group bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-orange-200 transition-all duration-300">
+      <div v-for="dept in departments" :key="dept.id" class="group bg-primary-50 rounded-xl border border-primary-200 shadow-sm hover:shadow-lg hover:border-primary-300 transition-all duration-300">
         
         <!-- Header: Dept Name and Count -->
-        <div class="p-8 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-transparent flex justify-between items-center">
+        <div class="p-8 border-b border-primary-200 bg-gradient-to-r from-primary-100 to-transparent flex justify-between items-center">
           <div class="flex items-center gap-4">
-            <div class="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-50 rounded-2xl flex items-center justify-center border border-orange-200">
-              <span class="text-2xl">🏢</span>
+            <div class="w-14 h-14 bg-primary-100 rounded-lg flex items-center justify-center border border-primary-200">
+              <BuildingIcon class="w-7 h-7 text-primary-600" />
             </div>
             <div>
               <h3 class="text-2xl font-black text-slate-900">{{ dept.name }}</h3>
-              <p class="text-[10px] font-bold text-orange-600 uppercase tracking-[0.2em] mt-1">Department</p>
+              <p class="text-[10px] font-bold text-primary-600 uppercase tracking-[0.2em] mt-1">Department</p>
             </div>
           </div>
           <div class="flex items-center gap-6">
@@ -59,14 +62,14 @@
             <div class="flex gap-2">
               <button 
                 @click="editDept(dept)"
-                class="p-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all"
+                class="p-3 bg-primary-100 text-primary-600 rounded-lg hover:bg-primary-200 hover:text-primary-700 transition-all"
                 title="Edit department"
               >
                 <EditIcon class="w-5 h-5" />
               </button>
               <button 
                 @click="deleteDept(dept)"
-                class="p-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-red-100 hover:text-red-600 transition-all"
+                class="p-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 hover:text-red-700 transition-all"
                 title="Delete department"
               >
                 <TrashIcon class="w-5 h-5" />
@@ -78,10 +81,10 @@
         <!-- Personnel List -->
         <div class="p-8">
           <div v-if="dept.users.length > 0" class="space-y-4">
-            <div v-for="user in dept.users" :key="user.id" class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors group">
+            <div v-for="user in dept.users" :key="user.id" class="flex items-center justify-between p-4 bg-primary-100 rounded-lg hover:bg-primary-200 transition-colors group">
               <div class="flex items-center gap-3 flex-1">
                 <!-- Avatar -->
-                <div v-if="user.avatar" class="w-10 h-10 bg-slate-900 rounded-lg overflow-hidden flex-shrink-0 border-2 border-slate-200">
+                <div v-if="user.avatar" class="w-10 h-10 bg-slate-900 rounded-lg overflow-hidden flex-shrink-0 border-2 border-primary-300">
                   <img :src="`data:${user.avatarMimeType};base64,${user.avatar}`" :alt="user.name" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0 border-2 border-orange-300">
@@ -94,13 +97,15 @@
                 </div>
               </div>
               <!-- Job Title Badge -->
-              <div class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black uppercase">
+              <div class="px-3 py-1 bg-primary-200 text-primary-700 rounded-full text-[10px] font-black uppercase">
                 {{ user.job || 'Staff' }}
               </div>
             </div>
           </div>
           <div v-else class="text-center py-12">
-            <div class="text-4xl mb-3">👥</div>
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-primary-100 rounded-lg mb-3">
+              <UsersIcon class="w-6 h-6 text-primary-400" />
+            </div>
             <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">No personnel assigned</p>
             <p class="text-[10px] text-slate-400 mt-2">Add employees to this department</p>
           </div>
@@ -111,28 +116,28 @@
     <!-- Add Department Modal -->
     <transition name="fade">
       <div v-if="showAddDeptModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl p-10 w-full max-w-md shadow-2xl animate-in fade-in slide-in-from-bottom-4">
+        <div class="bg-primary-50 rounded-2xl p-10 w-full max-w-md shadow-2xl animate-in fade-in slide-in-from-bottom-4">
           <h2 class="text-2xl font-black text-slate-900 mb-2">Create Department</h2>
           <p class="text-sm text-slate-500 mb-6">Add a new department to your organization</p>
           
           <input 
             v-model="newDeptName" 
             @keyup.enter="addDepartment"
-            class="w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:border-orange-500 focus:outline-none mb-6 font-bold placeholder-slate-400" 
+            class="w-full p-4 bg-white border border-primary-200 rounded-lg focus:border-primary-600 focus:outline-none mb-6 font-bold placeholder-slate-400" 
             placeholder="e.g. Sales, Marketing, Engineering" 
           />
           
           <div class="flex gap-3">
             <button 
               @click="showAddDeptModal = false" 
-              class="flex-1 py-3 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              class="flex-1 py-3 font-bold text-slate-600 hover:bg-primary-100 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button 
               @click="addDepartment"
               :disabled="!newDeptName || isLoading"
-              class="flex-1 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
+              class="flex-1 py-3 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
             >
               {{ isLoading ? 'Creating...' : 'Create' }}
             </button>
@@ -144,27 +149,27 @@
     <!-- Edit Department Modal -->
     <transition name="fade">
       <div v-if="showEditDeptModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl p-10 w-full max-w-md shadow-2xl animate-in fade-in slide-in-from-bottom-4">
+        <div class="bg-primary-50 rounded-2xl p-10 w-full max-w-md shadow-2xl animate-in fade-in slide-in-from-bottom-4">
           <h2 class="text-2xl font-black text-slate-900 mb-2">Edit Department</h2>
           <p class="text-sm text-slate-500 mb-6">Update department name</p>
           
           <input 
             v-model="editDeptName" 
             @keyup.enter="updateDepartment"
-            class="w-full p-4 bg-slate-50 rounded-xl border border-slate-200 focus:border-blue-500 focus:outline-none mb-6 font-bold" 
+            class="w-full p-4 bg-white border border-primary-200 rounded-lg focus:border-primary-600 focus:outline-none mb-6 font-bold" 
           />
           
           <div class="flex gap-3">
             <button 
               @click="showEditDeptModal = false" 
-              class="flex-1 py-3 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              class="flex-1 py-3 font-bold text-slate-600 hover:bg-primary-100 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button 
               @click="updateDepartment"
               :disabled="!editDeptName || isLoading"
-              class="flex-1 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
+              class="flex-1 py-3 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
             >
               {{ isLoading ? 'Saving...' : 'Save' }}
             </button>
@@ -176,22 +181,24 @@
     <!-- Delete Confirmation Modal -->
     <transition name="fade">
       <div v-if="showDeleteConfirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl p-10 w-full max-w-md shadow-2xl animate-in fade-in slide-in-from-bottom-4">
-          <div class="text-4xl mb-4">🗑️</div>
+        <div class="bg-primary-50 rounded-2xl p-10 w-full max-w-md shadow-2xl animate-in fade-in slide-in-from-bottom-4">
+          <div class="w-12 h-12 bg-red-100 rounded-lg inline-flex items-center justify-center mb-4">
+            <TrashIcon class="w-6 h-6 text-red-600" />
+          </div>
           <h2 class="text-2xl font-black text-slate-900 mb-2">Delete Department?</h2>
           <p class="text-sm text-slate-600 mb-6">Are you sure you want to delete <strong>"{{ deleteDeptName }}"</strong>? This action cannot be undone.</p>
           
           <div class="flex gap-3">
             <button 
               @click="showDeleteConfirm = false" 
-              class="flex-1 py-3 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              class="flex-1 py-3 font-bold text-slate-600 hover:bg-primary-100 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button 
               @click="confirmDelete"
               :disabled="isLoading"
-              class="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
+              class="flex-1 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 hover:shadow-lg transition-all active:scale-95 disabled:opacity-50"
             >
               {{ isLoading ? 'Deleting...' : 'Delete' }}
             </button>
@@ -205,7 +212,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '@/utils/api'
-import { EditIcon, TrashIcon } from 'lucide-vue-next'
+import { EditIcon, TrashIcon, BuildingIcon, UsersIcon, SparklesIcon } from 'lucide-vue-next'
 
 const departments = ref([])
 const loading = ref(false)

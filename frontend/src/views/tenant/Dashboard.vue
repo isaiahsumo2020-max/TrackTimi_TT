@@ -11,12 +11,12 @@
              'bg-yellow-500': notif.type === 'warning'
            }"
            class="text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 animate-slideIn min-w-80">
-        <span v-if="notif.type === 'success'">✅</span>
-        <span v-else-if="notif.type === 'error'">❌</span>
-        <span v-else-if="notif.type === 'warning'">⚠️</span>
-        <span v-else>ℹ️</span>
+        <CheckCircleIcon v-if="notif.type === 'success'" class="w-5 h-5" />
+        <XCircleIcon v-else-if="notif.type === 'error'" class="w-5 h-5" />
+        <AlertTriangleIcon v-else-if="notif.type === 'warning'" class="w-5 h-5" />
+        <InfoIcon v-else class="w-5 h-5" />
         <span class="flex-1">{{ notif.message }}</span>
-        <button @click="removeLiveNotification(idx)" class="text-white opacity-70 hover:opacity-100">✕</button>
+        <button @click="removeLiveNotification(idx)" class="text-white opacity-70 hover:opacity-100"><XIcon class="w-4 h-4" /></button>
       </div>
     </div>
 
@@ -29,7 +29,7 @@
         </h1>
       </div>
       
-      <div class="flex items-center bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+      <div class="flex items-center bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
         <div class="px-5 py-2 text-center border-r border-slate-100">
           <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Daily Health</p>
           <p class="text-sm font-black" :class="healthColor">{{ healthScore }}%</p>
@@ -44,9 +44,9 @@
     <!-- 2. Interactive Metric Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div v-for="stat in stats" :key="stat.label" 
-        class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group cursor-default">
+      <div class="bg-primary-50 p-6 rounded-2xl border border-primary-200 shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-300 group cursor-default">
         <div class="flex items-center justify-between mb-4">
-          <div :class="stat.color" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:rotate-6 transition-transform">
+          <div :class="stat.color" class="w-12 h-12 rounded-lg flex items-center justify-center text-white shadow-lg group-hover:rotate-6 transition-transform">
             <component :is="stat.icon" class="w-6 h-6" />
           </div>
           <div class="flex flex-col items-end">
@@ -62,14 +62,14 @@
     </div>
 
     <!-- Live Activity Feed Panel -->
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm">
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-primary-200 rounded-lg p-4 shadow-sm">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
           <span class="flex h-3 w-3 relative">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
           </span>
-          <h3 class="text-sm font-semibold text-gray-900">🔴 Live Activity Feed</h3>
+          <h3 class="text-sm font-semibold text-gray-900 flex items-center gap-2">Live Activity Feed</h3>
         </div>
         <button @click="showActivityPanel = !showActivityPanel" class="text-xs bg-white px-3 py-1 rounded border border-gray-300 hover:bg-gray-100">
           {{ showActivityPanel ? 'Hide' : 'Show' }}
@@ -79,7 +79,7 @@
       <div v-if="showActivityPanel" class="space-y-2 max-h-48 overflow-y-auto">
         <div v-if="activityLog.length === 0" class="text-xs text-gray-500 italic">No recent activity yet...</div>
         <div v-for="(log, index) in activityLog" :key="index" class="text-xs bg-white bg-opacity-60 px-3 py-2 rounded border border-blue-100 flex items-start gap-2">
-          <span class="mt-0.5 text-lg">{{ log.icon }}</span>
+          <component :is="getActivityIcon(log.icon)" class="w-4 h-4 mt-0.5 flex-shrink-0" />
           <div class="flex-1">
             <p class="text-gray-900 font-medium">{{ log.action }}</p>
             <p class="text-gray-600 text-xs mt-0.5">{{ log.details }}</p>
@@ -93,7 +93,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       <!-- 7-Day Trend Card -->
-      <div class="lg:col-span-2 bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl text-white relative overflow-hidden flex flex-col h-[480px]">
+      <div class="lg:col-span-2 bg-primary-900 p-10 rounded-3xl shadow-2xl text-white relative overflow-hidden flex flex-col h-[480px]">
         <div class="relative z-10 flex flex-col h-full">
           <div class="flex justify-between items-center mb-10">
             <div>
@@ -157,7 +157,7 @@
       </div>
 
       <!-- Live Pulse Feed -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col h-[480px]">
+      <div class="bg-primary-50 p-8 rounded-2xl border border-primary-200 shadow-sm flex flex-col h-[480px]">
         <div class="flex items-center justify-between mb-8">
           <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center">
             <ZapIcon class="w-4 h-4 mr-2 text-amber-500 fill-amber-500" />
@@ -188,12 +188,12 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       <!-- Present Members -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+      <div class="bg-primary-50 p-8 rounded-2xl border border-primary-200 shadow-sm">
         <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center">
           <div class="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div> Present Personnel
         </h3>
         <div class="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-          <div v-for="user in presentList" :key="user.name" class="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-primary-100 hover:bg-white transition-all">
+          <div v-for="user in presentList" :key="user.name" class="flex items-center justify-between p-4 bg-slate-50/50 rounded-lg border border-transparent hover:border-primary-100 hover:bg-white transition-all">
             <div class="flex items-center space-x-3">
               <div v-if="user.avatar" class="w-9 h-9 bg-slate-900 text-white rounded-xl overflow-hidden flex-shrink-0">
                 <img :src="`data:${user.avatarMimeType};base64,${user.avatar}`" :alt="user.name" class="w-full h-full object-cover" />
@@ -213,7 +213,7 @@
       </div>
 
       <!-- Off-Duty Members -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+      <div class="bg-primary-50 p-8 rounded-2xl border border-primary-200 shadow-sm">
         <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-8 flex items-center">
           <div class="w-1.5 h-1.5 bg-slate-300 rounded-full mr-2"></div> Not In Today
         </h3>
@@ -232,7 +232,7 @@
       </div>
 
       <!-- Department Distribution -->
-      <div class="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
+      <div class="bg-primary-50 p-8 rounded-2xl border border-primary-200 shadow-sm">
         <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest mb-8">Department Load</h3>
         <div class="space-y-7 mt-4">
           <div v-for="dept in departments" :key="dept.name" class="space-y-3">
@@ -249,14 +249,14 @@
       </div>
     </div>
 
-    <!-- 4.5 FEEDBACK SUBMISSION PANEL -->
-    <FeedbackSubmissionPanel 
+    <!-- 4.5 FEEDBACK SUBMISSION PANEL - HIDDEN -->
+    <!-- <FeedbackSubmissionPanel 
       @feedback-sent="handleFeedbackSent"
       @error="showLiveNotif($event, 'error')"
-    />
+    /> -->
 
     <!-- 5. ULTIMATE ATTENDANCE LEDGER (Historical Tracking) -->
-    <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-10">
+    <div class="bg-primary-50 p-10 rounded-3xl border border-primary-200 shadow-sm space-y-10\">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center">
@@ -279,7 +279,7 @@
         </div>
       </div>
 
-      <div class="overflow-hidden rounded-[2rem] border border-slate-50">
+      <div class="overflow-hidden rounded-xl border border-primary-200">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-slate-50/50 border-b border-slate-100">
@@ -337,8 +337,9 @@ import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import api from '@/utils/api'
 import { useRoute } from 'vue-router'
 import { 
-  UsersIcon, CheckCircleIcon, ClockIcon, XCircleIcon, 
-  ZapIcon, HistoryIcon, SearchIcon, FileDownIcon 
+  UsersIcon, CheckCircleIcon, ClockIcon, XCircleIcon, XIcon,
+  ZapIcon, HistoryIcon, SearchIcon, FileDownIcon,
+  AlertTriangleIcon, InfoIcon, RefreshCwIcon, MessageSquareIcon, RocketIcon
 } from 'lucide-vue-next'
 import FeedbackSubmissionPanel from '@/components/FeedbackSubmissionPanel.vue'
 
@@ -577,6 +578,18 @@ const handleFeedbackSent = (feedbackData) => {
 
 const showLiveNotif = (message, type = 'info') => {
   showLiveNotification(message, type)
+}
+
+// Icon mapping for activity log
+const getActivityIcon = (emoji) => {
+  const iconMap = {
+    '🔄': RefreshCwIcon,
+    '⚠️': AlertTriangleIcon,
+    '📝': InfoIcon,
+    '💬': MessageSquareIcon,
+    '🚀': RocketIcon
+  }
+  return iconMap[emoji] || InfoIcon
 }
 
 onMounted(() => {

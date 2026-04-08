@@ -24,7 +24,7 @@
       <nav class="flex-1 py-8 px-4 space-y-1.5 overflow-y-auto custom-scrollbar">
         <p v-if="sidebarOpen" class="text-[10px] font-black text-slate-500 uppercase px-4 mb-4 tracking-[0.2em]">Platform Control</p>
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group relative"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase tracking-widest transition-all group relative"
           :class="[$route.path === item.path ? 'bg-primary-600 text-white shadow-xl shadow-primary-900/40' : 'text-slate-400 hover:bg-slate-900 hover:text-white']">
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
@@ -33,7 +33,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-2xl border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
+        <div @click="handleLogout" class="flex items-center space-x-3 bg-red-500/5 p-3 rounded-lg border border-red-500/10 group cursor-pointer hover:bg-red-500/10 transition-all">
           <div class="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center text-red-500">
             <LogOutIcon class="w-5 h-5" />
           </div>
@@ -60,7 +60,7 @@
 
         <div class="flex items-center space-x-4">
           <button @click="saveSettings" :disabled="saving" 
-            class="bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary-100 transition-all active:scale-95 flex items-center">
+            class="bg-primary-600 hover:bg-primary-700 disabled:bg-slate-300 text-white px-8 py-4 rounded-lg font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary-100 transition-all active:scale-95 flex items-center">
             <SaveIcon v-if="!saving" class="w-4 h-4 mr-2" />
             <RefreshCwIcon v-else class="w-4 h-4 mr-2 animate-spin" />
             {{ saving ? 'Syncing...' : 'Commit Changes' }}
@@ -76,7 +76,7 @@
           <!-- SECTION 1: GENERAL PLATFORM BRANDING -->
           <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-8">
             <div class="flex items-center space-x-3 mb-2">
-              <div class="w-10 h-10 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-600">
+              <div class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600">
                 <LayoutIcon class="w-5 h-5" />
               </div>
               <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Identity Matrix</h2>
@@ -85,20 +85,20 @@
             <div class="space-y-6">
               <div class="space-y-2">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-[0.2em]">Platform Display Name</label>
-                <input v-model="settings.platformName" type="text" class="w-full p-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary-50 transition-all outline-none" />
+                <input v-model="settings.platformName" type="text" class="w-full p-4 bg-slate-50 border-none rounded-lg text-xs font-bold focus:ring-4 focus:ring-primary-50 transition-all outline-none" />
               </div>
               <div class="space-y-2">
                 <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-[0.2em]">Master Support Channel (Email)</label>
-                <input v-model="settings.supportEmail" type="email" class="w-full p-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary-50 transition-all outline-none" />
+                <input v-model="settings.supportEmail" type="email" class="w-full p-4 bg-slate-50 border-none rounded-lg text-xs font-bold focus:ring-4 focus:ring-primary-50 transition-all outline-none" />
               </div>
               <div class="grid grid-cols-2 gap-6">
                 <div class="space-y-2">
                   <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-[0.2em]">Node Capacity</label>
-                  <input v-model.number="settings.maxOrganizations" type="number" class="w-full p-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary-50 outline-none" />
+                  <input v-model.number="settings.maxOrganizations" type="number" class="w-full p-4 bg-slate-50 border-none rounded-lg text-xs font-bold focus:ring-4 focus:ring-primary-50 outline-none" />
                 </div>
                 <div class="space-y-2">
                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-[0.2em]">Default Radius (M)</label>
-                   <input v-model.number="settings.defaultRadius" type="number" class="w-full p-4 bg-slate-50 border-none rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary-50 outline-none" />
+                   <input v-model.number="settings.defaultRadius" type="number" class="w-full p-4 bg-slate-50 border-none rounded-lg text-xs font-bold focus:ring-4 focus:ring-primary-50 outline-none" />
                 </div>
               </div>
             </div>
@@ -107,7 +107,7 @@
           <!-- SECTION 2: SECURITY & GATEWAY PROTOCOLS -->
           <div class="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-8">
             <div class="flex items-center space-x-3 mb-2">
-              <div class="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-600">
+              <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600">
                 <ShieldCheckIcon class="w-5 h-5" />
               </div>
               <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Security Protocols</h2>
@@ -160,7 +160,7 @@
               <div class="space-y-6">
                  <div class="space-y-2">
                     <p class="text-[9px] font-black uppercase tracking-widest opacity-60">Global Secret Key (HS256)</p>
-                    <div class="flex items-center space-x-3 bg-white/5 p-4 rounded-2xl border border-white/5 font-mono text-[10px] text-primary-300 overflow-hidden">
+                    <div class="flex items-center space-x-3 bg-white/5 p-4 rounded-lg border border-white/5 font-mono text-[10px] text-primary-300 overflow-hidden">
                        <LockIcon class="w-3 h-3 shrink-0" />
                        <span class="truncate">****************************************</span>
                        <button class="text-xs font-black text-white uppercase ml-auto hover:text-primary-400 transition-colors">Reveal</button>
@@ -188,7 +188,7 @@
               </h3>
               <div class="space-y-4">
                  <div v-for="legal in ['Terms of Protocol', 'Privacy Governance', 'SLA Agreement', 'Cookie Matrix']" :key="legal"
-                   class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer group">
+                   class="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer group">
                     <span class="text-xs font-bold text-slate-600 uppercase group-hover:text-slate-900">{{ legal }}</span>
                     <ExternalLinkIcon class="w-3.5 h-3.5 text-slate-300" />
                  </div>

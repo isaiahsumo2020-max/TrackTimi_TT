@@ -14,7 +14,7 @@
       </div>
       <nav class="flex-1 py-8 px-4 space-y-2">
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all text-slate-400 hover:bg-slate-900 hover:text-white"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase tracking-widest transition-all text-slate-400 hover:bg-slate-900 hover:text-white"
           active-class="bg-primary-600 text-white shadow-xl shadow-primary-900/40"
         >
           <component :is="item.icon" class="w-5 h-5 shrink-0" />
@@ -35,7 +35,7 @@
             <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
             <span class="text-[10px] font-black text-green-600 uppercase">All Systems Nominal</span>
           </div>
-          <button @click="checkMonitoring" class="p-4 bg-slate-900 text-white rounded-2xl hover:bg-primary-600 transition-all">
+          <button @click="checkMonitoring" class="p-4 bg-slate-900 text-white rounded-lg hover:bg-primary-600 transition-all">
             <RefreshCwIcon :class="{'animate-spin': loading}" class="w-5 h-5" />
           </button>
         </div>
@@ -46,7 +46,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div v-for="stat in monitorStats" :key="stat.label" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
             <div class="flex justify-between items-start mb-6">
-              <div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-primary-50 text-primary-600 shadow-sm">
+              <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-primary-50 text-primary-600 shadow-sm">
                 <component :is="stat.icon" class="w-6 h-6" />
               </div>
               <span :class="stat.statusColor" class="px-3 py-1 rounded-full text-[8px] font-black uppercase border">{{ stat.status }}</span>

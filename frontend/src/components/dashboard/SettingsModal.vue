@@ -14,9 +14,9 @@
         <h2 class="text-3xl font-black text-primary-600">Settings</h2>
         <button
           @click="$emit('close')"
-          class="text-slate-400 hover:text-slate-600 text-2xl font-bold"
+          class="text-slate-400 hover:text-slate-600"
         >
-          ✕
+          <XIcon class="w-6 h-6" />
         </button>
       </div>
 
@@ -30,13 +30,14 @@
               :key="tab.id"
               @click="activeTab = tab.id"
               :class="[
-                'w-full text-left px-4 py-3 rounded-lg font-bold text-sm transition-all',
+                'w-full text-left px-4 py-3 rounded-lg font-bold text-sm transition-all flex items-center gap-2',
                 activeTab === tab.id
                   ? 'bg-primary-500 text-white shadow'
                   : 'text-slate-700 hover:bg-slate-200'
               ]"
             >
-              {{ tab.icon }} {{ tab.label }}
+              <component :is="getTabIcon(tab.id)" class="w-4 h-4" />
+              {{ tab.label }}
             </button>
           </nav>
         </div>
@@ -102,9 +103,12 @@
           <div v-else-if="activeTab === 'password'" class="space-y-6 max-w-2xl">
             <h3 class="text-xl font-black text-slate-900">Change Password</h3>
 
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900">
-              <p class="font-bold">⚠️ Security Notice</p>
-              <p class="mt-1">Use a strong password with uppercase, lowercase, numbers, and symbols.</p>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900 flex items-start gap-3">
+              <AlertTriangleIcon class="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <div>
+                <p class="font-bold">Security Notice</p>
+                <p class="mt-1">Use a strong password with uppercase, lowercase, numbers, and symbols.</p>
+              </div>
             </div>
 
             <div class="space-y-4">
@@ -165,9 +169,9 @@
                   v-model="editSettings.preferences.theme"
                   class="w-full px-4 py-2 rounded-lg border border-slate-200 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
-                  <option value="light">☀️ Light</option>
-                  <option value="dark">🌙 Dark</option>
-                  <option value="auto">🔄 Auto</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                  <option value="auto">Auto</option>
                 </select>
               </div>
 
@@ -255,8 +259,8 @@
                   <img :src="currentLogo" alt="Organization Logo" class="w-32 h-32 object-cover rounded-lg mx-auto border border-slate-300" />
                   <p class="text-xs text-slate-600 mt-3">Current Logo Preview</p>
                 </div>
-                <div v-else class="text-slate-500 py-8">
-                  <p class="text-3xl mb-2">🖼️</p>
+                <div v-else class="text-slate-500 py-8 text-center">
+                  <ImageIcon class="w-12 h-12 mx-auto mb-2 text-slate-300" />
                   <p class="font-bold">No logo uploaded yet</p>
                 </div>
               </div>
@@ -266,7 +270,7 @@
                 <label class="block text-sm font-bold text-slate-700 mb-3">Upload Logo</label>
                 <label class="flex items-center justify-center w-full px-4 py-4 rounded-lg border-2 border-dashed border-primary-300 bg-primary-50 cursor-pointer hover:bg-primary-100 transition">
                   <div class="text-center">
-                    <p class="text-2xl mb-2">📤</p>
+                    <UploadIcon class="w-8 h-8 text-primary-400 mx-auto mb-2" />
                     <p class="text-sm font-bold text-primary-600">Click to upload or drag and drop</p>
                     <p class="text-xs text-slate-600">PNG, JPEG, GIF, WebP (Max 500KB)</p>
                   </div>
@@ -286,14 +290,16 @@
                   :disabled="!selectedLogoFile"
                   class="flex-1 px-6 py-3 bg-primary-500 text-white rounded-lg font-bold hover:bg-primary-600 transition-all text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  💾 Save Logo
+                  <SaveIcon class="w-4 h-4 inline mr-1" />
+                  Save Logo
                 </button>
                 <button
                   v-if="currentLogo"
                   @click="deleteLogo"
                   class="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-all text-sm uppercase tracking-wider"
                 >
-                  🗑️ Delete Logo
+                  <TrashIcon class="w-4 h-4 inline mr-1" />
+                  Delete Logo
                 </button>
               </div>
 
@@ -376,10 +382,10 @@
                 v-model="editSettings.notifications.emailDigestFrequency"
                 class="w-full px-4 py-2 rounded-lg border border-slate-200 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
-                <option value="realtime">🔔 Real-time</option>
-                <option value="daily">📅 Daily</option>
-                <option value="weekly">📆 Weekly</option>
-                <option value="monthly">📅 Monthly</option>
+                <option value="realtime">Real-time</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
               </select>
             </div>
 
@@ -476,6 +482,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { settingsApi } from '@/services/settingsApi'
 import orgApi, { uploadOrgLogo, deleteOrgLogo } from '@/services/orgApi'
 import { useAuthStore } from '@/stores/auth'
+import { AlertTriangleIcon, ImageIcon, UploadIcon, SaveIcon, TrashIcon, UserIcon, LockIcon, SettingsIcon, PaletteIcon, BellIcon, ShieldIcon, XIcon } from 'lucide-vue-next'
 
 const emit = defineEmits(['close'])
 const props = defineProps({
@@ -505,13 +512,25 @@ const passwordStrength = reactive({
 })
 
 const tabs = [
-  { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'password', label: 'Password', icon: '🔐' },
-  { id: 'preferences', label: 'Preferences', icon: '⚙️' },
-  { id: 'branding', label: 'Branding', icon: '🎨' },
-  { id: 'notifications', label: 'Notifications', icon: '🔔' },
-  { id: 'security', label: 'Security', icon: '🔒' }
+  { id: 'profile', label: 'Profile' },
+  { id: 'password', label: 'Password' },
+  { id: 'preferences', label: 'Preferences' },
+  { id: 'branding', label: 'Branding' },
+  { id: 'notifications', label: 'Notifications' },
+  { id: 'security', label: 'Security' }
 ]
+
+const getTabIcon = (tabId) => {
+  const iconMap = {
+    profile: UserIcon,
+    password: LockIcon,
+    preferences: SettingsIcon,
+    branding: PaletteIcon,
+    notifications: BellIcon,
+    security: ShieldIcon
+  }
+  return iconMap[tabId] || SettingsIcon
+}
 
 const fetchSettings = async () => {
   try {
@@ -620,10 +639,10 @@ const checkPasswordStrength = () => {
     passwordStrength.color = 'bg-amber-500'
   } else if (strength < 5) {
     passwordStrength.label = 'Strong'
-    passwordStrength.color = 'bg-green-500'
+    passwordStrength.color = 'bg-primary-500'
   } else {
     passwordStrength.label = 'Very Strong'
-    passwordStrength.color = 'bg-green-600'
+    passwordStrength.color = 'bg-primary-600'
   }
 }
 

@@ -51,25 +51,25 @@
         <p class="text-xs text-slate-500 mt-2">{{ getDaysValue() }}-day average</p>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
           <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Total Check-ins</h4>
-          <UsersIcon class="w-5 h-5 text-[#FF6B35]" />
+          <UsersIcon class="w-5 h-5 text-accent-500" />
         </div>
-        <p class="text-3xl font-black text-[#FF6B35]">{{ metrics.totalCheckIns }}</p>
+        <p class="text-3xl font-black text-accent-600">{{ metrics.totalCheckIns }}</p>
         <p class="text-xs text-slate-500 mt-2">Last {{ getDaysValue() }} days</p>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
           <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Avg Session Time</h4>
-          <ClockIcon class="w-5 h-5 text-[#60A5FA]" />
+          <ClockIcon class="w-5 h-5 text-primary-500" />
         </div>
-        <p class="text-3xl font-black text-[#60A5FA]">{{ (metrics.totalCheckIns / metrics.totalEmployees / getDaysValue()).toFixed(1) }}h</p>
+        <p class="text-3xl font-black text-primary-600">{{ (metrics.totalCheckIns / metrics.totalEmployees / getDaysValue()).toFixed(1) }}h</p>
         <p class="text-xs text-slate-500 mt-2">Per employee daily</p>
       </div>
 
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6">
         <div class="flex items-center justify-between mb-4">
           <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Absent Today</h4>
           <AlertCircleIcon class="w-5 h-5 text-red-500" />
@@ -82,7 +82,7 @@
     <!-- Charts Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Check-in Trend Chart -->
-      <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+      <div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 shadow-sm p-8">
         <h3 class="text-lg font-black text-primary-600 mb-6">Check-in Trends (Last {{ getDaysValue() }} Days)</h3>
         <div class="w-full h-64 flex items-end justify-between gap-2">
           <div v-for="(day, idx) in checkInTrends" :key="idx" class="flex-1 flex flex-col items-center" style="min-width: 0">
@@ -100,7 +100,7 @@
       </div>
 
       <!-- Department Distribution -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-8">
         <h3 class="text-lg font-black text-primary-600 mb-6">By Department</h3>
         <div class="space-y-4">
           <div v-for="dept in departmentDistribution" :key="dept.name" class="flex items-center gap-3">
@@ -240,7 +240,7 @@
         </div>
       </div>
 
-      <div class="bg-gradient-to-br from-[#FF6B35] to-[#E55A25] rounded-2xl border border-[#FF8C5A] shadow-lg p-8 text-white">
+      <div class="bg-gradient-to-br from-accent-500 to-accent-600 rounded-lg border border-accent-600 shadow-lg p-8 text-white">
         <h3 class="text-lg font-black mb-6 flex items-center">
           <AlertCircleIcon class="w-5 h-5 mr-3" />
           Alerts & Issues

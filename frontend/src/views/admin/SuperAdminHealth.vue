@@ -15,9 +15,9 @@
 
       <nav class="flex-1 py-8 px-4 space-y-2 overflow-y-auto">
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all group"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase tracking-widest transition-all group"
           :class="[$route.path === item.path ? 'text-white shadow-xl' : 'text-slate-400 hover:bg-slate-900 hover:text-white']"
-          :style="$route.path === item.path ? { backgroundColor: '#D97A2B' } : {}"
+          :style="$route.path === item.path ? { backgroundColor: '#0284c7' } : {}"
         >
           <component :is="item.icon" class="w-5 h-5" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -25,7 +25,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <button @click="handleLogout" class="w-full p-3 rounded-xl text-xs font-bold uppercase text-white" style="background-color: #D97A2B;">
+        <button @click="handleLogout" class="w-full p-3 rounded-xl text-xs font-bold uppercase text-white" style="background-color: #0284c7;">
           Logout
         </button>
       </div>
@@ -38,7 +38,7 @@
           <h1 class="text-xl font-black uppercase" style="color: #000000;">System Health Monitoring</h1>
         </div>
         <div class="flex items-center space-x-4">
-          <button @click="loadHealth" class="p-3 bg-slate-50 rounded-xl hover:bg-slate-100" style="color: #D97A2B;">
+          <button @click="loadHealth" class="p-3 bg-slate-50 rounded-xl hover:bg-slate-100" style="color: #0284c7;">
             <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
           </button>
         </div>
@@ -47,45 +47,45 @@
       <div class="flex-1 overflow-y-auto p-10 space-y-8">
         <!-- Health Status Overview -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="bg-white p-6 rounded-lg border border-slate-100 shadow-sm">
             <div class="flex justify-between items-start mb-4">
-              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white" style="background-color: #6FAF4F;">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white" style="background-color: #0284c7;">
                 <CheckCircleIcon class="w-6 h-6" />
               </div>
-              <span class="text-[10px] font-black px-2 py-1 rounded uppercase text-white" style="background-color: #6FAF4F;">Healthy</span>
+              <span class="text-[10px] font-black px-2 py-1 rounded uppercase text-white" style="background-color: #0284c7;">Healthy</span>
             </div>
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Server Status</p>
             <h3 class="text-2xl font-black mt-1" style="color: #000000;">{{ health.serverStatus || 'Checking...' }}</h3>
           </div>
 
-          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="bg-white p-6 rounded-lg border border-slate-100 shadow-sm">
             <div class="flex justify-between items-start mb-4">
-              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white" style="background-color: #D97A2B;">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white" style="background-color: #ea580c;">
                 <HardDriveIcon class="w-6 h-6" />
               </div>
-              <span class="text-[10px] font-black px-2 py-1 rounded uppercase text-white" style="background-color: #D97A2B;">Live</span>
+              <span class="text-[10px] font-black px-2 py-1 rounded uppercase text-white" style="background-color: #ea580c;">Live</span>
             </div>
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Database Size</p>
             <h3 class="text-2xl font-black mt-1" style="color: #000000;">{{ health.dbSize || '0 MB' }}</h3>
           </div>
 
-          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="bg-white p-6 rounded-lg border border-slate-100 shadow-sm">
             <div class="flex justify-between items-start mb-4">
-              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white" style="background-color: #F2D479; color: #000000;">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white" style="background-color: #0284c7;">
                 <UsersIcon class="w-6 h-6" />
               </div>
-              <span class="text-[10px] font-black px-2 py-1 rounded uppercase text-white" style="background-color: #F2D479; color: #000000;">Active</span>
+              <span class="text-[10px] font-black px-2 py-1 rounded uppercase text-white" style="background-color: #0284c7;">Active</span>
             </div>
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Active Users</p>
             <h3 class="text-2xl font-black mt-1" style="color: #000000;">{{ health.activeUsersToday || 0 }}</h3>
           </div>
 
-          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="bg-white p-6 rounded-lg border border-slate-100 shadow-sm">
             <div class="flex justify-between items-start mb-4">
-              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white" style="background-color: #D97A2B;">
+              <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white" style="background-color: #ea580c;">
                 <ClockIcon class="w-6 h-6" />
               </div>
-              <span class="text-[10px] font-black px-2 py-1 rounded uppercase text-white" style="background-color: #D97A2B;">Running</span>
+              <span class="text-[10px] font-black px-2 py-1 rounded uppercase text-white" style="background-color: #ea580c;">Running</span>
             </div>
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Server Uptime</p>
             <h3 class="text-2xl font-black mt-1" style="color: #000000;">{{ formatUptime }}</h3>
@@ -94,7 +94,7 @@
 
         <!-- Database Tables -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div class="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="bg-white p-8 rounded-lg border border-slate-100 shadow-sm">
             <h2 class="text-sm font-black uppercase mb-6 tracking-widest" style="color: #000000;">Database Tables</h2>
             <div class="space-y-4">
               <div v-for="table in health.tableStats" :key="table.table_name" class="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
@@ -103,19 +103,19 @@
                   <p class="text-[10px]" style="color: #000000;">Records</p>
                 </div>
                 <div class="text-right">
-                  <p class="text-lg font-black" style="color: #D97A2B;">{{ table.record_count }}</p>
+                  <p class="text-lg font-black" style="color: #0284c7;">{{ table.record_count }}</p>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- System Events -->
-          <div class="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="bg-white p-8 rounded-lg border border-slate-100 shadow-sm">
             <h2 class="text-sm font-black uppercase mb-6 tracking-widest" style="color: #000000;">System Events</h2>
             <div v-if="health.recentErrors && health.recentErrors.length > 0" class="space-y-3">
-              <div v-for="error in health.recentErrors.slice(0, 5)" :key="error.Log_ID" class="p-3 rounded-lg border" style="background-color: #FFF3CD; border-color: #D97A2B;">
-                <p class="text-xs font-bold" style="color: #000000;">{{ error.Action }}</p>
-                <p class="text-[10px]" style="color: #000000;">{{ formatDate(error.Created_at) }}</p>
+              <div v-for="error in health.recentErrors.slice(0, 5)" :key="error.Log_ID" class="p-3 rounded-lg border" style="background-color: #FEE2E2; border-color: #ef4444;">
+                <p class="text-xs font-bold" style="color: #7f1d1d;">{{ error.Action }}</p>
+                <p class="text-[10px]" style="color: #7f1d1d;">{{ formatDate(error.Created_at) }}</p>
               </div>
             </div>
             <div v-else class="text-center py-8" style="color: #000000;">
@@ -216,3 +216,4 @@ onMounted(() => {
   to { transform: rotate(360deg); }
 }
 </style>
+

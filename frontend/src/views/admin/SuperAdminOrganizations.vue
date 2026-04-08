@@ -4,7 +4,7 @@
     <!-- 1. NOTIFICATION TOAST -->
     <Transition name="toast">
       <div v-if="notification.show" :class="[
-        'fixed top-6 right-6 z-[200] px-6 py-4 rounded-2xl font-black text-white flex items-center space-x-3 shadow-2xl animate-in slide-in-from-top',
+        'fixed top-6 right-6 z-[200] px-6 py-4 rounded-lg font-black text-white flex items-center space-x-3 shadow-2xl animate-in slide-in-from-top',
         notification.type === 'success' ? 'bg-[#1B8B3C]' : 'bg-red-500'
       ]">
         <CheckIcon v-if="notification.type === 'success'" class="w-5 h-5" />
@@ -55,12 +55,12 @@
           <div class="relative group">
             <SearchIcon class="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-[#1B8B3C] transition-colors" />
             <input v-model="searchQuery" placeholder="Filter by Name or Domain..." 
-              class="pl-14 pr-6 py-4 bg-slate-50 border-none rounded-2xl text-[11px] font-bold shadow-sm w-80 focus:ring-4 focus:ring-[#1B8B3C]/20 transition-all outline-none" />
+              class="pl-14 pr-6 py-4 bg-slate-50 border-none rounded-lg text-[11px] font-bold shadow-sm w-80 focus:ring-4 focus:ring-[#1B8B3C]/20 transition-all outline-none" />
           </div>
-          <button @click="loadOrganizations" :disabled="loading" class="p-4 bg-[#1B8B3C] text-white rounded-2xl hover:bg-[#156B2E] transition-all active:scale-90 shadow-lg">
+          <button @click="loadOrganizations" :disabled="loading" class="p-4 bg-[#1B8B3C] text-white rounded-lg hover:bg-[#156B2E] transition-all active:scale-90 shadow-lg">
              <RefreshCwIcon :class="{'animate-spin': loading}" class="w-5 h-5" />
           </button>
-          <button @click="showCreateModal = true" class="px-6 py-4 bg-[#FF6B35] text-white rounded-2xl hover:bg-[#E55A25] font-black text-xs uppercase tracking-widest flex items-center space-x-2 shadow-lg active:scale-95">
+          <button @click="showCreateModal = true" class="px-6 py-4 bg-[#FF6B35] text-white rounded-lg hover:bg-[#E55A25] font-black text-xs uppercase tracking-widest flex items-center space-x-2 shadow-lg active:scale-95">
             <PlusIcon class="w-5 h-5" />
             <span>New Organization</span>
           </button>
@@ -85,7 +85,7 @@
                 <tr v-for="org in filteredOrgs" :key="org.Org_ID" class="group hover:bg-[#1B8B3C]/5 transition-all duration-300">
                   <td class="px-10 py-8">
                     <div class="flex items-center space-x-4">
-                      <div class="w-12 h-12 bg-[#1B8B3C] text-white rounded-2xl flex items-center justify-center font-black text-lg shadow-xl group-hover:rotate-6 transition-transform uppercase">
+                      <div class="w-12 h-12 bg-[#1B8B3C] text-white rounded-lg flex items-center justify-center font-black text-lg shadow-xl group-hover:rotate-6 transition-transform uppercase">
                         {{ org.Org_Name[0] }}
                       </div>
                       <div>
@@ -208,7 +208,7 @@
               <button @click="showEditModal = false" class="flex-1 px-4 py-3 bg-slate-100 text-slate-700 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
                 Cancel
               </button>
-              <button @click="handleEditSubmit" :disabled="operationLoading" class="flex-1 px-4 py-3 bg-[#FF6B35] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#E55A25] active:scale-95 transition-all disabled:opacity-50">
+              <button @click="handleEditSubmit" :disabled="operationLoading" class="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-primary-700 active:scale-95 transition-all disabled:opacity-50">
                 {{ operationLoading ? 'Saving...' : 'Save Changes' }}
               </button>
             </div>
@@ -228,7 +228,7 @@
                  <div :class="selectedOrg.info.Is_Active ? 'bg-[#4ADE80]' : 'bg-red-500'" class="w-2.5 h-2.5 rounded-full"></div>
               </div>
             </div>
-            <button @click="showManagementDrawer = false" class="p-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl transition-all relative z-10">
+            <button @click="showManagementDrawer = false" class="p-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all relative z-10">
                 <XIcon class="w-6 h-6 text-white" />
             </button>
           </div>
@@ -238,10 +238,10 @@
             <div class="grid grid-cols-2 gap-4">
               <button @click="handleToggleStatus(selectedOrg.info.Org_ID, selectedOrg.info.Is_Active)" :disabled="operationLoading"
                 :class="selectedOrg.info.Is_Active ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100' : 'bg-[#1B8B3C]/10 text-[#1B8B3C] border-[#1B8B3C]/20 hover:bg-[#1B8B3C]/20'"
-                class="py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest border transition-all disabled:opacity-50">
+                class="py-5 rounded-lg font-black text-[10px] uppercase tracking-widest border transition-all disabled:opacity-50">
                 {{ selectedOrg.info.Is_Active ? '🚫 Deactivate' : '✅ Activate' }}
               </button>
-              <button @click="handleDeleteOrg(selectedOrg.info.Org_ID)" :disabled="operationLoading" class="bg-red-600 text-white py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all disabled:opacity-50">
+              <button @click="handleDeleteOrg(selectedOrg.info.Org_ID)" :disabled="operationLoading" class="bg-red-600 text-white py-5 rounded-lg font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all disabled:opacity-50">
                 🗑️ Delete Org
               </button>
             </div>
@@ -269,7 +269,7 @@
               </div>
               
               <!-- Add User Section -->
-              <div class="mb-6 p-5 bg-[#1B8B3C]/5 rounded-2xl border border-[#1B8B3C]/20">
+              <div class="mb-6 p-5 bg-[#1B8B3C]/5 rounded-lg border border-[#1B8B3C]/20">
                 <label class="block text-[9px] font-black text-slate-700 uppercase tracking-widest mb-3">Assign User to Organization</label>
                 <div class="flex space-x-2">
                   <input v-model="selectedUserToAdd" placeholder="User ID" type="number"
@@ -282,7 +282,7 @@
 
               <!-- Users List -->
               <div class="space-y-3">
-                <div v-for="user in selectedOrg.users" :key="user.User_ID" class="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-2xl hover:border-[#1B8B3C]/40 transition-all group">
+                <div v-for="user in selectedOrg.users" :key="user.User_ID" class="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-lg hover:border-[#1B8B3C]/40 transition-all group">
                   <div class="flex items-center space-x-4 flex-1 min-w-0">
                     <div class="w-10 h-10 bg-[#1B8B3C] text-white rounded-xl flex items-center justify-center font-black text-xs shrink-0">{{ user.First_Name[0] }}</div>
                     <div class="min-w-0 flex-1">
@@ -297,7 +297,7 @@
                     </button>
                   </div>
                 </div>
-                <div v-if="selectedOrg.users.length === 0" class="text-center py-8 bg-slate-50 rounded-2xl opacity-30 italic text-xs">No members assigned</div>
+                <div v-if="selectedOrg.users.length === 0" class="text-center py-8 bg-slate-50 rounded-lg opacity-30 italic text-xs">No members assigned</div>
               </div>
             </section>
           </div>

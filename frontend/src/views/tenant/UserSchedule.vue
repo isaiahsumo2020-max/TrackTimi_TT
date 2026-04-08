@@ -5,16 +5,17 @@
     <div class="fixed top-6 right-6 z-[100] space-y-3 pointer-events-none">
       <transition-group name="toast">
         <div v-for="toast in toasts" :key="toast.id"
-             class="flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border-2 pointer-events-auto animate-in slide-in-from-top-4 duration-300"
+             class="flex items-center gap-4 px-6 py-4 rounded-lg shadow-2xl border-2 pointer-events-auto animate-in slide-in-from-top-4 duration-300"
              :class="{
                'bg-green-50 border-green-300': toast.type === 'success',
                'bg-red-50 border-red-300': toast.type === 'error',
                'bg-blue-50 border-blue-300': toast.type === 'info',
                'bg-amber-50 border-amber-300': toast.type === 'warning'
              }">
-          <span class="text-2xl">
-            {{ toast.type === 'success' ? '✓' : toast.type === 'error' ? '✕' : toast.type === 'info' ? 'ℹ' : '⚠' }}
-          </span>
+          <CheckCircleIcon v-if="toast.type === 'success'" class="w-6 h-6" />
+          <XCircleIcon v-else-if="toast.type === 'error'" class="w-6 h-6" />
+          <InfoIcon v-else-if="toast.type === 'info'" class="w-6 h-6" />
+          <AlertTriangleIcon v-else class="w-6 h-6" />
           <div>
             <p class="font-black text-sm" :class="{
               'text-green-900': toast.type === 'success',
@@ -44,15 +45,15 @@
       
       <div class="flex items-center space-x-3">
         <!-- Monthly Hours Card -->
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 px-6 py-3 rounded-2xl border border-blue-200 shadow-sm text-center">
-          <p class="text-[9px] font-black text-blue-600 uppercase">Work Hours (MTD)</p>
-          <p class="text-2xl font-black text-blue-900">{{ loading ? '--' : totalMonthlyHours.toFixed(1) }}h</p>
+        <div class="bg-gradient-to-br from-primary-50 to-primary-100 px-6 py-3 rounded-lg border border-primary-200 shadow-sm text-center">
+          <p class="text-[9px] font-black text-primary-600 uppercase">Work Hours (MTD)</p>
+          <p class="text-2xl font-black text-primary-900">{{ loading ? '--' : totalMonthlyHours.toFixed(1) }}h</p>
         </div>
         
         <!-- Weekly Hours Card -->
-        <div class="bg-gradient-to-br from-green-50 to-green-100 px-6 py-3 rounded-2xl border border-green-200 shadow-sm text-center">
-          <p class="text-[9px] font-black text-green-600 uppercase">This Week</p>
-          <p class="text-2xl font-black text-green-900">{{ loading ? '--' : currentWeeklyHours.toFixed(1) }}h</p>
+        <div class="bg-gradient-to-br from-accent-50 to-accent-100 px-6 py-3 rounded-lg border border-accent-200 shadow-sm text-center">
+          <p class="text-[9px] font-black text-accent-600 uppercase">This Week</p>
+          <p class="text-2xl font-black text-accent-900">{{ loading ? '--' : currentWeeklyHours.toFixed(1) }}h</p>
         </div>
         
         <!-- Quick Action Button - Hidden -->
@@ -63,10 +64,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
       <!-- Current Status Card -->
-      <div class="bg-white p-8 rounded-[3rem] border-2 border-slate-200 shadow-md flex flex-col justify-between relative overflow-hidden group">
+      <div class="bg-primary-50 p-8 rounded-2xl border border-primary-200 shadow-md flex flex-col justify-between relative overflow-hidden group">
         <div class="relative z-10">
           <div class="flex justify-between items-start mb-6">
-            <div :class="statusColor" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:rotate-12">
+            <div :class="statusColor" class="w-12 h-12 rounded-lg flex items-center justify-center text-white shadow-lg transition-transform group-hover:rotate-12">
               <ClockIcon class="w-6 h-6" />
             </div>
             <span :class="statusBadge" class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
@@ -82,7 +83,7 @@
       </div>
 
       <!-- Upcoming Schedule - Full Month View -->
-      <div class="lg:col-span-2 bg-slate-900 p-8 rounded-[3rem] border-2 border-slate-700 shadow-2xl text-white relative overflow-hidden">
+      <div class="lg:col-span-2 bg-primary-900 p-8 rounded-2xl border-2 border-primary-800 shadow-2xl text-white relative overflow-hidden">
         <div class="relative z-10 space-y-6">
           <div class="flex justify-between items-center mb-6">
             <div>
@@ -105,7 +106,7 @@
             <div v-if="currentMonthSchedule.length > 0" class="space-y-3">
               <p class="text-[10px] font-black text-primary-400 uppercase tracking-widest opacity-50 mb-2">This Month ({{ new Date().toLocaleDateString('en-US', { month: 'long' }) }})</p>
               <div v-for="shift in currentMonthSchedule" :key="shift.Schedule_ID" 
-                   class="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-primary-500/30 transition-all group cursor-pointer">
+                   class="p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-primary-500/30 transition-all group cursor-pointer">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="text-lg font-black tracking-tight">{{ shift.Start_Time }} — {{ shift.End_Time }}</p>
@@ -125,7 +126,7 @@
             <div v-if="nextMonthSchedule.length > 0" class="space-y-3">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-50 mt-6 mb-2">Next Month ({{ new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString('en-US', { month: 'long' }) }})</p>
               <div v-for="shift in nextMonthSchedule" :key="shift.Schedule_ID" 
-                   class="p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-slate-500/30 transition-all group cursor-pointer opacity-75 hover:opacity-100">
+                   class="p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-slate-500/30 transition-all group cursor-pointer opacity-75 hover:opacity-100">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="text-lg font-black tracking-tight">{{ shift.Start_Time }} — {{ shift.End_Time }}</p>
@@ -155,7 +156,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
       <!-- Recent Check-ins List -->
-      <div class="lg:col-span-2 bg-white p-8 rounded-[3rem] border-2 border-slate-200 shadow-md">
+      <div class="lg:col-span-2 bg-primary-50 p-8 rounded-2xl border-2 border-primary-200 shadow-md">
         <div class="flex justify-between items-center mb-8">
           <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center">
             <HistoryIcon class="w-4 h-4 mr-2 text-primary-500" /> Recent Pulse History
@@ -165,7 +166,7 @@
 
         <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
           <div v-for="checkin in checkins" :key="checkin.Attend_ID" 
-            class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-white border border-transparent hover:border-slate-100 transition-all group">
+            class="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-white border border-transparent hover:border-slate-100 transition-all group">
             <div class="flex items-center space-x-4">
               <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm font-black text-primary-600 group-hover:bg-primary-600 group-hover:text-white transition-colors">
                 {{ checkin.Check_Type === 'IN' ? '↓' : '↑' }}
@@ -187,7 +188,7 @@
       </div>
 
       <!-- Weekly Progress (Cool Feature) -->
-      <div class="bg-white p-8 rounded-[3rem] border-2 border-slate-200 shadow-md text-center space-y-6">
+      <div class="bg-primary-50 p-8 rounded-2xl border-2 border-primary-200 shadow-md text-center space-y-6">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Weekly Commitment</h3>
           <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold">
@@ -236,6 +237,43 @@
 
     </div>
 
+    <!-- 4. Live Work Zones Map -->
+    <div class="bg-primary-50 p-8 rounded-2xl border-2 border-primary-200 shadow-md">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h3 class="text-lg font-black text-slate-900 uppercase tracking-widest">Your Work Zones</h3>
+          <p class="text-sm text-slate-500 font-semibold mt-1">Authorized locations for check-in</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+          <span class="text-xs font-black text-green-600 uppercase">Live</span>
+        </div>
+      </div>
+      
+      <!-- Map Container -->
+      <div id="work-zones-map" class="w-full h-96 rounded-3xl border-2 border-slate-100 shadow-md overflow-hidden"></div>
+
+      <!-- Zone Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div class="text-center p-4 bg-slate-50 rounded-lg border border-slate-100">
+          <p class="text-2xl font-black text-primary-600">{{ authorizedZones.length }}</p>
+          <p class="text-[9px] font-bold text-slate-500 uppercase mt-1">Zones Active</p>
+        </div>
+        <div v-if="currentLocation" class="text-center p-4 bg-green-50 rounded-lg border border-green-100">
+          <p class="text-2xl font-black text-green-600">✓</p>
+          <p class="text-[9px] font-bold text-green-600 uppercase mt-1">Location Found</p>
+        </div>
+        <div class="text-center p-4 bg-blue-50 rounded-lg border border-blue-100">
+          <p class="text-lg font-black text-primary-600">{{ userRadius || '500' }}m</p>
+          <p class="text-[9px] font-bold text-primary-600 uppercase mt-1">Check-in Radius</p>
+        </div>
+        <div class="text-center p-4 bg-amber-50 rounded-lg border border-amber-100">
+          <p class="text-2xl font-black text-amber-600">{{ isInZone ? '✓' : '✕' }}</p>
+          <p class="text-[9px] font-bold text-amber-600 uppercase mt-1">In Zone Now</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Add New Shift Button - Hidden -->
   </div>
 
@@ -243,7 +281,7 @@
   <div v-if="showAddShiftModal"
        class="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 flex items-center justify-center"
        @click="closeAddShiftModal">
-    <div class="relative mx-auto p-6 border w-full max-w-md shadow-lg rounded-2xl bg-white"
+    <div class="relative mx-auto p-6 border w-full max-w-md shadow-lg rounded-lg bg-white"
          @click.stop>
       <div>
         <h3 class="text-lg font-bold text-slate-900 mb-6">Add New Shift</h3>
@@ -300,7 +338,9 @@ import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import api from '@/utils/api'
 import { useRoute } from 'vue-router'
-import { ClockIcon, CalendarIcon, HistoryIcon, MapPinIcon } from 'lucide-vue-next'
+import { ClockIcon, CalendarIcon, HistoryIcon, MapPinIcon, CheckCircleIcon, XCircleIcon, InfoIcon, AlertTriangleIcon, ArrowDownIcon, ArrowUpIcon, CheckIcon } from 'lucide-vue-next'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
 const authStore = useAuthStore()
 const route = useRoute()
@@ -322,6 +362,15 @@ const showAddShiftModal = ref(false)
 const formSubmitted = ref(false)
 const loading = ref(true)
 const toasts = ref([])
+
+// Map & Location Data
+const currentLocation = ref(null)
+const authorizedZones = ref([])
+const userRadius = ref(500) // meters
+const isInZone = ref(false)
+let map = null
+let userMarker = null
+let zoneMarkers = null
 
 const shiftForm = ref({
   userId: '',
@@ -553,8 +602,177 @@ const createShift = async () => {
 
 let refreshInterval
 
+const initializeMap = async () => {
+  // Use Leaflet with OpenStreetMap (FREE - no API key needed!)
+  const mapContainer = document.getElementById('work-zones-map')
+  if (!mapContainer) return
+  
+  // Default center: Monrovia, Liberia
+  const defaultLat = 6.2741
+  const defaultLng = -10.6946
+  const centerLat = currentLocation.value?.latitude || defaultLat
+  const centerLng = currentLocation.value?.longitude || defaultLng
+  
+  // Initialize map
+  map = L.map(mapContainer).setView([centerLat, centerLng], 15)
+  
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(map)
+  
+  // Add user location marker (blue)
+  if (currentLocation.value) {
+    userMarker = L.marker([currentLocation.value.latitude, currentLocation.value.longitude], {
+      icon: L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      })
+    }).addTo(map)
+    .bindPopup('📍 Your Location')
+    
+    // Draw circle around user location (check-in radius)
+    L.circle([currentLocation.value.latitude, currentLocation.value.longitude], {
+      radius: userRadius.value,
+      color: '#3b82f6',
+      fillColor: '#3b82f6',
+      fillOpacity: 0.1,
+      weight: 2,
+      opacity: 0.3
+    }).addTo(map)
+  }
+  
+  // Add authorized zones markers (red)
+  if (authorizedZones.value && authorizedZones.value.length > 0) {
+    authorizedZones.value.forEach(zone => {
+      const zoneLat = parseFloat(zone.latitude)
+      const zoneLng = parseFloat(zone.longitude)
+      const zoneRadius = zone.Radius || 500
+      
+      // Add marker
+      L.marker([zoneLat, zoneLng], {
+        icon: L.icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        })
+      }).addTo(map)
+      .bindPopup(`<strong>${zone.Zone_Name}</strong><br>Radius: ${zoneRadius}m`)
+      
+      // Draw zone circle
+      L.circle([zoneLat, zoneLng], {
+        radius: zoneRadius,
+        color: '#ef4444',
+        fillColor: '#ef4444',
+        fillOpacity: 0.05,
+        weight: 1,
+        opacity: 0.2
+      }).addTo(map)
+      
+      // Check if user is in this zone
+      if (currentLocation.value) {
+        const R = 6371000 // Earth's radius in meters
+        const dLat = (zoneLat - currentLocation.value.latitude) * Math.PI / 180
+        const dLng = (zoneLng - currentLocation.value.longitude) * Math.PI / 180
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(currentLocation.value.latitude * Math.PI / 180) * Math.cos(zoneLat * Math.PI / 180) *
+                  Math.sin(dLng / 2) * Math.sin(dLng / 2)
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        const distance = R * c
+        
+        if (distance <= zoneRadius) {
+          isInZone.value = true
+        }
+      }
+    })
+  }
+}
+
+const getUserLocation = () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.watchPosition(
+      (position) => {
+        currentLocation.value = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        }
+      },
+      (error) => {
+        console.warn('Location access denied:', error)
+        showToast('Enable location for check-in zones', 'warning')
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 10000,
+        timeout: 5000
+      }
+    )
+  }
+}
+
+const fetchAuthorizedZones = async () => {
+  try {
+    // Fetch zones from backend
+    const zonesRes = await api.get('/org/work-zones')
+    authorizedZones.value = zonesRes.data || []
+  } catch (error) {
+    console.warn('Failed to fetch work zones:', error)
+    // Demo data
+    authorizedZones.value = [
+      { Zone_ID: 1, Zone_Name: 'Main Office', latitude: '6.2741', longitude: '-10.6946', Radius: 500 }
+    ]
+  }
+}
+
+const updateMyZone = async () => {
+  if (!currentLocation.value) {
+    showToast('Location not available', 'warning', 'Enable location permissions to continue')
+    return
+  }
+  
+  try {
+    // Check if in any authorized zone
+    if (!isInZone.value) {
+      showToast('Outside zone', 'warning', `You are not currently in an authorized work zone. Please move closer to a work zone to check in.`)
+      return
+    }
+    
+    // Emit location update to backend (for check-in)
+    const response = await api.post('/attendance/verify-zone', {
+      latitude: currentLocation.value.latitude,
+      longitude: currentLocation.value.longitude,
+      accuracy: currentLocation.value.accuracy
+    })
+    
+    if (response.data.inZone) {
+      showToast('Zone verified! ✓', 'success', `You're in ${response.data.zoneName}. Ready to check in!`)
+    } else {
+      showToast('Not in authorized zone', 'error', 'Please move to an authorized work zone')
+    }
+  } catch (error) {
+    console.error('Zone verification failed:', error)
+    showToast('Verification failed', 'error', error.response?.data?.message || 'Could not verify zone')
+  }
+}
+
 onMounted(() => {
   loadUserData()
+  getUserLocation()
+  fetchAuthorizedZones()
+  
+  // Initialize map after a brief delay to allow DOM to render
+  setTimeout(() => {
+    initializeMap()
+  }, 500)
   
   // Auto-refresh every 2 minutes for live data
   refreshInterval = setInterval(() => {
@@ -564,6 +782,10 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (refreshInterval) clearInterval(refreshInterval)
+  // Clean up map
+  if (map) {
+    map = null
+  }
 })
 </script>
 

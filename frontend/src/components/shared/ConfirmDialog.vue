@@ -118,22 +118,22 @@ const icon = computed(() => iconMap[props.type])
 
 const iconBgClass = computed(() => {
   const classes = {
-    info: 'bg-blue-100',
+    info: 'bg-primary-100',
     success: 'bg-green-100',
     warning: 'bg-yellow-100',
     danger: 'bg-red-100',
-    question: 'bg-gray-100'
+    question: 'bg-primary-100'
   }
   return classes[props.type]
 })
 
 const iconColorClass = computed(() => {
   const classes = {
-    info: 'text-blue-600',
+    info: 'text-primary-600',
     success: 'text-green-600',
     warning: 'text-yellow-600',
     danger: 'text-red-600',
-    question: 'text-gray-600'
+    question: 'text-primary-600'
   }
   return classes[props.type]
 })
@@ -141,11 +141,11 @@ const iconColorClass = computed(() => {
 const confirmButtonClass = computed(() => {
   const base = 'text-white font-semibold hover:shadow-lg'
   const classes = {
-    info: 'bg-blue-600 hover:bg-blue-700',
-    success: 'bg-green-600 hover:bg-green-700',
+    info: 'bg-primary-600 hover:bg-primary-700',
+    success: 'bg-primary-600 hover:bg-primary-700',
     warning: 'bg-yellow-600 hover:bg-yellow-700',
     danger: 'bg-red-600 hover:bg-red-700',
-    question: 'bg-gray-600 hover:bg-gray-700'
+    question: 'bg-primary-600 hover:bg-primary-700'
   }
   return `${base} ${classes[props.type]}`
 })

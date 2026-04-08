@@ -95,7 +95,7 @@
           </div>
           <div v-else class="p-8 text-center text-slate-400">
             <p class="text-sm font-bold">No active alerts</p>
-            <p class="text-[10px]">All systems operating normally ✓</p>
+            <p class="text-[10px] flex items-center gap-1"><CheckCircleIcon class="w-4 h-4 text-green-600" />All systems operating normally</p>
           </div>
         </div>
 
@@ -141,7 +141,7 @@ import { getAlerts } from '@/services/superadminApi'
 import {
   ZapIcon, MenuIcon, ChevronLeftIcon, RefreshCwIcon, LayoutDashboardIcon,
   BuildingIcon, UsersIcon, TrendingUpIcon, MapPinIcon, BriefcaseIcon,
-  ClockIcon, ActivityIcon, FileTextIcon, AlertCircleIcon, ShieldAlertIcon, SettingsIcon
+  ClockIcon, ActivityIcon, FileTextIcon, AlertCircleIcon, ShieldAlertIcon, SettingsIcon, CheckCircleIcon
 } from 'lucide-vue-next'
 
 const router = useRouter()

@@ -15,9 +15,9 @@
 
       <nav class="flex-1 py-8 px-4 space-y-2">
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase transition-all"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase transition-all"
           :class="[$route.path === item.path ? 'text-white shadow-xl' : 'text-slate-400 hover:bg-slate-900']"
-          :style="$route.path === item.path ? { backgroundColor: '#D97A2B' } : {}"
+          :style="$route.path === item.path ? { backgroundColor: '#0284c7' } : {}"
         >
           <component :is="item.icon" class="w-5 h-5" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -25,7 +25,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <button @click="handleLogout" class="w-full p-3 rounded-xl text-xs font-bold uppercase text-white" style="background-color: #D97A2B;">
+        <button @click="handleLogout" class="w-full p-3 rounded-xl text-xs font-bold uppercase text-white" style="background-color: #0284c7;">
           Logout
         </button>
       </div>
@@ -36,10 +36,10 @@
       <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between px-10 sticky top-0 z-10">
         <h1 class="text-xl font-black uppercase" style="color: #000000;">Reports & Export</h1>
         <div class="flex items-center space-x-3">
-          <button @click="generateReport('pdf')" class="px-4 py-2 rounded-lg text-xs font-bold uppercase text-white" style="background-color: #D97A2B;">
+          <button @click="generateReport('pdf')" class="px-4 py-2 rounded-lg text-xs font-bold uppercase text-white" style="background-color: #0284c7;">
             PDF Export
           </button>
-          <button @click="generateReport('csv')" class="px-4 py-2 rounded-lg text-xs font-bold uppercase text-white" style="background-color: #6FAF4F;">
+          <button @click="generateReport('csv')" class="px-4 py-2 rounded-lg text-xs font-bold uppercase text-white" style="background-color: #ea580c;">
             CSV Export
           </button>
         </div>
@@ -47,7 +47,7 @@
 
       <div class="flex-1 overflow-y-auto p-10 space-y-8">
         <!-- Report Builder -->
-        <div class="bg-white rounded-2xl border border-slate-100 p-8">
+        <div class="bg-white rounded-lg border border-slate-100 p-8">
           <h2 class="text-sm font-black uppercase mb-6" style="color: #000000;">Create Custom Report</h2>
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -80,14 +80,14 @@
             </div>
           </div>
 
-          <button @click="previewReport" class="px-6 py-2 text-white rounded-lg font-bold uppercase text-xs" style="background-color: #D97A2B;">
+          <button @click="previewReport" class="px-6 py-2 text-white rounded-lg font-bold uppercase text-xs" style="background-color: #0284c7;">
             Preview Report
           </button>
         </div>
 
         <!-- Quick Reports -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-white rounded-2xl border border-slate-100 p-8">
+          <div class="bg-white rounded-lg border border-slate-100 p-8">
             <h3 class="text-sm font-black uppercase mb-4" style="color: #000000;">Attendance Summary</h3>
             <div class="space-y-3">
               <button @click="generateReport('attendance')" class="w-full p-3 rounded-lg text-xs font-bold uppercase" style="background-color: #F0F9FF; color: #D97A2B;">
@@ -97,7 +97,7 @@
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl border border-slate-100 p-8">
+          <div class="bg-white rounded-lg border border-slate-100 p-8">
             <h3 class="text-sm font-black uppercase mb-4" style="color: #000000;">User Activity</h3>
             <div class="space-y-3">
               <button @click="generateReport('activity')" class="w-full p-3 bg-purple-50 text-purple-600 rounded-lg text-xs font-bold hover:bg-purple-100 uppercase">
@@ -107,7 +107,7 @@
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl border border-slate-100 p-8">
+          <div class="bg-white rounded-lg border border-slate-100 p-8">
             <h3 class="text-sm font-black text-slate-900 uppercase mb-4">Department Analytics</h3>
             <div class="space-y-3">
               <button @click="generateReport('departments')" class="w-full p-3 bg-green-50 text-green-600 rounded-lg text-xs font-bold hover:bg-green-100 uppercase">
@@ -117,7 +117,7 @@
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl border border-slate-100 p-8">
+          <div class="bg-white rounded-lg border border-slate-100 p-8">
             <h3 class="text-sm font-black text-slate-900 uppercase mb-4">Revenue Summary</h3>
             <div class="space-y-3">
               <button @click="generateReport('revenue')" class="w-full p-3 bg-amber-50 text-amber-600 rounded-lg text-xs font-bold hover:bg-amber-100 uppercase">
@@ -129,7 +129,7 @@
         </div>
 
         <!-- Scheduled Reports -->
-        <div class="bg-white rounded-2xl border border-slate-100 p-8">
+        <div class="bg-white rounded-lg border border-slate-100 p-8">
           <h2 class="text-sm font-black text-slate-900 uppercase mb-6">Scheduled Reports</h2>
           <div class="space-y-3">
             <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
@@ -256,3 +256,4 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 </style>
+

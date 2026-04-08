@@ -15,9 +15,9 @@
 
       <nav class="flex-1 py-8 px-4 space-y-2">
         <router-link v-for="item in navItems" :key="item.path" :to="item.path"
-          class="flex items-center space-x-4 px-4 py-3.5 rounded-2xl font-bold text-xs uppercase transition-all"
+          class="flex items-center space-x-4 px-4 py-3.5 rounded-lg font-bold text-xs uppercase transition-all"
           :class="[$route.path === item.path ? 'text-white shadow-xl' : 'text-slate-400 hover:bg-slate-900']"
-          :style="$route.path === item.path ? { backgroundColor: '#D97A2B' } : {}"
+          :style="$route.path === item.path ? { backgroundColor: '#0284c7' } : {}"
         >
           <component :is="item.icon" class="w-5 h-5" />
           <span v-if="sidebarOpen">{{ item.name }}</span>
@@ -25,7 +25,7 @@
       </nav>
 
       <div class="p-6 border-t border-slate-800">
-        <button @click="handleLogout" class="w-full p-3 rounded-xl text-xs font-bold uppercase text-white" style="background-color: #D97A2B;">
+        <button @click="handleLogout" class="w-full p-3 rounded-xl text-xs font-bold uppercase text-white" style="background-color: #0284c7;">
           Logout
         </button>
       </div>
@@ -40,7 +40,7 @@
         </div>
         <div class="flex items-center space-x-4">
           <input v-model="searchQuery" type="text" placeholder="Search users..." class="px-4 py-2 border border-slate-200 rounded-lg text-sm">
-          <button @click="loadUsers" class="p-3 bg-slate-50 rounded-xl hover:bg-slate-100" style="color: #D97A2B;">
+          <button @click="loadUsers" class="p-3 bg-slate-50 rounded-xl hover:bg-slate-100" style="color: #0284c7;">
             <RefreshCwIcon :class="{'animate-spin': loading}" class="w-4 h-4" />
           </button>
         </div>
@@ -49,26 +49,26 @@
       <div class="flex-1 overflow-y-auto p-10 space-y-8">
         <!-- Summary Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div class="bg-white p-6 rounded-2xl border border-slate-100">
+          <div class="bg-white p-6 rounded-lg border border-slate-100">
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Total Users</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #D97A2B;">{{ users.length }}</h3>
+            <h3 class="text-3xl font-black mt-2" style="color: #0284c7;">{{ users.length }}</h3>
           </div>
-          <div class="bg-white p-6 rounded-2xl border border-slate-100">
+          <div class="bg-white p-6 rounded-lg border border-slate-100">
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Active Users</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #6FAF4F;">{{ activeUsers }}</h3>
+            <h3 class="text-3xl font-black mt-2" style="color: #ea580c;">{{ activeUsers }}</h3>
           </div>
-          <div class="bg-white p-6 rounded-2xl border border-slate-100">
+          <div class="bg-white p-6 rounded-lg border border-slate-100">
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Inactive Users</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #D97A2B;">{{ inactiveUsers }}</h3>
+            <h3 class="text-3xl font-black mt-2" style="color: #ef4444;">{{ inactiveUsers }}</h3>
           </div>
-          <div class="bg-white p-6 rounded-2xl border border-slate-100">
+          <div class="bg-white p-6 rounded-lg border border-slate-100">
             <p class="text-[10px] font-black uppercase" style="color: #000000;">Organizations</p>
-            <h3 class="text-3xl font-black mt-2" style="color: #F2D479;">{{ uniqueOrgs }}</h3>
+            <h3 class="text-3xl font-black mt-2" style="color: #0284c7;">{{ uniqueOrgs }}</h3>
           </div>
         </div>
 
         <!-- Users Table -->
-        <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="bg-white rounded-lg border border-slate-100 overflow-hidden">
           <div class="p-8 border-b border-slate-100">
             <h2 class="text-sm font-black uppercase" style="color: #000000;">Users Directory</h2>
           </div>
@@ -100,11 +100,11 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 text-xs" style="color: #000000;">{{ user.Email }}</td>
-                  <td class="px-6 py-4 text-xs font-bold" style="color: #D97A2B;">{{ user.Org_Name }}</td>
+                  <td class="px-6 py-4 text-xs font-bold" style="color: #0284c7;">{{ user.Org_Name }}</td>
                   <td class="px-6 py-4 text-xs" style="color: #000000;">{{ user.Job_Title || 'N/A' }}</td>
-                  <td class="px-6 py-4 text-xs font-mono" style="color: #D97A2B;">{{ user.Org_Domain }}.tracktimi.com</td>
+                  <td class="px-6 py-4 text-xs font-mono" style="color: #0284c7;">{{ user.Org_Domain }}.tracktimi.com</td>
                   <td class="px-6 py-4">
-                    <span :style="user.Is_Active ? { backgroundColor: '#6FAF4F', color: 'white' } : { backgroundColor: '#FFE5E5', color: '#D97A2B' }" class="px-3 py-1 rounded-full text-[9px] font-black uppercase">
+                    <span :style="user.Is_Active ? { backgroundColor: '#0284c7', color: 'white' } : { backgroundColor: '#FFE5E5', color: '#ef4444' }" class="px-3 py-1 rounded-full text-[9px] font-black uppercase">
                       {{ user.Is_Active ? 'Active' : 'Inactive' }}
                     </span>
                   </td>
@@ -119,7 +119,7 @@
 
         <!-- User Statistics -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div class="bg-white rounded-2xl border border-slate-100 p-8">
+          <div class="bg-white rounded-lg border border-slate-100 p-8">
             <h2 class="text-sm font-black text-slate-900 uppercase mb-6">Top Organizations by Users</h2>
             <div class="space-y-3">
               <div v-for="org in topOrganizations" :key="org.org" class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
@@ -129,7 +129,7 @@
             </div>
           </div>
 
-          <div class="bg-white rounded-2xl border border-slate-100 p-8">
+          <div class="bg-white rounded-lg border border-slate-100 p-8">
             <h2 class="text-sm font-black text-slate-900 uppercase mb-6">User Status Distribution</h2>
             <div class="space-y-4">
               <div>
@@ -277,3 +277,4 @@ onMounted(loadUsers)
   to { transform: rotate(360deg); }
 }
 </style>
+

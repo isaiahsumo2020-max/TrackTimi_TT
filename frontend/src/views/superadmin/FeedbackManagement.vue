@@ -15,7 +15,7 @@
               <p class="text-slate-600 text-sm">Total Feedback</p>
               <p class="text-3xl font-bold text-slate-900">{{ stats.total }}</p>
             </div>
-            <svg class="w-10 h-10 text-blue-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-10 h-10 text-primary-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
           </div>
@@ -25,9 +25,9 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-slate-600 text-sm">Pending</p>
-              <p class="text-3xl font-bold text-yellow-600">{{ stats.pending }}</p>
+              <p class="text-3xl font-bold text-accent-600">{{ stats.pending }}</p>
             </div>
-            <svg class="w-10 h-10 text-yellow-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-10 h-10 text-accent-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
@@ -37,9 +37,9 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-slate-600 text-sm">Responded</p>
-              <p class="text-3xl font-bold text-green-600">{{ stats.responded }}</p>
+              <p class="text-3xl font-bold text-primary-600">{{ stats.responded }}</p>
             </div>
-            <svg class="w-10 h-10 text-green-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-10 h-10 text-primary-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
@@ -49,7 +49,7 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-slate-600 text-sm">Avg Rating</p>
-              <p class="text-3xl font-bold text-orange-600">{{ stats.avg_rating?.toFixed(1) || 'N/A' }}</p>
+              <p class="text-3xl font-bold text-accent-600">{{ stats.avg_rating?.toFixed(1) || 'N/A' }}</p>
             </div>
             <div class="text-3xl">⭐</div>
           </div>
@@ -114,8 +114,8 @@
                 <span
                   class="px-3 py-1 rounded-full text-xs font-bold"
                   :class="{
-                    'bg-yellow-100 text-yellow-700': feedback.Status === 'pending',
-                    'bg-green-100 text-green-700': feedback.Status === 'responded'
+                    'bg-accent-100 text-accent-700': feedback.Status === 'pending',
+                    'bg-primary-100 text-primary-700': feedback.Status === 'responded'
                   }"
                 >
                   {{ feedback.Status }}
@@ -162,9 +162,9 @@
             </div>
             <button
               @click="selectedFeedback = null"
-              class="text-slate-400 hover:text-slate-600 text-2xl"
+              class="text-slate-400 hover:text-slate-600"
             >
-              ✕
+              <XIcon class="w-6 h-6" />
             </button>
           </div>
 
@@ -177,8 +177,8 @@
                 <span
                   class="inline-block mt-1 px-3 py-1 rounded-full text-xs font-bold"
                   :class="{
-                    'bg-yellow-100 text-yellow-700': selectedFeedback.Status === 'pending',
-                    'bg-green-100 text-green-700': selectedFeedback.Status === 'responded'
+                    'bg-accent-100 text-accent-700': selectedFeedback.Status === 'pending',
+                    'bg-primary-100 text-primary-700': selectedFeedback.Status === 'responded'
                   }"
                 >
                   {{ selectedFeedback.Status }}
@@ -215,8 +215,8 @@
             <div>
               <p class="text-sm font-bold text-slate-900 mb-4">Response</p>
 
-              <div v-if="selectedFeedback.Response" class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                <p class="text-xs font-bold text-green-700 uppercase mb-2">Your Response</p>
+              <div v-if="selectedFeedback.Response" class="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-4">
+                <p class="text-xs font-bold text-primary-700 uppercase mb-2">Your Response</p>
                 <p class="text-slate-700 mb-2">{{ selectedFeedback.Response }}</p>
                 <p class="text-xs text-slate-500">{{ formatDate(selectedFeedback.Responded_at) }}</p>
               </div>
@@ -258,6 +258,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '@/utils/api'
+import { XIcon } from 'lucide-vue-next'
+import { showError, showDeleteConfirm } from '@/utils/dialog'
 
 const allFeedback = ref([])
 const selectedFeedback = ref(null)
@@ -300,7 +302,7 @@ const fetchFeedback = async () => {
 
 const respondToFeedback = async () => {
   if (!responseText.value.trim()) {
-    alert('Please type a response')
+    showError('Please type a response', 'Empty Response')
     return
   }
 
@@ -319,27 +321,25 @@ const respondToFeedback = async () => {
     }
   } catch (err) {
     console.error('Failed to send response:', err)
-    alert('Failed to send response')
+    showError('Failed to send response', 'Error')
   } finally {
     isResponding.value = false
   }
 }
 
 const deleteFeedback = async () => {
-  if (!confirm('Are you sure you want to delete this feedback?')) {
-    return
-  }
-
-  try {
-    const res = await api.delete(`/feedback/${selectedFeedback.value.Feedback_ID}`)
-    if (res.data.success) {
-      selectedFeedback.value = null
-      await fetchFeedback()
+  showDeleteConfirm('Feedback', async () => {
+    try {
+      const res = await api.delete(`/feedback/${selectedFeedback.value.Feedback_ID}`)
+      if (res.data.success) {
+        selectedFeedback.value = null
+        await fetchFeedback()
+      }
+    } catch (err) {
+      console.error('Failed to delete feedback:', err)
+      showError('Failed to delete feedback', 'Error')
     }
-  } catch (err) {
-    console.error('Failed to delete feedback:', err)
-    alert('Failed to delete feedback')
-  }
+  })
 }
 
 const formatDate = (dateString) => {
