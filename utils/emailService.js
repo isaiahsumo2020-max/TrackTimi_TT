@@ -284,9 +284,88 @@ TrackTimi Team
   }
 };
 
+/**
+ * Send password reset email with reset link
+ */
+const sendPasswordResetEmail = async (email, firstName, resetToken) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+  console.log(`🔐 Password reset link for ${email}: ${resetLink}`);
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #f2a409; padding: 20px; color: white; text-align: center; border-radius: 5px; }
+          .content { padding: 20px; background-color: #f9f9f9; border-radius: 5px; margin-top: 20px; }
+          .link-box { background-color: #ffffff; border: 2px solid #f2a409; padding: 15px; text-align: center; margin: 20px 0; border-radius: 5px; word-break: break-all; }
+          .link-text { font-size: 13px; color: #f2a409; font-weight: bold; }
+          .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+          .button { background-color: #f2a409; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Reset Your Password</h1>
+          </div>
+          
+          <div class="content">
+            <p>Hello ${firstName},</p>
+            
+            <p>We received a request to reset your TrackTimi account password. Click the button below to create a new password:</p>
+            
+            <a href="${resetLink}" class="button">Reset Password</a>
+            
+            <p>Or click the reset link below:</p>
+            <div class="link-box">
+              <div class="link-text">${resetLink}</div>
+            </div>
+            
+            <p style="color: #666; font-size: 12px; margin-top: 20px;">
+              This link will expire in <strong>30 minutes</strong>.
+            </p>
+            
+            <p>If you did not request to reset your password, please ignore this message and contact our support team if you have concerns.</p>
+            
+            <p>Best regards,<br/>
+            <strong>TrackTimi Team</strong></p>
+          </div>
+          
+          <div class="footer">
+            <p>&copy; 2026 TrackTimi. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  const mailOptions = {
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+    to: email,
+    subject: 'Reset Your TrackTimi Password',
+    html: htmlContent,
+    text: `Click this link to reset your password: ${resetLink}`
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Password reset email sent to:', email);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('⚠️  Password reset email sending failed:', error.message);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendVerificationEmail,
   sendResendVerificationEmail,
   sendTestEmail,
-  sendInvitationEmail
+  sendInvitationEmail,
+  sendPasswordResetEmail
 };

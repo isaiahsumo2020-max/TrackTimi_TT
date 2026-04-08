@@ -2,7 +2,7 @@
 
 const db = require('./config/db');
 
-console.log('📊 Adding Break table to database...');
+console.log(' Adding Break table to database...');
 
 db.run(`CREATE TABLE IF NOT EXISTS Break (
   Break_ID INTEGER PRIMARY KEY AUTOINCREMENT,

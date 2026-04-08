@@ -15,7 +15,11 @@ router.get('/verify-email', authController.verifyEmailByLink);
 router.post('/verify-code', authLimiter, authController.verifyEmailByCode);
 router.post('/resend-verification', authLimiter, authController.resendVerification);
 
-// 3. PROTECTED ROUTES
+// 3. PASSWORD RESET ROUTES (Public)
+router.post('/request-password-reset', authLimiter, authController.requestPasswordReset);
+router.post('/reset-password', authLimiter, authController.resetPassword);
+
+// 4. PROTECTED ROUTES
 router.get('/profile', authenticateToken, authController.getProfile);
 router.post('/invite', authenticateToken, authController.inviteEmployee);
 
