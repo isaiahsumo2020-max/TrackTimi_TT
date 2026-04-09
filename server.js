@@ -1,3 +1,4 @@
+// Build trigger: Apr 9 2026 - Fresh rebuild with EMAIL_SERVICE variable
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
